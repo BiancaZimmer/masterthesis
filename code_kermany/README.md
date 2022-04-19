@@ -25,3 +25,62 @@ Occlusion:
                 --graph /tmp/output_graph.pb
                 --labels /tmp/output_labels.txt
 
+----------- 
+Added by Bianca:
+
+Sample usage:
+python retrain.py
+    --images /path/to/images
+    --output_graph "/Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small/results/retrained_graph_1.pb"
+    --output_labels "/Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small/results/output_labels.txt"
+    --summaries_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small/results/retrain_logs1"
+    --training_steps 100
+
+
+python retrain.py --help
+usage: retrain.py [-h] [--images IMAGES] [--output_graph OUTPUT_GRAPH]
+                  [--output_labels OUTPUT_LABELS]
+                  [--summaries_dir SUMMARIES_DIR]
+                  [--training_steps TRAINING_STEPS]
+                  [--learning_rate LEARNING_RATE]
+                  [--eval_frequency EVAL_FREQUENCY]
+                  [--train_batch_size TRAIN_BATCH_SIZE]
+                  [--test_batch_size TEST_BATCH_SIZE]
+                  [--validation_batch_size VALIDATION_BATCH_SIZE]
+                  [--model_dir MODEL_DIR] [--bottleneck_dir BOTTLENECK_DIR]
+                  [--final_tensor_name FINAL_TENSOR_NAME]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --images IMAGES       Path to folder containing subdirectories of the
+                        training categories (filesnames all CAPS)
+  --output_graph OUTPUT_GRAPH
+                        Output directory to save the trained graph.
+  --output_labels OUTPUT_LABELS
+                        Directory in which to save the labels.
+  --summaries_dir SUMMARIES_DIR
+                        Path to save summary logs for TensorBoard.
+  --training_steps TRAINING_STEPS
+                        How many training steps to run before ending.
+  --learning_rate LEARNING_RATE
+                        Set learning rate
+  --eval_frequency EVAL_FREQUENCY
+                        How often to evaluate the training results.
+  --train_batch_size TRAIN_BATCH_SIZE
+                        How many images to train on at a time.
+  --test_batch_size TEST_BATCH_SIZE
+                        Number of images from test set to test on. Value of -1
+                        will cause entire directory to be used. Since it is
+                        used only once, -1 will work in most cases.
+  --validation_batch_size VALIDATION_BATCH_SIZE
+                        Number of images from validation set to validate on.
+                        Value of -1 will cause entire directory to be used.
+                        Large batch sizes may slow down training size it is
+                        performed frequently.
+  --model_dir MODEL_DIR
+                        Path to pretrained weights
+  --bottleneck_dir BOTTLENECK_DIR
+                        Path to store bottleneck layer values.
+  --final_tensor_name FINAL_TENSOR_NAME
+                        The name of the output classification layer in the
+                        retrained graph.

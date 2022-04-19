@@ -8,12 +8,13 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import os
+# import os
 import sys
 import time
 from net import utils
 from net import train
 import numpy as np
+#import tensorflow.compat.v1 as tf # since we use tf.app in the second to last line
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 
@@ -146,12 +147,13 @@ def main(_):
   predictions = np.argmax(probabilities, axis=1)
   labels = np.argmax(test_ground_truth, axis=1)
   print("Total Model Runtime: {}min, {:0.2f}sec".format(int(time_elapsed // 60), time_elapsed % 60))
-    
-  # roc_labels = [0 if label in [LIST_OF_POS_IDX] else 1 for label in labels]
-  # pos_probs = probabilities[:, [LIST_OF_POS_IDX]]
-  # roc_probs = np.ndarray.sum(pos_probs, axis=1)
-  # auc = utils.generate_roc(roc_labels, roc_probs, pos_label = 0)
-  # print("Final Model AUC: {:0.2f}%".format(auc * 100))
+
+  LIST_OF_POS_IDX = ['CNV', 'DME'] #changed to match the paper
+  roc_labels = [0 if label in LIST_OF_POS_IDX else 1 for label in labels]
+  pos_probs = probabilities[:, LIST_OF_POS_IDX]
+  roc_probs = np.ndarray.sum(pos_probs, axis=1)
+  auc = utils.generate_roc(roc_labels, roc_probs, pos_label = 0)
+  print("Final Model AUC: {:0.2f}%".format(auc * 100))
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()

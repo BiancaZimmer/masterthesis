@@ -124,7 +124,7 @@ def get_bottleneck_path(image_lists, label_name, index, bottleneck_dir, category
 
 # Create directories for TensorBoard summaries
 def create_tensorboard_directories(summaries_dir):
-  if tf.gfile.Exists(summaries_dir):
+  if tf.gfile.Exists(summaries_dir): #tf.io.gfile. when using tensorflow 2.0
     tf.gfile.DeleteRecursively(summaries_dir)
   tf.gfile.MakeDirs(summaries_dir)
 
