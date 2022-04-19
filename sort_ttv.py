@@ -115,6 +115,6 @@ for dir in ['Training', 'Validation', 'Testing']:
 percentages = [round(i / sum(per_dir), 2) * 100 for i in per_dir]
 print(str(percentages) + "  - percentages  ")
 
-# TODO:
+#
 # add an option to not make a validation directory -> only 2
 # add sys arguments to execute this from the console (for this: research sys arguments)
