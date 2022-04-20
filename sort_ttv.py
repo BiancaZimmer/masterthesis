@@ -6,7 +6,9 @@ import random
 import shutil
 
 # sample usage:
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train Users/biancazimmer/Documents/Masterthesis_data 0.2
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
 
 # initialize parser for command line args
 parser = argparse.ArgumentParser()
@@ -19,12 +21,10 @@ parser.add_argument("basedir",
 parser.add_argument("testsplit",
                     help="determins the test split. All_images * testsplit = size of test set",
                     type=float)
-parser.add_argument("-v", "--validationset",
-                    help="adds a third folder for the validation set, else only the test set is split off",
-                    action="store_true")
 parser.add_argument("-s", "--validationsplit",
-                    help="determins the validation split. Traindata * validationsplit = size of validation set",
-                    action="store_true")
+                    help="adds a third folder for the validation set, else only the test set is split off. Value "
+                         "gives the validation split. Traindata * validationsplit = size of validation set",
+                    type=float)
 args = parser.parse_args()
 
 
@@ -42,12 +42,12 @@ def makedirs():
     train_dir = os.path.join(args.basedir, 'train')
     testing_dir = os.path.join(args.basedir, 'test')
 
-    if args.validationset:
-        validation_dir = os.path.join(args.base_dir, 'val')
+    if args.validationsplit:
+        validation_dir = os.path.join(args.basedir, 'val')
 
     for l in all_labels:
         os.makedirs(os.path.join(train_dir, l), exist_ok=True)
-        if args.validationset:
+        if args.validationsplit:
             os.makedirs(os.path.join(validation_dir, l), exist_ok=True)
         os.makedirs(os.path.join(testing_dir, l), exist_ok=True)
 
@@ -128,7 +128,7 @@ train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit)
 numtrain = copyfiles(train_fnames, args.imagedir, os.path.join(args.basedir, "train"))
 numtest = copyfiles(test_fnames, args.imagedir, os.path.join(args.basedir, "test"))
 
-if args.validationset:
+if args.validationsplit:
     train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit)
     numval = movefiles(val_fnames, os.path.join(args.basedir, "train"), os.path.join(args.basedir, "val"))
     checkmove(numtrain, numtest, numval)
