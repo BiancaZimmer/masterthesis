@@ -7,16 +7,16 @@
 # The validation folder is optional, use -s <float> to give a validation split.
 # If you do not want a test folder simply set the test split to 0.0
 
+# sample usage:
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
+
 
 import argparse
 import os
 import random
 import shutil
-
-# sample usage:
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
 
 # initialize parser for command line args
 parser = argparse.ArgumentParser()
