@@ -1,4 +1,12 @@
-# functions to sort images into train, test and validation folders
+# Functions to sort images into train, test and validation folders
+
+# In order to set up the  training we need a certain file structure. For this wee need all out images divided into
+# training, validation and test set (each a unique folder) and each again divided into the label folders.
+# This code takes all the folders in the image directory, from this it infers how many and which labels we have,
+# creates the folder structure as mentioned above and sorts the images accordingly.
+# The validation folder is optional, use -s <float> to give a validation split.
+# If you do not want a test folder simply set the test split to 0.0
+
 
 import argparse
 import os
@@ -6,7 +14,9 @@ import random
 import shutil
 
 # sample usage:
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train Users/biancazimmer/Documents/Masterthesis_data 0.2
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
+# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
 
 # initialize parser for command line args
 parser = argparse.ArgumentParser()
@@ -19,12 +29,10 @@ parser.add_argument("basedir",
 parser.add_argument("testsplit",
                     help="determins the test split. All_images * testsplit = size of test set",
                     type=float)
-parser.add_argument("-v", "--validationset",
-                    help="adds a third folder for the validation set, else only the test set is split off",
-                    action="store_true")
 parser.add_argument("-s", "--validationsplit",
-                    help="determins the validation split. Traindata * validationsplit = size of validation set",
-                    action="store_true")
+                    help="adds a third folder for the validation set, else only the test set is split off. Value "
+                         "gives the validation split. Traindata * validationsplit = size of validation set",
+                    type=float)
 args = parser.parse_args()
 
 
@@ -42,12 +50,12 @@ def makedirs():
     train_dir = os.path.join(args.basedir, 'train')
     testing_dir = os.path.join(args.basedir, 'test')
 
-    if args.validationset:
-        validation_dir = os.path.join(args.base_dir, 'val')
+    if args.validationsplit:
+        validation_dir = os.path.join(args.basedir, 'val')
 
     for l in all_labels:
         os.makedirs(os.path.join(train_dir, l), exist_ok=True)
-        if args.validationset:
+        if args.validationsplit:
             os.makedirs(os.path.join(validation_dir, l), exist_ok=True)
         os.makedirs(os.path.join(testing_dir, l), exist_ok=True)
 
@@ -113,6 +121,7 @@ def movefiles(train_fnames, imagefolder, destinationfolder):
 
 
 def checkmove(ntrain, ntest, nval=[0]):
+    """Checks if the copy/move of the files was successful. Prints number of pictures in folders onto the console"""
     numimg = []
     for l in get_labels():
         numimg.append(len(os.listdir(os.path.join(args.imagedir, l))))
@@ -128,22 +137,10 @@ train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit)
 numtrain = copyfiles(train_fnames, args.imagedir, os.path.join(args.basedir, "train"))
 numtest = copyfiles(test_fnames, args.imagedir, os.path.join(args.basedir, "test"))
 
-if args.validationset:
+if args.validationsplit:
     train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit)
     numval = movefiles(val_fnames, os.path.join(args.basedir, "train"), os.path.join(args.basedir, "val"))
     checkmove(numtrain, numtest, numval)
 else:
     checkmove(numtrain, numtest)
 
-# ----------------------------------
-
-
-# Get File Names and Make Directories
-# In order to set up the  training we need a certain file structure. For this wee need all out images devided into
-# training, validation and test set (each a unique folder) and each again devided into the category folders.
-# This code takes all the folders in the base directory, from this it infers how many and which classes we have,
-# creates the folder structure as mentioned above and sorts the images accordingly. For this to be possible there
-# mustn't be any other folders in the base directory except the generated folders, a folder called "Models"
-# and one folder per class.
-# **NOTE** If the directories already exist they will be updated but not over-written. So just put your new data in
-# the base_dir/class_folder and run this code chunk again.
