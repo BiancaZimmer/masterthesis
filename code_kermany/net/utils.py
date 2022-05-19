@@ -2,7 +2,7 @@ import sys
 import os
 from glob import glob
 from six.moves import urllib
-from sklearn.metrics import roc_auc_score
+# from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
 from sklearn.metrics import auc
 import matplotlib.pyplot as plt

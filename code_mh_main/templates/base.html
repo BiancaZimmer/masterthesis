@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+        <title>Test - {% block title %}{% endblock %}</title>
+        {% block header %}{% endblock %}
+        <script>
+function callback(funtype,id,value) {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200) {
+            var resultls = JSON.parse(request.responseText);
+            resultls.forEach(result => {
+                if (result.hasOwnProperty('elem') && result.elem != null) {
+                    var elem = document.getElementById(result.elem);
+                    elem.innerHTML = result.content;
+                }
+            })
+            stop_loading();
+        }
+    }
+    request.open("GET", "/callbacks?type=" + funtype + "&id=" + id + "&value=" + value)
+    request.send(null)
+}
+        </script>
+        
+    </head>
+    <body>
+        {% block body %}{% endblock %}
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+
+        <script type="text/javascript">// <![CDATA[
+            function loading(){
+                $("#loading").show();
+                $("#content").hide();       
+            }
+            function stop_loading(){
+                $("#loading").hide();
+                $("#content").show();       
+            }
+    // ]]>
+
+            function slider(slideAmount) {
+                var sliderSpan = document.getElementById("top_n_nh_nm");
+                sliderSpan.innerHTML = slideAmount;
+                var v =  parseInt(slideAmount, 10);
+                if(v == 4){
+                    $('#nm_5').hide();
+                    $('#nh_5').hide();
+                    $('#nm_4').show();
+                    $('#nh_4').show();
+                    $('#nm_3').show();
+                    $('#nh_3').show();
+                    $('#nm_2').show();
+                    $('#nh_2').show();
+                    $('#nm_1').show();
+                    $('#nh_1').show();
+                }
+                else if(v == 3){
+                    $('#nm_5').hide();
+                    $('#nh_5').hide();
+                    $('#nm_4').hide();
+                    $('#nh_4').hide();
+                    $('#nm_3').show();
+                    $('#nh_3').show();
+                    $('#nm_2').show();
+                    $('#nh_2').show();
+                    $('#nm_1').show();
+                    $('#nh_1').show();
+                }
+                else if(v == 2){
+                    $('#nm_5').hide();
+                    $('#nh_5').hide();
+                    $('#nm_4').hide();
+                    $('#nh_4').hide();
+                    $('#nm_3').hide();
+                    $('#nh_3').hide();
+                    $('#nm_2').show();
+                    $('#nh_2').show();
+                    $('#nm_1').show();
+                    $('#nh_1').show();
+                }
+                else if(v == 1){
+                    $('#nm_5').hide();
+                    $('#nh_5').hide();
+                    $('#nm_4').hide();
+                    $('#nh_4').hide();
+                    $('#nm_3').hide();
+                    $('#nh_3').hide();
+                    $('#nm_2').hide();
+                    $('#nh_2').hide();
+                    $('#nm_1').show();
+                    $('#nh_1').show();
+                }
+                else {
+                    $('#nm_5').show();
+                    $('#nh_5').show();
+                    $('#nm_4').show();
+                    $('#nh_4').show();
+                    $('#nm_3').show();
+                    $('#nh_3').show();
+                    $('#nm_2').show();
+                    $('#nh_2').show();
+                    $('#nm_1').show();
+                    $('#nh_1').show();
+                }
+      
+
+            }
+        </script>
+
+        <!-- Site footer -->
+        <footer class="footer">
+            <div class="row">
+                <div class="container-copyright"></div>
+                    <p class="copyright-text">Copyright &copy; 2021 All Rights Reserved by <a href="https://www.iis.fraunhofer.de/de/ff/sse/imaging-and-analysis/cai.html">Fraunhofer IIS</a> | Author: Marvin Herchenbach & Prof. Dr. Ute Schmid</p>
+                </div>
+            </div>
+        </footer>
+
+    </body>
+</html>

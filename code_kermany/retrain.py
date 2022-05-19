@@ -148,7 +148,7 @@ def main(_):
   labels = np.argmax(test_ground_truth, axis=1)
   print("Total Model Runtime: {}min, {:0.2f}sec".format(int(time_elapsed // 60), time_elapsed % 60))
 
-  LIST_OF_POS_IDX = ['CNV', 'DME'] #changed to match the paper
+  LIST_OF_POS_IDX = [1, 2] #changed to match the paper ['CNV', 'DME']
   roc_labels = [0 if label in LIST_OF_POS_IDX else 1 for label in labels]
   pos_probs = probabilities[:, LIST_OF_POS_IDX]
   roc_probs = np.ndarray.sum(pos_probs, axis=1)

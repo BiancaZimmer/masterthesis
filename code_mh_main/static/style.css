@@ -1,0 +1,267 @@
+html * {
+    font-size: 16px;
+    line-height: 1.625;
+    font-family: Lato, sans-serif;
+  }
+
+h1 {
+    font-weight: bold;
+    color: #000;
+    font-size: 24px;
+    float: none;
+    padding: 20px;
+
+}
+
+
+h2 {
+    font-weight: bold;
+    color: #000;
+    font-size: 18px;
+    float: none;
+
+}
+
+
+body {
+    margin: 0px;
+    height: 100%;
+}
+
+footer {
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:50px;   /* Height of the footer */
+    background:#f5f5f5;
+    color: #686868;
+}
+
+.content { 
+    width: 100%; 
+}
+
+.menu-bar {
+    float: left;
+    width: 100%;
+    background-color: #a0b8b396;
+    height: 55px;
+    line-height: 55px;
+
+}
+
+.title  {
+    font-size: 24;
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: normal;
+}
+
+.logo-demo {
+    position: relative;
+    height: 30px;
+    margin-right: 5px;
+    vertical-align: middle;
+    line-height: normal;
+}
+
+div.title span {
+    position: relative;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: normal;
+ 
+}
+
+.logo-iis {
+    position: absolute;
+    right: 10px;
+    height: 35px;
+    top: 10px;
+}
+
+
+.container-images { 
+    margin-left: 0px; 
+    margin-bottom: 20px;
+    padding: 20px;
+    width: 100%;
+}
+
+.dropdown-test{ 
+    margin-left: 0px; 
+    margin-right: 20px; 
+    margin-bottom: 20px;
+    padding: 20px;
+    float:left;
+    flex-grow: 0!important;
+}
+
+.dropdown-datset {
+    width: 100%;
+    margin-left: 0px; 
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.dropdown-distance{    
+    margin-left: 0px; 
+    margin-right: 20px; 
+    margin-bottom: 20px;
+    padding: 20px;
+    float:left;
+    flex-grow: 5;
+}
+
+
+
+/* Desktop */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.row > * {
+    flex-grow: 1;
+}
+
+
+.column {
+    flex-direction: column;
+}
+
+.fill {
+    width: 100%;
+}
+
+
+/* Mobile */
+@media (max-width: 414px) {
+    .row > .row {
+        display: contents;
+    }
+}
+
+
+
+img { 
+    object-fit: contain;
+    float:initial;
+}
+
+.label-dropdown { 
+    margin: 0 10px;
+}
+
+.dropdown { 
+    position: relative;
+}
+
+
+.button-explain {
+	background:linear-gradient(to bottom, #bcdbd4 5%, #aed6cd 100%);
+	background-color:#bcdbd4;
+	display:inline-block;
+	cursor:pointer;
+	color:#000000;
+	font-family:Arial;
+	font-size:16px;
+	font-weight:bold;
+	padding:13px 32px;
+	text-decoration:none;
+}
+.button-explain:hover {
+	background:linear-gradient(to bottom, #aed6cd 5%, #bcdbd4 100%);
+	background-color:#aed6cd;
+}
+.button-explain:active {
+	position:relative;
+	top:1px;
+}
+
+.button-classify {
+	background:linear-gradient(to bottom, #faed99 5%, #f4f79e 100%);
+	background-color:#faed99;
+	display:inline-block;
+	cursor:pointer;
+	color:#000000;
+	font-family:Arial;
+	font-size:16px;
+	font-weight:bold;
+	padding:13px 32px;
+	text-decoration:none;
+}
+.button-classify:hover {
+	background:linear-gradient(to bottom, #f4f79e 5%, #faed99 100%);
+	background-color:#f4f79e;
+}
+.button-classify:active {
+	position:relative;
+	top:1px;
+} 
+
+
+.container-button { 
+    margin-left: 20px; 
+    float:left;
+}
+
+.container-slider { 
+    margin-left: 20px; 
+    margin-right: 75px; 
+    float:left;
+    width: 400px!important;
+    flex: 2;
+    flex-grow: 0!important;
+}
+
+.container-input { 
+    margin-left: 0px; 
+    margin-bottom: 20px;
+    padding: 20px;
+    width: 300px;
+}
+
+.container-pred { 
+    margin-left: 0px; 
+    margin-bottom: 20px;
+    padding: 20px;
+
+}
+
+.container-model-options { 
+    margin-left: 20px; 
+    float:left;
+    width: 400px;
+    margin-right: 75px; 
+    flex-grow: 0!important;
+}
+
+
+div#loading {
+    width: 350px;
+    height: 350px;
+    display: none;
+    background: url(/static/media/loadingimage.gif) ;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+    cursor: wait;
+}
+
+div#nm_1, div#nh_1 {
+	background-color:#ebfefa;
+}
+
+div#nm_2, div#nh_2, div#nm_3, div#nh_3, div#nm_4, div#nh_4, div#nm_5, div#nh_5   {
+	background-color:#efefef;
+}
+
+div#results {
+    width: 70%;
+}
+
+

@@ -29,13 +29,16 @@ Occlusion:
 Added by Bianca:
 
 Sample usage:
-python retrain.py
-    --images /path/to/images
-    --output_graph "/Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small/results/retrained_graph_1.pb"
-    --output_labels "/Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small/results/output_labels.txt"
-    --summaries_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_keramy_small/results/retrain_logs1"
-    --training_steps 100
+python code_kermany/retrain.py
+    --images "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2"
+    --output_graph "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/retrained_graph_1.pb"
+    --output_labels "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/output_labels.txt"
+    --summaries_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/retrain_logs1"
+    --training_steps 200
 
+To view Tensorboard go into the results folder and type the following into the terminal:
+
+tensorboard --logdir retrain_logs1
 
 python retrain.py --help
 usage: retrain.py [-h] [--images IMAGES] [--output_graph OUTPUT_GRAPH]
