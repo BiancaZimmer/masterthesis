@@ -97,13 +97,14 @@ class DataEntry:
         return x
        
 
-
+# delete comments for first testing
+# python code_mh_main/dataentry.py #workis as of 20/05/2022
 # if __name__ == '__main__':
 #     from feature_extractor import *
 #     dataset = 'mnist'
 #     fe = FeatureExtractor()
 #     image_path = os.path.join(DATA_DIR,dataset)
-#     data = [DataEntry(fe,dataset,os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files]
-#     for d in data:
+#     data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
+#     for d in data[:10]:
 #         print(d.feature_embedding)
 #     print("")

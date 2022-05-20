@@ -41,3 +41,10 @@ We propose a method for explaining the results of black box image classifiers to
 ## Contact
 
 * **Marvin Herchenbach** - If you have questions you can contact me under marv.her@t-online.de
+
+# By Bianca
+
+## Setup
+- Change the utils.py so the global variables fit your data
+- DATA_DIR should contain the data in a folder with name <data_name>
+- Inside should be two folders named "test" and "train" wherein your images in separate folders for the classes shall be found
