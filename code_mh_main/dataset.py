@@ -39,7 +39,7 @@ class DataSet():
 
         # Image path of the dataset
         self.DIR_TRAIN_DATA = os.path.join(self.path_datasets, self.name,'train')
-        self.DIR_TEST_DATA = os.path.join(self.path_datasets, self.name,'test')  
+        self.DIR_TEST_DATA = os.path.join(self.path_datasets, self.name,'test')
         
         self.data = [DataEntry(self.fe,self.name,os.path.join(path, file)) for path, _, files in os.walk(self.DIR_TRAIN_DATA) for file in files if file.endswith(tuple(image_extensions))]
         self.data_t = [DataEntry(self.fe,self.name,os.path.join(path, file)) for path, _, files in os.walk(self.DIR_TEST_DATA) for file in files if file.endswith(tuple(image_extensions))]
@@ -230,16 +230,21 @@ def get_dict_datasets_with_all_embeddings():
 
 
 
-def get_dict_datasets(use_CNN_feature_embeddding:bool):
+def get_dict_datasets(use_CNN_feature_embeddding:bool, use_all_datasets: bool):
     """Function to get a dictionary with available datasets where the keys are the names and the values are the DataSet objects.
 
     :param use_CNN_feature_embeddding: Set to True in order to save the model-specific (CNN-based) feature embedding instead the model-agnostic feature embedding (VGG16)
     :type use_CNN_feature_embeddding: bool
+    :param use_all_datasets: Set to True in order to walk through all data sets in the DATA_DIR; if set to false DATA_DIR_FOLDER is used
+    :type bool
 
     :return: *self* (`dict`) - Dictionary with avaiable DataSets objects
     """
     # LOAD the DATASETS
-    dataset_list = get_available_dataset()
+    if use_all_datasets:
+        dataset_list = get_available_dataset()
+    else:
+        dataset_list = DATA_DIR_FOLDERS
     dict_datasets = {}
     for dataset_name in dataset_list:
         if use_CNN_feature_embeddding:
@@ -248,7 +253,6 @@ def get_dict_datasets(use_CNN_feature_embeddding:bool):
         else:
             fe_VGG16 = FeatureExtractor(loaded_model=None)
             dict_datasets[dataset_name] = DataSet(name = dataset_name, fe = fe_VGG16)
-
     print(f'Possible dataset: {dict_datasets.keys()}')
     return dict_datasets
 

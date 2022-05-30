@@ -48,3 +48,13 @@ We propose a method for explaining the results of black box image classifiers to
 - Change the utils.py so the global variables fit your data
 - DATA_DIR should contain the data in a folder with name <data_name>
 - Inside should be two folders named "test" and "train" wherein your images in separate folders for the classes shall be found
+
+## Test settings can be found in the following modules:
+- dataset
+- dataentry
+
+## Main programs can be found in:
+- cnn_model: trains a cnn model with training data, evaluates the misclassified data, prints plots
+- Feature_Extractor
+- flaskutil
+- kernels

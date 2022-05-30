@@ -434,27 +434,32 @@ if __name__ == "__main__":
 
 
     use_CNN_feature_embeddding = False
-    dict_datasets = get_dict_datasets(use_CNN_feature_embeddding)
+    use_all_datasets = True
+    if len(DATA_DIR_FOLDERS) > 0:
+        use_all_datasets = False
+    dict_datasets = get_dict_datasets(use_CNN_feature_embeddding, use_all_datasets)
 
-    model_quality = CNNmodel(dict_datasets['quality'])
+    # TODO: careful: This is hard coded, doesn't work for different dataset names
+    #model_quality = CNNmodel(dict_datasets['quality'])
     model_mnist = CNNmodel(dict_datasets['mnist'])
 
-    sel_model = model_quality
+    sel_model = model_mnist
 
     #initialize img generator
     sel_model._preprocess_img_gen()
     sel_model._binary_model()
 
-
-    #sel_model.fit(save_model=True, suffix_path="_test")
+    # TODO: careful! Here it is hard coded whether or not to take a pre-saved model
+    #sel_model.fit(save_model=True, suffix_path="_test") #TODO: this is a binary model
     sel_model.load_model()
-    sel_model.eval(plot_losses=True)
+    sel_model.eval(plot_losses=True) #TODO: no legend in plot
     # sel_model.plot_rand10_pred()
-    quality_misclassified = sel_model.get_misclassified(plot=False)
-    #print("Misclassified: ", len(quality_misclassified))
+    # quality_misclassified = sel_model.get_misclassified(plot=False)
+    # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number
 
-
+    # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[99], plot=True)
 
+    # plots activation maps of one image
     # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[42])
     # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[55])
