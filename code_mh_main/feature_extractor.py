@@ -85,16 +85,19 @@ class FeatureExtractor():
 if __name__ == "__main__":
 
     from dataset import DataSet
+    from dataset import get_dict_datasets
 
     ## LOAD the DATASETS
-    dataset_list = get_available_dataset()
-    dict_datasets = {}
-    for dataset_name in dataset_list:
-        dict_datasets[dataset_name] = DataSet(name = dataset_name)
+    use_CNN_feature_embeddding = False
+    use_all_datasets = True
+    if len(DATA_DIR_FOLDERS) > 0:
+        use_all_datasets = False
+    dict_datasets = get_dict_datasets(use_CNN_feature_embeddding, use_all_datasets)
+
     print(f'Possible dataset: {dict_datasets.keys()}')
 
 
-    sel_model = CNNmodel(selected_dataset='quality')
+    sel_model = CNNmodel(dict_datasets['mnist']) #TODO: careful data set is hardcoded!
     sel_model.load_model()
     sel_model._preprocess_img_gen()
 

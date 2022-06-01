@@ -212,7 +212,10 @@ def get_dict_datasets_with_all_embeddings():
     :return: *self* (`dict`) - Dictionary with all feature embeddings in respect to the avaiable datasets
     """
     # LOAD the DATASETS
-    dataset_list = get_available_dataset()
+    if len(DATA_DIR_FOLDERS) > 0:
+        dataset_list = DATA_DIR_FOLDERS
+    else:
+        dataset_list = get_available_dataset()
     dict_datasets_embeddings = {}
     for dataset_name in dataset_list:
         dict_embeddings = {}

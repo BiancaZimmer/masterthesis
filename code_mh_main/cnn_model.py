@@ -433,7 +433,7 @@ if __name__ == "__main__":
     from dataset import get_dict_datasets, get_available_dataset
 
 
-    use_CNN_feature_embeddding = False
+    use_CNN_feature_embeddding = True
     use_all_datasets = True
     if len(DATA_DIR_FOLDERS) > 0:
         use_all_datasets = False
@@ -450,9 +450,9 @@ if __name__ == "__main__":
     sel_model._binary_model()
 
     # TODO: careful! Here it is hard coded whether or not to take a pre-saved model
-    #sel_model.fit(save_model=True, suffix_path="_test") #TODO: this is a binary model
-    sel_model.load_model()
-    sel_model.eval(plot_losses=True) #TODO: no legend in plot
+    sel_model.fit(save_model=True, suffix_path="_cnn") #TODO: this is a binary model
+    #sel_model.load_model()
+    #sel_model.eval(plot_losses=True) #TODO: no legend in plot
     # sel_model.plot_rand10_pred()
     # quality_misclassified = sel_model.get_misclassified(plot=False)
     # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number

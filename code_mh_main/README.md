@@ -55,6 +55,6 @@ We propose a method for explaining the results of black box image classifiers to
 
 ## Main programs can be found in:
 - cnn_model: trains a cnn model with training data, evaluates the misclassified data, prints plots
-- Feature_Extractor
+- Feature_Extractor: don't get it yet
 - flaskutil
 - kernels
