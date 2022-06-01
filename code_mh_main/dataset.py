@@ -15,7 +15,7 @@ from cnn_model import *
 class DataSet():
     """DataSet object for the image dataset containing list of DataEntries
     """
-    def __init__(self, name:str, fe:FeatureExtractor,  path_datasets =DIR_DATASETS, ):
+    def __init__(self, name: str, fe: FeatureExtractor,  path_datasets=DIR_DATASETS, ):
         """Initialization of the DataSet
 
         :param name: Dataset name which should refer to the folder name
@@ -196,6 +196,7 @@ def get_available_dataset(path_datasets =DIR_DATASETS):
     """
     return next(os.walk(path_datasets))[1]
 
+
 def get_available_featureembeddings(path_features =DIR_FEATURES):
     """Function to get a list of local available feature embeddings.
 
@@ -205,6 +206,7 @@ def get_available_featureembeddings(path_features =DIR_FEATURES):
     :return: *self* (`list`) - List of local available feature embeddings
     """
     return next(os.walk(path_features))[1]
+
 
 def get_dict_datasets_with_all_embeddings():
     """Function to get a dictionary where the keys are the avaiable DataSets and their values another dictionary with the available feature embeddings.
@@ -228,9 +230,8 @@ def get_dict_datasets_with_all_embeddings():
         dict_datasets_embeddings[dataset_name] = dict_embeddings
 
     print(f'Possible dataset: {dict_datasets_embeddings.keys()}')
-    print(f'Possible embedings: {dict_embeddings.keys()}')
+    print(f'Possible embeddings: {dict_embeddings.keys()}')
     return dict_datasets_embeddings
-
 
 
 def get_dict_datasets(use_CNN_feature_embeddding:bool, use_all_datasets: bool):

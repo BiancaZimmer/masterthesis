@@ -36,7 +36,8 @@ def get_prototypes_by_img_files(data, protos_dict:dict):
         #print('proto ..', proto_class)
         prototypes_per_class[proto_class] = [ [entry for entry in data if entry.img_name==proto_img_name][0] for proto_img_name in protos_dict[proto_class]]
     return prototypes_per_class
-    
+
+
 def get_dataentry_by_img_name(data, img_name:str):
     """For a given image name, the corresponding DataEntry object is retrieved from a given list of DataEntry (refering to the dataset).
 
@@ -49,7 +50,8 @@ def get_dataentry_by_img_name(data, img_name:str):
     """
     data_entry = [entry for entry in data if entry.img_name==img_name][0]
     return data_entry
-    
+
+
 def get_dataentry_by_img_path(data, img_path:str):
     """For a given image path, the corresponding DataEntry object is retrieved from a given list of DataEntry (refering to the dataset).
 
@@ -62,23 +64,30 @@ def get_dataentry_by_img_path(data, img_path:str):
     """
     data_entry = [entry for entry in data if entry.img_path==img_path][0]
     return data_entry
-    
-# List if local avaiable datasets (global variable)
-dataset_list = get_available_dataset()
-# List if local avaiable datasets (global variable)
-dict_datasets_and_embedings =  get_dict_datasets_with_all_embeddings()
+
+
+# List if local available datasets (global variable)
+# dataset_list = get_available_dataset()
+if len(DATA_DIR_FOLDERS) > 0:
+    dataset_list = DATA_DIR_FOLDERS
+else:
+    dataset_list = get_available_dataset()
+
+# List if local available datasets and their embeddings (global variable)
+dict_datasets_and_embeddings = get_dict_datasets_with_all_embeddings()
 
 dict_cnn_models = {}
-for dataset_name, embedding_dict in dict_datasets_and_embedings.items():
+for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
+    print("Dataset: ", dataset_name)
     #touch the embeddings to load in ram
     for model_name, value in embedding_dict.items():
-        [x.feature_embedding for x in value.data]
+        print("Currently touching embeddings of ", model_name, " ...")
+        #[x.feature_embedding for x in value.data]
         if model_name == "SimpleCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
-            dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name]._binary_model()
-            dict_cnn_models[dataset_name].load_model() 
-
+            # dict_cnn_models[dataset_name]._preprocess_img_gen()
+            # dict_cnn_models[dataset_name]._binary_model()
+            # dict_cnn_models[dataset_name].load_model()
 
 
 use_CNN_feature_embeddding = True
@@ -87,7 +96,7 @@ use_CNN_feature_embeddding = True
 class ExamplebasedXAIDemo(FlaskApp):
     """The implemented FLASK app relying on the developed architecture for prototypes, near hits and misses selection.
     """
-    
+
     sel_dataset = None
     test_dataentry = None
     data = None
@@ -101,18 +110,18 @@ class ExamplebasedXAIDemo(FlaskApp):
     prototypes_per_class_img_files = None
 
     dict_datasets = {}
-    for dataset_name, embedding_dict in dict_datasets_and_embedings.items():
+    for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
         dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
 
 
     def doRequest(self):
-        """This method takes care of "normal" GET-requests. Should return a full html "file", e.g. a template (using render_template or render_template_string). 
+        """This method takes care of "normal" GET-requests. Should return a full html "file", e.g. a template (using render_template or render_template_string).
 
         :return: *self* (`str`) - A full html "file", e.g. a template (using render_template or render_template_string)
         """
         return render_template('xai_demo.html',
                                 datasets = dataset_list)
-                                    
+
     def callbacks(self,id:str,type:str,value):
         """This functions use the javascript callbacks return JSON directionary in order to instructs the client to replace the content of the given ID with the new given content.
 
@@ -128,7 +137,7 @@ class ExamplebasedXAIDemo(FlaskApp):
         """
         if id == 'model-specific-button' and type == 'onchange':
             self.dict_datasets = {}
-            for dataset_name, embedding_dict in dict_datasets_and_embedings.items():
+            for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
                 self.dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
 
             g.datasets = dataset_list
@@ -137,10 +146,10 @@ class ExamplebasedXAIDemo(FlaskApp):
             {'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>')},
             {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
             {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
-        
+
         elif id == 'model-agnostic-button' and type == 'onchange':
             self.dict_datasets = {}
-            for dataset_name, embedding_dict in dict_datasets_and_embedings.items():
+            for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
                 self.dict_datasets[dataset_name] = embedding_dict['VGG16']
 
             g.datasets = dataset_list
@@ -170,14 +179,14 @@ class ExamplebasedXAIDemo(FlaskApp):
             self.data =  self.dict_datasets[self.sel_dataset].data
             self.data_t =  self.dict_datasets[self.sel_dataset].data_t
             self.fe = self.dict_datasets[self.sel_dataset].fe
-            
-            
+
+
             g.test_set =  self.dict_datasets[self.sel_dataset].data_t
 
             return jsonify([{'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{%for test_sample in g.test_set %}<option value= {{test_sample.img_path}} >{{ test_sample.img_name }}</option>{% endfor %}')},
             {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
             {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
-        
+
         elif id == 'test-dropdown' and type == 'onchange':
             g.test_img_path = value
             self.test_dataentry = get_dataentry_by_img_path(self.data_t, value)
@@ -198,7 +207,7 @@ class ExamplebasedXAIDemo(FlaskApp):
         elif id == 'explain-button' and type == 'onclick':
 
             top_n = 5
-          
+
             scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)
             scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)
 
@@ -214,7 +223,7 @@ class ExamplebasedXAIDemo(FlaskApp):
 
             DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
 
-            
+
             protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(num_prototypes) + '.json')
 
             if os.path.exists(protos_file):
@@ -239,10 +248,10 @@ class ExamplebasedXAIDemo(FlaskApp):
                 {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="{{ nearest_hit[0] }}" height="200px"><figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
                 <h2>Nearest Miss:</h2><div class="row">\
                 {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="{{ nearest_miss[0] }}" height="200px"><figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')}])
-    
+
 
         return super(self).callbacks()
-        
+
 
 if __name__ == '__main__':
 

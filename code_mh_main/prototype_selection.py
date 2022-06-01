@@ -236,9 +236,6 @@ class PrototypesSelector():
         else:
             print("Select either 'recall', 'accuracy' or 'error' as metric!")
 
-  
-
-
 
 class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
     """K-Medoids based Prototype Selection
@@ -354,10 +351,6 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
             
         return self
     
-    
-
-
-
 
 class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
     """MMD-based Prototype Selection by using parts of orignal implemention of *Been Kim*
@@ -493,6 +486,7 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
                     #plt.savefig(output_dir / f'{self.num_prototypes}_prototypes_imagenet_{class_name}.svg')
 
         return self
+
 
 def scree_plot_MMD2(mmd2_tracking, available_classes):
 
@@ -642,7 +636,7 @@ if __name__ == "__main__":
     gamma_rawData_mnist = 0.0001
 
     ## Initialize Prototype Selector
-    tester = PrototypesSelector_MMD(dataset, num_prototypes=3, use_image_embeddings=True, gamma= gamma_simpleCNN_mnist,  verbose=1, make_plots=True)
+    tester = PrototypesSelector_MMD(dataset, num_prototypes=3, use_image_embeddings=True, gamma= gamma_simpleCNN_mnist, verbose=1, make_plots=True)
 
     tester.fit()
     tester.score()

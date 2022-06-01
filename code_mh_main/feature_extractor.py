@@ -36,7 +36,7 @@ class FeatureExtractor():
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output, name = "SimpleCNN_flatten")
             else:   
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output, name = "SimpleCNN")
-            
+        # TODO: add options where we can use a model outside of CNN
 
     def load_preprocess_img(self, path):
         """Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array. 
