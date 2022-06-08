@@ -54,7 +54,10 @@ We propose a method for explaining the results of black box image classifiers to
 - dataentry
 
 ## Main programs can be found in:
+- xai_demo: main file!!!
 - cnn_model: trains a cnn model with training data, evaluates the misclassified data, prints plots
 - Feature_Extractor: don't get it yet
 - flaskutil
 - kernels
+## Things I changed fundamentally:
+- Added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used

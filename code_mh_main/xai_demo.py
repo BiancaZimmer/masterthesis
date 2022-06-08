@@ -82,12 +82,12 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
     #touch the embeddings to load in ram
     for model_name, value in embedding_dict.items():
         print("Currently touching embeddings of ", model_name, " ...")
-        [x.feature_embedding for x in value.data]
+        #[x.feature_embedding for x in value.data]
         if model_name == "SimpleCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
-            dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name]._binary_model()
-            dict_cnn_models[dataset_name].load_model()
+            #dict_cnn_models[dataset_name]._preprocess_img_gen()
+            #dict_cnn_models[dataset_name]._binary_model()
+            #dict_cnn_models[dataset_name].load_model()
 
 
 use_CNN_feature_embeddding = True

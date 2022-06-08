@@ -1,8 +1,7 @@
 # MacOS specific files
-.DStore
+.DS_Store
 
 # big data folders
-static/
 code_mh_main/static/
 
 # Byte-compiled / optimized / DLL files
