@@ -1,8 +1,0 @@
-1. Please download first the datasets (see links below)
-2. Split each dataset in 'train' and 'test'
-3. Assign the images to a sub-order of respective image class (label).
-
-Links:
-- Quality Dataset: https://www.kaggle.com/ravirajsinh45/real-life-industrial-dataset-of-casting-product
-- MNIST Dataset: http://yann.lecun.com/exdb/mnist/
-
