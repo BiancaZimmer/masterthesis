@@ -1,3 +1,10 @@
+# MacOS specific files
+.DStore
+
+# big data folders
+static/
+code_mh_main/static/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -102,17 +109,10 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-.venv
-env/
+#.env
+#.venv
 venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
+venv_py37/
 
 # Rope project settings
 .ropeproject
