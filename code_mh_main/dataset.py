@@ -50,10 +50,9 @@ class DataSet():
         print(f'Current Dataset: {self.name}')
         print(f'Available Classes: {self.available_classes}')
 
-        print(f'Length of Train Data:{len(self.data)}')
-        print(f'Length of Test Data:{len(self.data_t)}')
+        print(f'Length of Train Data: {len(self.data)}')
+        print(f'Length of Test Data: {len(self.data_t)}')
         print('==============\n')
-    
 
     def apply_elbow_method(self, use_image_embeddings:bool =True, sel_size:int = 128, components_PCA: int =None):
         """Elbow method that is applied to the feature embedding or the raw data of this DataSet
@@ -261,7 +260,6 @@ def get_dict_datasets(use_CNN_feature_embeddding:bool, use_all_datasets: bool):
     return dict_datasets
 
 
-
 def get_quality(fe =None):
     """Function to get the DataSet of quality data.
 
@@ -271,6 +269,7 @@ def get_quality(fe =None):
     :return: *self* (`DataSet`) - DataSet object of the quality data.
     """
     return DataSet(name = 'quality', fe =fe) 
+
 
 def get_mnist(fe =None):
     """Function to get the DataSet of MNIST data.
@@ -284,13 +283,12 @@ def get_mnist(fe =None):
     return DataSet(name = 'mnist', fe =fe) 
 
 
-
 if __name__ == "__main__":
 
     # -- Setup -------------------------------------------------------------------   
 
-    #dataset_name = 'quality'
-    dataset_name = 'mnist'
+    # give name of data set folder
+    dataset_name = DATA_DIR_FOLDERS[0]
 
     use_image_embeddings = True
     sel_size = 128
@@ -298,6 +296,8 @@ if __name__ == "__main__":
     ## Select feature Extractor
     ## Simple CNN
     # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name))
+    ## MultiCNN
+    #TODO
     ## VGG16 -> loaded_model = None
     fe = FeatureExtractor(loaded_model=None)
 

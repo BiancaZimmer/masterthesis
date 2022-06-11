@@ -18,7 +18,7 @@ from cnn_model import *
 class FeatureExtractor():
     """Feature Extractor model
     """
-    def __init__(self, loaded_model = None, use_flatten: bool =False) -> None:
+    def __init__(self, loaded_model = None, use_flatten: bool = False) -> None:
         """Initialisation of the feature extraction model based on either the VGG16 or the given CNN model.
 
         :param loaded_model: A simple CNN model with 2 FC layers and 2 Activation layers as well as a Flatten layer, defaults to None
