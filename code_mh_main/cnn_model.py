@@ -16,9 +16,10 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Conv2D, MaxPooling2D
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from tensorflow.keras.utils import plot_model
+from tensorflow.keras.utils import plot_model, to_categorical
 from tensorflow.keras import backend
 from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.preprocessing import LabelEncoder
 
 import keras
 from keras import models
@@ -28,7 +29,6 @@ from keras.preprocessing import image
 #from dataentry import *
 #from dataset import *
 from utils import *
-#initialize()
 
 
 class CNNmodel():
@@ -54,27 +54,45 @@ class CNNmodel():
 
         self.batch_size = batch_size
 
-        #Image Generator
+        # Image Generator
         self.train_set = None
         self.test_set = None
-        #Model specific
+        # Model specific
         self.model = None
         self.model_history = None
         self.predictions = None
-
+        # for multiclass
+        self.labelencoder = None
 
     def _preprocess_img_gen(self):
         """Based on the given dataset, the ImageDataGenerator for the CNN are created.
         """
-        train_data = [(np.expand_dims(x.image_numpy(img_size=self.image_shape[1]), -1),x.y) for x in self.dataset.data]
+        # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
+        train_data = [(np.expand_dims(x.image_numpy(img_size=self.image_shape[1]), -1), x.ground_truth_label) for x in self.dataset.data]
         X_train = np.array(list(zip(*train_data))[0])
         y_train = np.array(list(zip(*train_data))[1])
-        #print('X_train shape', X_train.shape)
-        #print('Sample:' ,X_train[0], ' label: ',y_train[0])
+        print('X_train shape: ', X_train.shape)
+        # print('Sample: ', X_train[0], ' label: ', y_train[0])
+        # print('y_train shape', y_train.shape)
+        # print(y_train)
 
-        test_data = [(np.expand_dims(x.image_numpy(img_size=self.image_shape[1]), -1),x.y) for x in self.dataset.data_t]
+        test_data = [(np.expand_dims(x.image_numpy(img_size=self.image_shape[1]), -1), x.ground_truth_label) for x in self.dataset.data_t]
         X_test = np.array(list(zip(*test_data))[0])
         y_test = np.array(list(zip(*test_data))[1])
+        # print(y_test)
+
+        if not BINARY:
+            # encode class values as integers
+            self.labelencoder = LabelEncoder()
+            self.labelencoder.fit(y_train)
+            y_train = self.labelencoder.transform(y_train)
+            y_test = self.labelencoder.transform(y_test)
+            print("LE classes from preprocess img gen: ", self.labelencoder.classes_)
+            # convert integers to one hot encoded variables
+            y_train = to_categorical(y_train)
+            y_test = to_categorical(y_test)
+            # print('y_train shape: ', y_train.shape)
+            # print(y_train)
 
         print('Initializing Image Generator ...')
         
@@ -96,7 +114,6 @@ class CNNmodel():
         self.test_set = image_gen_test.flow(X_test, y_test, 
                                     batch_size=self.batch_size, 
                                     shuffle=False)
-
 
     def _binary_model(self):
         """Set up SimpleCNN for binary image classification.
@@ -124,9 +141,33 @@ class CNNmodel():
 
         print(self.model.summary())
 
+    def _multiclass_model(self):
+        """Set up MultiCNN for multi class image classification.
+        """
 
+        backend.clear_session()
+        print('Clear Session & Setup Model ...')
 
-    def load_model(self, suffix_path:str =''):
+        self.model = Sequential()
+        self.model.add(Conv2D(filters=8, kernel_size=(3,3),input_shape=self.image_shape, activation='relu', padding='same'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=self.image_shape, activation='relu', padding='same'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=self.image_shape, activation='relu', padding='same'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        self.model.add(Flatten())
+        self.model.add(Dense(224))
+        self.model.add(Activation('relu'))
+        self.model.add(Dense(len(self.labelencoder.classes_)))  # TODO: test if this works
+        self.model.add(Activation('softmax'))
+
+        self.model.compile(loss='categorical_crossentropy',
+                    optimizer='adam',
+                    metrics=['accuracy'])
+
+        print(self.model.summary())
+
+    def load_model(self, suffix_path: str = ''):
         """Load the already trained SimpleCNN and its history about training.
 
         :param suffix_path: Optional suffix to give a model a special name, defaults to ''
@@ -136,16 +177,14 @@ class CNNmodel():
         self.model = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5'))
         self.model_history = json.load(open(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.json'), 'r'))
 
-
-
-    def fit(self, n_epochs:int =50, patience:int =10, suffix_path:str ='',  save_model:bool =True):
+    def fit(self, n_epochs: int = 50, patience: int = 10, suffix_path: str = '',  save_model: bool = True):
         """Fit the SimpleCNN on the given dataset
 
         :param n_epochs: Number of epochs, defaults to 50
         :type n_epochs: int, optional
         :param patience: Early stopping patience, defaults to 10
         :type patience: int, optional
-        :param suffix_path: ptional suffix to give a model a special name, defaults to ''
+        :param suffix_path: optional suffix to give a model a special name, defaults to ''
         :type suffix_path: str, optional
         :param save_model: Set to `False` if the model should not be saved, defaults to True
         :type save_model: bool, optional
@@ -153,22 +192,20 @@ class CNNmodel():
 
         model_save_path = os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5')
 
-        early_stop = EarlyStopping(monitor='val_loss',patience=patience)
+        early_stop = EarlyStopping(monitor='val_loss', patience=patience)
         checkpoint = ModelCheckpoint(filepath=model_save_path, verbose=1, save_best_only=save_model, monitor='val_loss')
 
         n_epochs = n_epochs
         results = self.model.fit_generator(self.train_set, 
                                     epochs=n_epochs, 
-                                    validation_data=self.test_set, 
-                                    callbacks=[early_stop,checkpoint])
+                                    validation_data=self.test_set,
+                                    callbacks=[early_stop, checkpoint])
         
         if save_model:
             self.model_history = results.history
             json.dump(self.model_history, open(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.json'), 'w'))
 
-
-
-    def eval(self, plot_losses:bool =True):
+    def eval(self, plot_losses: bool = True):
         """Return classification performance of the SimpleCNN and plot Loss curve
 
         :param plot_losses: Set to `False` if no loss curve should be plotted, defaults to True
@@ -184,32 +221,34 @@ class CNNmodel():
             plt.xlabel('Loss/Accuracy', size=14, weight='bold')
             plt.plot(losses)
             plt.show()
-        
-        
-        pred_probability = self.model.predict(self.test_set)
-        self.predictions = pred_probability > 0.5
-        self.predictions = self.predictions.reshape(-1)
+
+        self._set_selfprediction()
+
+        if BINARY:
+            groundtruth = self.test_set.y
+        else:
+            groundtruth = self.labelencoder.inverse_transform(np.argmax(self.test_set.y, axis=1))
+            # print("le classes: ", self.labelencoder.classes_)
 
         custom_map = sns.light_palette("#13233D", as_cmap=True)
 
-        plt.figure(figsize=(10,6))
-        plt.title("Confusion Matrix - " + str(self.dataset.name)+ " dataset", size=20, weight='bold')
+        plt.figure(figsize=(10, 6))
+        plt.title("Confusion Matrix - " + str(self.dataset.name) + " dataset", size=20, weight='bold')
         sns.heatmap(
-            confusion_matrix(self.test_set.y, self.predictions),
+            confusion_matrix(groundtruth, self.predictions),
             annot=True,
-            annot_kws={'size':14, 'weight':'bold'},
+            annot_kws={'size': 14, 'weight': 'bold'},
             fmt='d',
             #cmap=plt.cm.Blues,
             cmap=custom_map,
-            xticklabels=[self.dataset.available_classes[0], self.dataset.available_classes[1]],
-            yticklabels=[self.dataset.available_classes[0], self.dataset.available_classes[1]])
+            xticklabels=self.dataset.available_classes,
+            yticklabels=self.dataset.available_classes)
         plt.tick_params(axis='both', labelsize=14)
         plt.ylabel('Actual', size=14, weight='semibold')
         plt.xlabel('Predicted', size=14, weight='semibold')
         plt.show()
 
-        print(classification_report(self.test_set.y, self.predictions, digits=3))
-
+        print(classification_report(groundtruth, self.predictions, digits=3))
 
     def pred_test_img(self, test_dataentry, plot:bool =False):
         """Classify the given test image.
@@ -229,14 +268,17 @@ class CNNmodel():
         
         img = cv2.imread(test_dataentry.img_path)
         label = test_dataentry.ground_truth_label
-        
-        
-        if (prediction > 0.5):
-            predicted_label = self.dataset.available_classes[0]
-            prob = prediction.sum() * 100
+
+        if BINARY:
+            if prediction > 0.5:
+                predicted_label = self.dataset.available_classes[0]
+                prob = prediction.sum() * 100
+            else:
+                predicted_label = self.dataset.available_classes[1]
+                prob = (1-prediction.sum()) * 100
         else:
-            predicted_label = self.dataset.available_classes[1]
-            prob = (1-prediction.sum()) * 100
+            predicted_label = self.labelencoder.inverse_transform(np.argmax(prediction, axis=1))
+            prob = np.max(prediction) * 100
         
         if plot:
             plt.figure(figsize=(20,8))
@@ -254,13 +296,12 @@ class CNNmodel():
         
         return predicted_label, prob
 
-
     def plot_rand10_pred(self):
         """Plot 10 random prediction by using images from the test dataset.
         """
         rand_idx = [random.randint(0, len(self.dataset.data_t)) for p in range(0, 10)]
 
-        plt.figure(figsize=(20,8))
+        plt.figure(figsize=(20, 8))
         for i, idx in enumerate(rand_idx):
             
             img_pred = np.expand_dims(np.expand_dims(self.dataset.data_t[idx].image_numpy(img_size=self.image_shape[1]),0), -1)
@@ -271,13 +312,16 @@ class CNNmodel():
             img = cv2.imread(self.dataset.data_t[idx].img_path)
             label = self.dataset.data_t[idx].ground_truth_label
             
-            
-            if (prediction < 0.5):
-                predicted_label = self.dataset.available_classes[0]
-                prob = (1-prediction.sum()) * 100
+            if BINARY:
+                if prediction < 0.5:
+                    predicted_label = self.dataset.available_classes[0]
+                    prob = (1-prediction.sum()) * 100
+                else:
+                    predicted_label = self.dataset.available_classes[1]
+                    prob = prediction.sum() * 100
             else:
-                predicted_label = self.dataset.available_classes[1]
-                prob = prediction.sum() * 100
+                predicted_label = self.labelencoder.inverse_transform(np.argmax(prediction, axis=1))
+                prob = np.max(prediction) * 100
             
             plt.subplot(2, 5, i+1)
             
@@ -292,6 +336,39 @@ class CNNmodel():
         plt.tight_layout()
         plt.show()
 
+    def _set_selfprediction(self):
+        """ Sets the attribute prediction according to the model and the test_set
+        """
+
+        if BINARY:
+            pred_probability = self.model.predict(self.test_set)
+            self.predictions = pred_probability > 0.5
+            self.predictions = self.predictions.reshape(-1)
+        else:
+            pred_probability = self.model.predict(self.test_set)
+            predictions = np.argmax(pred_probability, axis=1)
+            self.predictions = self.labelencoder.inverse_transform(predictions)
+            # print("le classes: ", self.labelencoder.classes_)
+
+    def transform_prediction(self, prediction, threshold = 0.5):
+        """ Transforms the output of a model.predict() into a correctly predicted label and the according probability
+
+        :param prediction: prediction output from model.predict()
+        :param threshold: if model was binary you can set a threshold here. Default: 0.5
+        :return: list of the predicted label and the according probability
+        """
+        if BINARY:
+            if prediction < threshold:
+                predicted_label = self.dataset.available_classes[0]
+                prob = (1 - prediction.sum()) * 100
+            else:
+                predicted_label = self.dataset.available_classes[1]
+                prob = prediction.sum() * 100
+        else:
+            predicted_label = self.labelencoder.inverse_transform(np.argmax(prediction, axis=1))
+            prob = np.max(prediction) * 100
+
+        return [predicted_label, prob]
 
     def get_misclassified(self, plot:bool =False):
         """Identifiy misclassifcation by the Simple CNN
@@ -302,12 +379,15 @@ class CNNmodel():
         """
 
         if self.predictions is None:
-            pred_probability = self.model.predict(self.test_set)
-            self.predictions = pred_probability > 0.5
-            self.predictions = self.predictions.reshape(-1)
+            self._set_selfprediction()
 
-        ## misclassifications done on the test data where y_pred is the predicted values
-        idx_misclassified = np.where(self.predictions != self.test_set.y)[0] 
+        # misclassifications done on the test data where y_pred is the predicted values
+        if BINARY:
+            groundtruth = self.test_set.y
+        else:
+            groundtruth = self.labelencoder.inverse_transform(np.argmax(self.test_set.y, axis=1))
+
+        idx_misclassified = np.where(self.predictions != groundtruth)[0]
         idx_misclassified = list(idx_misclassified)
 
         misclassified = []
@@ -323,20 +403,13 @@ class CNNmodel():
             
             prediction = self.model.predict(img_pred)
 
-            
             img = cv2.imread(self.dataset.data_t[idx].img_path)
             label = self.dataset.data_t[idx].ground_truth_label
-            
-            
-            if (prediction < 0.5):
-                predicted_label = self.dataset.available_classes[0]
-                prob = (1-prediction.sum()) * 100
-            else:
-                predicted_label = self.dataset.available_classes[1]
-                prob = prediction.sum() * 100
+
+            predicted_label, prob = self.transform_prediction(prediction)
             
             if plot:
-                plt.subplot(np.ceil(len(idx_misclassified)/5), 5, i+1)
+                plt.subplot(int(np.ceil(len(idx_misclassified)/5)), 5, i+1)
                 
                 plt.title(f"{self.dataset.data_t[idx].img_name}\n\
                 Actual Label : {label}\n\
@@ -351,7 +424,6 @@ class CNNmodel():
             plt.show()
         
         return misclassified
-
 
     def plot_activation_map(self, test_dataentry):
         """Plot activation maps of the SimpleCNN by predicting a test image
@@ -427,38 +499,47 @@ def get_CNNmodel(sel_dataset:str, suffix_path:str =''):
     return model
 
 
-
-
 if __name__ == "__main__":
     from dataset import get_dict_datasets, get_available_dataset
 
-
-    use_CNN_feature_embeddding = True
+    # definition of some parameters and boolean switches
+    ## boolean whether to use a binary CNN or multiclass
+    use_CNN_feature_embedding = True
+    ## if true a model is fitted, if false a model is loaded
+    fit_model = False
+    suffix_path = "_multicnn"
+    ## if True evaluation plus plot is run
+    eval = True
+    ## boolean whether to use all data sets in the DATA_DIR or only selected ones
     use_all_datasets = True
-    if len(DATA_DIR_FOLDERS) > 0:
-        use_all_datasets = False
-    dict_datasets = get_dict_datasets(use_CNN_feature_embeddding, use_all_datasets)
+    if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
 
-    # TODO: careful: This is hard coded, doesn't work for different dataset names
-    #model_quality = CNNmodel(dict_datasets['quality'])
-    model_mnist = CNNmodel(dict_datasets['mnist'])
+    # dictionary of data sets to use
+    dict_datasets = get_dict_datasets(use_CNN_feature_embedding, use_all_datasets)
 
-    sel_model = model_mnist
+    # FIXME: careful: This is hard coded, always takes first data set
+    sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])
 
-    #initialize img generator
+    # initialize img generator
     sel_model._preprocess_img_gen()
-    sel_model._binary_model()
+    if BINARY:
+        sel_model._binary_model()
+    else:
+        sel_model._multiclass_model()
 
-    # TODO: careful! Here it is hard coded whether or not to take a pre-saved model
-    sel_model.fit(save_model=True, suffix_path="_cnn") #TODO: this is a binary model
-    #sel_model.load_model()
-    #sel_model.eval(plot_losses=True) #TODO: no legend in plot
-    # sel_model.plot_rand10_pred()
-    # quality_misclassified = sel_model.get_misclassified(plot=False)
-    # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number
+    if fit_model:
+        sel_model.fit(save_model=True, suffix_path=suffix_path)
+    else:
+        sel_model.load_model(suffix_path=suffix_path)
+
+    if eval:
+        sel_model.eval(plot_losses=False)    # TODO: no legend in plot
+        sel_model.plot_rand10_pred()
+        quality_misclassified = sel_model.get_misclassified(plot=False)
+        # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number
 
     # predicts one test image
-    # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[99], plot=True)
+    # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
 
     # plots activation maps of one image
     # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[42])
