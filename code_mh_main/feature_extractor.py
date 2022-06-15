@@ -18,7 +18,7 @@ from cnn_model import *
 class FeatureExtractor():
     """Feature Extractor model
     """
-    def __init__(self, loaded_model = None, use_flatten: bool = False) -> None:
+    def __init__(self, loaded_model=None, use_flatten: bool = False) -> None:
         """Initialisation of the feature extraction model based on either the VGG16 or the given CNN model.
 
         :param loaded_model: A simple CNN model with 2 FC layers and 2 Activation layers as well as a Flatten layer, defaults to None
@@ -32,10 +32,18 @@ class FeatureExtractor():
             ## Create Feature Extractor Model based on the Base Model
             self.fe_model = Model(inputs=model.input, outputs=model.get_layer("flatten").output, name = "VGG16")
         else:
-            if use_flatten:
-                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output, name = "SimpleCNN_flatten")
-            else:   
-                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output, name = "SimpleCNN")
+            if BINARY & use_flatten:        # never used
+                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output,
+                                      name="SimpleCNN_flatten")
+            elif (not BINARY) & use_flatten:  # never used
+                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output,
+                                      name="MultiCNN_flatten")
+            elif not BINARY:
+                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output,
+                                      name="MultiCNN")
+            else:
+                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output,
+                                      name="SimpleCNN")
         # TODO: add options where we can use a model outside of CNN
 
     def load_preprocess_img(self, path):
@@ -60,7 +68,7 @@ class FeatureExtractor():
             #print(np.shape(x))
             x = preprocess_input(x)
 
-        elif self.fe_model.name == 'SimpleCNN':
+        elif self.fe_model.name in ['SimpleCNN', 'MultiCNN']:
             img_PIL = Image.open(path).convert('L')
             img_PIL = img_PIL.resize(self.fe_model.input_shape[1:3])
             x = np.array(img_PIL, dtype=np.float64)
@@ -96,8 +104,7 @@ if __name__ == "__main__":
 
     print(f'Possible dataset: {dict_datasets.keys()}')
 
-
-    sel_model = CNNmodel(dict_datasets['mnist']) #TODO: careful data set is hardcoded!
+    sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])  # TODO: careful always takes first data set!
     sel_model.load_model()
     sel_model._preprocess_img_gen()
 

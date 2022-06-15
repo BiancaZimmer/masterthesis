@@ -45,9 +45,14 @@ We propose a method for explaining the results of black box image classifiers to
 # By Bianca
 
 ## Setup
-- Change the utils.py so the global variables fit your data
+- change the utils.py so the global variables fit your data
 - DATA_DIR should contain the data in a folder with name <data_name>
-- Inside should be two folders named "test" and "train" wherein your images in separate folders for the classes shall be found
+- inside should be two folders named "test" and "train" wherein your images in separate folders for the classes shall be found
+- change DATA_DIR_FOLDERS to the name of your data folder(s) you want to use
+- run cnn_model.py to fit your model - important: for this you'll have to adjust the boolean switches in \_\_main__
+- run dataentry.py to get all feature embeddings - important: change the suffix_path in \_\_main__ to whatever the name of your model
+- run prototype_selection.py - when first running this you might have to evaluate the best number of prototypes via screeplot
+- run xai_demo.py
 
 ## Test settings can be found in the following modules:
 - dataset
@@ -59,5 +64,9 @@ We propose a method for explaining the results of black box image classifiers to
 - Feature_Extractor: don't get it yet
 - flaskutil
 - kernels
+
 ## Things I changed fundamentally:
 - Added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used
+- Added an option "BINARY" which, if set to True, runs the original code with a binary CNN, if set to False a multi-class CNN will be used
+- Added code so that a multi-class CNN can be used by only using the BINARY=False switch
+- 

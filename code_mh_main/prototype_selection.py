@@ -305,25 +305,20 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
             print(f'Samples for classes:{[len(data_per_class[available_class]) for available_class in self.available_classes]}')
             print('==========================\n')
 
-
-
         self.prototypes_per_class = {}
 
-
         for available_class in self.available_classes:
-
 
             if self.use_image_embeddings:
                 X = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(data_per_class[available_class])])
             else:
                 X = np.array([item.image_numpy(img_size=self.sel_size).flatten() for index, item in enumerate(data_per_class[available_class])])
 
-            
             kmedoids = KMedoids(n_clusters=self.num_prototypes, random_state=42, metric='euclidean', method='alternate').fit(X)
 
-            #print(kmedoids.labels_)
-            #print(kmedoids.cluster_centers_)
-            #print(kmedoids.medoid_indices_)
+            # print(kmedoids.labels_)
+            # print(kmedoids.cluster_centers_)
+            # print(kmedoids.medoid_indices_)
             
             prototype_indices = kmedoids.medoid_indices_       
             prototypes = [data_per_class[available_class][idx] for idx in prototype_indices]        
@@ -341,8 +336,8 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
                     if i >= self.num_prototypes:
                         axis.axis('off')
                         continue
-                    #axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size,3))
-                    #axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size), cmap='gray')
+                    # axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size,3))
+                    # axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size), cmap='gray')
                     axis.imshow(Image.open([item.img_path for _, item in enumerate(prototypes)][i]), cmap='gray')
                     axis.axis('off')
 
@@ -356,7 +351,6 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
     """MMD-based Prototype Selection by using parts of orignal implemention of *Been Kim*
     """
 
-    
     def __init__(self, dataset, num_prototypes:int =5, 
                 gamma:float =None, 
                 kernel_type:str ='global',
@@ -384,7 +378,6 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
 
         super().__init__()
 
-
         self.gamma = gamma
         self.kernel_type = kernel_type
         self.num_prototypes = num_prototypes
@@ -399,8 +392,7 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         self.dataset = dataset
         self.available_classes = self.dataset.available_classes
 
-
-    def fit(self, data =None):
+    def fit(self, data=None):
         """Run the prototype selection using the MMD2 algorithm. The prototypes are stored in a dict **prototypes_per_class**.
 
         :param data: DataSet on which the selection as well as the GridSearchCV is run/fitted , defaults to None
@@ -411,14 +403,13 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         if data is None: data = self.dataset.data
 
         data_per_class = {}
-        #data_t_per_class = {}
+        # data_t_per_class = {}
         for available_class in self.available_classes:
             data_per_class[available_class] = list(filter(lambda x: x.ground_truth_label == available_class, data))
-            #data_t_per_class[available_class] = list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data_t))
+            # data_t_per_class[available_class] = list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data_t))
 
         print("... selecting MMD Prototypes")    
 
-            
         if self.verbose > 0:
             print('======= Parameters =======')
             print(f'num_prototypes:{self.num_prototypes}')
@@ -432,10 +423,7 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
             print(f'Samples for classes:{[len(data_per_class[available_class]) for available_class in self.available_classes]}')
             print('==========================\n')
 
-
-
         self.prototypes_per_class = {}
-
 
         for available_class in self.available_classes:
 
@@ -475,15 +463,15 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
                         if i >= self.num_prototypes:
                             axis.axis('off')
                             continue
-                        #axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size,3))
-                        #axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size), cmap='gray')
+                        # axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size,3))
+                        # axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size), cmap='gray')
                         axis.imshow(Image.open([item.img_path for _, item in enumerate(prototypes)][i]), cmap='gray')
                         axis.axis('off')
 
                     fig.suptitle(f'{self.num_prototypes} Prototypes - for class: {available_class}')
                     plt.show()
 
-                    #plt.savefig(output_dir / f'{self.num_prototypes}_prototypes_imagenet_{class_name}.svg')
+                    # plt.savefig(output_dir / f'{self.num_prototypes}_prototypes_imagenet_{class_name}.svg')
 
         return self
 
@@ -498,7 +486,6 @@ def scree_plot_MMD2(mmd2_tracking, available_classes):
         for k in mmd2_tracking.keys():
             mmd2_per_proto_and_class.append(mmd2_tracking[k][available_class])
             num_proto.append(k)
-            
 
         plt.plot(num_proto, mmd2_per_proto_and_class,'bx-', markersize=10, color='#1F497D', linewidth=3)
         plt.xlabel('Number of Prototypes', fontsize=12, fontweight = 'medium')
@@ -506,7 +493,7 @@ def scree_plot_MMD2(mmd2_tracking, available_classes):
         plt.title(f'Class: {available_class} - The Scree-plot on MMD2', fontsize=14, fontweight = 'demibold')
         plt.show()
 
-        #print(available_class,': -> ', num_proto, '=>>=', mmd2_per_proto_and_class)
+        # print(available_class,': -> ', num_proto, '=>>=', mmd2_per_proto_and_class)
 
 
 if __name__ == "__main__":
@@ -517,16 +504,15 @@ if __name__ == "__main__":
     mmd2_tracking = {}
     
     ## -- Select dataset
-    #dataset_name = 'quality'
-    dataset_name = 'mnist'
+    # dataset_name = 'mnist'
+    dataset_name = DATA_DIR_FOLDERS[0]
 
     ## -- Select Feature Extractor
-    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name)) ## Simple CNN
-    #fe = FeatureExtractor(loaded_model=None) ## VGG16 -> loaded_model = None
+    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name, suffix_path="_multicnn"))  # gets FE from a loaded CNN with the dataset name and a suffix
+    # fe = FeatureExtractor(loaded_model=None) ## VGG16 -> loaded_model = None
 
     ## Load Dataset
-    dataset = DataSet(name = dataset_name, fe =fe)
-
+    dataset = DataSet(name=dataset_name, fe=fe)
 
     # -- Screeplot of MMD across num of proto  ---------------------------------------
 
@@ -546,7 +532,6 @@ if __name__ == "__main__":
     # gs.fit(dataset.data)
 
     # scree_plot_MMD2(mmd2_tracking, dataset.available_classes)
-
 
     # -- GridSearchCV to find gamma of RBF kernel -----------------------------------  
 
@@ -646,7 +631,7 @@ if __name__ == "__main__":
     else:
         DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData", dataset.name)
 
-    if os.path.exists(DIR_PROTOTYPES_DATASET) == False: 
+    if not os.path.exists(DIR_PROTOTYPES_DATASET):
         os.makedirs(DIR_PROTOTYPES_DATASET)
     
     protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(tester.num_prototypes) + '.json')
@@ -657,14 +642,12 @@ if __name__ == "__main__":
         print('[!!!] A file already exists! Please delete this file to save again prototypes of these settings.')
     else:
         print(protos_file)
-        #np.save(protos_file, protos_img_files)
+        # np.save(protos_file, protos_img_files)
         print('SAVE ...')
         with open(protos_file, 'w') as fp:
             json.dump(protos_img_files, fp)
 
-
     # -- Final run of both prototype selection algorihtms  ---------------------------------------
-
 
     # gamma_vgg16_quality = 6e-06
     # gamma_simpleCNN_quality = 0.006
@@ -673,7 +656,6 @@ if __name__ == "__main__":
     # gamma_simpleCNN_mnist = 1
     # gamma_rawData_mnist = 0.0001
 
-    
     # tester_KMedoids = PrototypesSelector_KMedoids(dataset, num_prototypes=3, use_image_embeddings=True, verbose=1, make_plots=False)
     # tester_MMD = PrototypesSelector_MMD(dataset, num_prototypes=3, gamma=gamma_simpleCNN_quality, use_image_embeddings=True, verbose=1, make_plots=False)
 

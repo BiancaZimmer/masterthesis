@@ -83,19 +83,20 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
     for model_name, value in embedding_dict.items():
         print("Currently touching embeddings of ", model_name, " ...")
         [x.feature_embedding for x in value.data]
+        # for x in value.data: x.feature_embedding
         if model_name == "SimpleCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
             dict_cnn_models[dataset_name]._binary_model()
             dict_cnn_models[dataset_name].load_model()
-        if model_name == "MultiCNN":
+        elif model_name == "MultiCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
             dict_cnn_models[dataset_name]._multiclass_model()
             dict_cnn_models[dataset_name].load_model()
 
 
-use_CNN_feature_embeddding = True
+use_CNN_feature_embedding = True
 
 
 class ExamplebasedXAIDemo(FlaskApp):
@@ -116,8 +117,10 @@ class ExamplebasedXAIDemo(FlaskApp):
 
     dict_datasets = {}
     for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
-        dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
-
+        if BINARY:
+            dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
+        else:
+            dict_datasets[dataset_name] = embedding_dict['MultiCNN']
 
     def doRequest(self):
         """This method takes care of "normal" GET-requests. Should return a full html "file", e.g. a template (using render_template or render_template_string).
@@ -143,7 +146,10 @@ class ExamplebasedXAIDemo(FlaskApp):
         if id == 'model-specific-button' and type == 'onchange':
             self.dict_datasets = {}
             for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
-                self.dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
+                if BINARY:
+                    self.dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
+                else:
+                    self.dict_datasets[dataset_name] = embedding_dict['MultiCNN']
 
             g.datasets = dataset_list
 
@@ -268,3 +274,5 @@ if __name__ == '__main__':
         template_folder="./templates"   # where templates are found
         )
     app.run() # runs the server
+
+# todo add tik tok

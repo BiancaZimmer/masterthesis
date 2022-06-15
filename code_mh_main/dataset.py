@@ -294,12 +294,10 @@ if __name__ == "__main__":
     sel_size = 128
 
     ## Select feature Extractor
-    ## Simple CNN
-    # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name))
-    ## MultiCNN
-    #TODO
+    ## Simple or MultiCNN (set BINARY to False)
+    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name))
     ## VGG16 -> loaded_model = None
-    fe = FeatureExtractor(loaded_model=None)
+    # fe = FeatureExtractor(loaded_model=None)
 
     ## Load Dataset
     dataset = DataSet(name = dataset_name, fe =fe)

@@ -43,7 +43,7 @@ class DataEntry:
         self.fe = fe #selected FeatureExtractor 
 
         # construct PATH where the feature vector is saved
-        DIR_FEATURE_EMBEDDING_DATASET = os.path.join(DIR_FEATURES, fe.fe_model.name , dataset)
+        DIR_FEATURE_EMBEDDING_DATASET = os.path.join(DIR_FEATURES, fe.fe_model.name, dataset)
         # create the folder for feature vectors if it is not created yet
         if os.path.exists(DIR_FEATURE_EMBEDDING_DATASET) == False:
             os.makedirs(DIR_FEATURE_EMBEDDING_DATASET)
@@ -65,6 +65,7 @@ class DataEntry:
             _, x = self.__compute_image
             feat = self.fe.extract_features(x)
             np.save(self.feature_file, feat)
+            print(self.feature_file)
             return feat
 
     @lazy
@@ -97,14 +98,16 @@ class DataEntry:
         return x
        
 
-# delete comments for first testing
-# python code_mh_main/dataentry.py #workis as of 20/05/2022
-# if __name__ == '__main__':
-#     from feature_extractor import *
-#     dataset = 'mnist'
-#     fe = FeatureExtractor()
-#     image_path = os.path.join(DATA_DIR,dataset)
-#     data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
-#     for d in data[:10]:
-#         print(d.feature_embedding)
-#     print("")
+# python code_mh_main/dataentry.py #works as of 20/05/2022
+if __name__ == '__main__':
+    from feature_extractor import *
+    dataset = DATA_DIR_FOLDERS[0]  # TODO: careful takes first data set hardcoded!
+    # fe = FeatureExtractor()  # standard FE
+    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))  # gets FE from a loaded CNN with the dataset name and a suffix
+    image_path = os.path.join(DATA_DIR, dataset)
+    data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
+    for d in data:
+        # print(d.feature_embedding)
+        d.feature_embedding
+    print("")
+# TODO add tik tok
