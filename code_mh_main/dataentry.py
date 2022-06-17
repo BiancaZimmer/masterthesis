@@ -100,7 +100,10 @@ class DataEntry:
 
 # python code_mh_main/dataentry.py #works as of 20/05/2022
 if __name__ == '__main__':
+    import time
     from feature_extractor import *
+    tic = time.time()
+
     dataset = DATA_DIR_FOLDERS[0]  # TODO: careful takes first data set hardcoded!
     # fe = FeatureExtractor()  # standard FE
     fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))  # gets FE from a loaded CNN with the dataset name and a suffix
@@ -110,4 +113,5 @@ if __name__ == '__main__':
         # print(d.feature_embedding)
         d.feature_embedding
     print("")
-# TODO add tik tok
+    toc = time.time()
+    print("{}h {}min {}sec " .format(round(((toc - tic)/(60*60))), ((toc - tic) % (60*60)) - ((toc - tic) % 60), ((toc - tic) % 60)))

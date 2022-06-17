@@ -8,6 +8,7 @@ import os
 import json
 import ntpath
 import numpy as np
+import time
 
 from utils import *
 from cnn_model import *
@@ -65,6 +66,7 @@ def get_dataentry_by_img_path(data, img_path:str):
     data_entry = [entry for entry in data if entry.img_path==img_path][0]
     return data_entry
 
+tic = time.time()
 
 # List if local available datasets (global variable)
 # dataset_list = get_available_dataset()
@@ -97,6 +99,10 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
 
 
 use_CNN_feature_embedding = True
+
+toc = time.time()
+print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), ((toc - tic) % (60 * 60)) - ((toc - tic) % 60),
+                                ((toc - tic) % 60)))
 
 
 class ExamplebasedXAIDemo(FlaskApp):
@@ -246,7 +252,7 @@ class ExamplebasedXAIDemo(FlaskApp):
 
             prototypes_per_class = get_prototypes_by_img_files(data=self.data, protos_dict=self.prototypes_per_class_img_files)
 
-            g.prototypes = prototypes_per_class[self.pred_label]
+            g.prototypes = prototypes_per_class[self.pred_label]  # FIXME
             print("PROTOTYPES: ", prototypes_per_class)
 
 
@@ -275,4 +281,3 @@ if __name__ == '__main__':
         )
     app.run() # runs the server
 
-# todo add tik tok
