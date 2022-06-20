@@ -158,7 +158,7 @@ class CNNmodel():
         self.model.add(Flatten())
         self.model.add(Dense(224))
         self.model.add(Activation('relu'))
-        self.model.add(Dense(len(self.labelencoder.classes_)))  # TODO: test if this works
+        self.model.add(Dense(len(self.labelencoder.classes_)))
         self.model.add(Activation('softmax'))
 
         self.model.compile(loss='categorical_crossentropy',
@@ -213,13 +213,18 @@ class CNNmodel():
         """
         if plot_losses:
             losses = pd.DataFrame(self.model_history)
-            losses.index = map(lambda x : x+1, losses.index)
+            losses.index = map(lambda x: x+1, losses.index)
             print(losses)
-            plt.figure(figsize=(10,6))
+            plt.figure(figsize=(10, 6))
             plt.title("Loss/Accuracy Plot", size=20, weight='bold')
             plt.ylabel('Epochs', size=14, weight='bold')
             plt.xlabel('Loss/Accuracy', size=14, weight='bold')
-            plt.plot(losses)
+            train_loss, = plt.plot(losses['loss'])
+            train_acc, = plt.plot(losses['accuracy'])
+            val_loss, = plt.plot(losses['val_loss'])
+            val_acc, = plt.plot(losses['val_accuracy'])
+            plt.legend(handles=[train_loss, val_loss, train_acc, val_acc],
+                       labels=['Train Loss', 'Validation Loss', 'Train Accuracy', 'Validation Accuracy'])
             plt.show()
 
         self._set_selfprediction()
@@ -502,22 +507,22 @@ def get_CNNmodel(sel_dataset:str, suffix_path:str =''):
 if __name__ == "__main__":
     from dataset import get_dict_datasets, get_available_dataset
 
-    # definition of some parameters and boolean switches
-    ## boolean whether to use a binary CNN or multiclass
-    use_CNN_feature_embedding = True
-    ## if true a model is fitted, if false a model is loaded
-    fit_model = False
-    suffix_path = "_multicnn"
-    ## if True evaluation plus plot is run
-    eval = True
-    ## boolean whether to use all data sets in the DATA_DIR or only selected ones
+    # boolean switches, please adjust to your liking
+    use_CNN_feature_embedding = True    # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
+    fit_model = False    # if True a model is fitted, if false a model is loaded
+    suffix_path = "_test"   # suffix_path = "_multicnn"
+    evaluate = True     # if True evaluation plus plot is run
+    plot_losses = True  # if True the evaluation losses are plotted
+    plotmisclassified = False   # if True misclassified jpgs are shown with classified and true label
+
+    # from here on you don't have to change anything anymore
     use_all_datasets = True
     if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
 
     # dictionary of data sets to use
     dict_datasets = get_dict_datasets(use_CNN_feature_embedding, use_all_datasets)
 
-    # FIXME: careful: This is hard coded, always takes first data set
+    # TODO: careful: This is hard coded, always takes first data set
     sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])
 
     # initialize img generator
@@ -532,10 +537,10 @@ if __name__ == "__main__":
     else:
         sel_model.load_model(suffix_path=suffix_path)
 
-    if eval:
-        sel_model.eval(plot_losses=False)    # TODO: no legend in plot
+    if evaluate:
+        sel_model.eval(plot_losses=plot_losses)
         sel_model.plot_rand10_pred()
-        quality_misclassified = sel_model.get_misclassified(plot=False)
+        quality_misclassified = sel_model.get_misclassified(plot=plotmisclassified)
         # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number
 
     # predicts one test image
