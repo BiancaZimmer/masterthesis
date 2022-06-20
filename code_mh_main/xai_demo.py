@@ -31,11 +31,12 @@ def get_prototypes_by_img_files(data, protos_dict:dict):
     :return: *self* (`dict`) - Dictionary of DataEntries of the pre-calculated prototypes
     """
     assert protos_dict is not None, "No Prototypes selected yet! Please, fit the Selector first!"
-    #print('classes: ...', proto_classes)
+    # print('classes: ...', protos_dict)
     prototypes_per_class = {}
     for proto_class in protos_dict.keys():
-        #print('proto ..', proto_class)
+        # print('proto ..', proto_class)
         prototypes_per_class[proto_class] = [ [entry for entry in data if entry.img_name==proto_img_name][0] for proto_img_name in protos_dict[proto_class]]
+    # print(prototypes_per_class)
     return prototypes_per_class
 
 
@@ -251,21 +252,18 @@ class ExamplebasedXAIDemo(FlaskApp):
                 print(protos_file)
 
             prototypes_per_class = get_prototypes_by_img_files(data=self.data, protos_dict=self.prototypes_per_class_img_files)
-
-            g.prototypes = prototypes_per_class[self.pred_label]  # FIXME
+            g.prototypes = prototypes_per_class[self.pred_label[0]]
             print("PROTOTYPES: ", prototypes_per_class)
-
 
             return jsonify([
             {'elem':'protos-images',
             'content':render_template_string('<h2>Prototypes:</h2><div class="row"><div class="carousel clearfix"><div class="carousel-view clearfix">\
-            {% for proto in g.prototypes %}<div class="box"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="{{ proto.img_path }}" height="200px"><figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
+            {% for proto in g.prototypes %}<div class="box"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ proto.img_path }}" alt="file://{{ proto.img_path }}" width="200px" height="200px"><figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
             {'elem':'nh-nm-images',
             'content':render_template_string('<h2>Nearest Hits:</h2><div class="row">\
-                {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="{{ nearest_hit[0] }}" height="200px"><figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
+                {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ nearest_hit[0] }}" alt="file://{{ nearest_hit[0] }}" width="200px" height="200px"><figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
                 <h2>Nearest Miss:</h2><div class="row">\
-                {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="{{ nearest_miss[0] }}" height="200px"><figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')}])
-
+                {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ nearest_miss[0] }}" alt="file://{{ nearest_miss[0] }}" width="200px" height="200px"><figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')}])
 
         return super(self).callbacks()
 
