@@ -255,7 +255,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             g.prototypes = prototypes_per_class[self.pred_label[0]]
             print("PROTOTYPES: ", prototypes_per_class)
 
-            return jsonify([
+            return jsonify([  # FIXME
             {'elem':'protos-images',
             'content':render_template_string('<h2>Prototypes:</h2><div class="row"><div class="carousel clearfix"><div class="carousel-view clearfix">\
             {% for proto in g.prototypes %}<div class="box"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ proto.img_path }}" alt="file://{{ proto.img_path }}" width="200px" height="200px"><figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
