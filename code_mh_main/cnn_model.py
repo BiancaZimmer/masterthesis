@@ -510,10 +510,10 @@ if __name__ == "__main__":
     # boolean switches, please adjust to your liking
     use_CNN_feature_embedding = True    # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
     fit_model = False    # if True a model is fitted, if false a model is loaded
-    suffix_path = "_test"   # suffix_path = "_multicnn"
+    suffix_path = "_multicnn"   # suffix_path = "_multicnn"
     evaluate = True     # if True evaluation plus plot is run
-    plot_losses = True  # if True the evaluation losses are plotted
-    plotmisclassified = False   # if True misclassified jpgs are shown with classified and true label
+    plot_losses = False  # if True the evaluation losses are plotted
+    plotmisclassified = True   # if True misclassified jpgs are shown with classified and true label
 
     # from here on you don't have to change anything anymore
     use_all_datasets = True
@@ -527,12 +527,12 @@ if __name__ == "__main__":
 
     # initialize img generator
     sel_model._preprocess_img_gen()
-    if BINARY:
-        sel_model._binary_model()
-    else:
-        sel_model._multiclass_model()
 
     if fit_model:
+        if BINARY:
+            sel_model._binary_model()
+        else:
+            sel_model._multiclass_model()
         sel_model.fit(save_model=True, suffix_path=suffix_path)
     else:
         sel_model.load_model(suffix_path=suffix_path)
