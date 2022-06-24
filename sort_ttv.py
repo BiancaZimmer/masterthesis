@@ -1,6 +1,6 @@
 # Functions to sort images into train, test and validation folders
 
-# In order to set up the  training we need a certain file structure. For this wee need all out images divided into
+# In order to set up the  training we need a certain file structure. For this wee need all our images divided into
 # training, validation and test set (each a unique folder) and each again divided into the label folders.
 # This code takes all the folders in the image directory, from this it infers how many and which labels we have,
 # creates the folder structure as mentioned above and sorts the images accordingly.
@@ -43,6 +43,7 @@ def get_labels():
     """Infers all the labels from the base directory"""
     return [i for i in os.listdir(args.imagedir) if i != ".DS_Store"]  # TODO: there might be a nicer way to check this
 
+
 def makedirs():
     """Makes directories for train, test and optional validation set"""
     all_labels = get_labels()
@@ -68,8 +69,14 @@ def dim(a):
 
 
 def makeimagesplits(imagedir, perc_split=0.2):
-    """Splits the images from the imagedir into two splits"""
-    """Returns the current paths of the images as a list"""
+    """Splits the images from the imagedir into two splits
+    :param imagedir: directory where original images are
+    :type imagedir: str
+    :param perc_split: default=0.2
+    :type perc_split: float
+
+    :return: Current paths of the images as a list
+    """
 
     listoffnames = []
     test_fnames = []
@@ -95,7 +102,16 @@ def makeimagesplits(imagedir, perc_split=0.2):
 
 
 def copyfiles(train_fnames, imagefolder, destinationfolder):
-    """copy files into their respective directories"""
+    """copy files into their respective directories
+    :param train_fnames:
+    :type train_fnames: list
+    :param imagefolder: original folder where images are
+    :type imagefolder: str
+    :param destinationfolder: destination folder of where to copy the files to
+    :type destinationfolder: str
+
+    :return: number of copied images
+    """
     numcopied = []
     for files, d in zip(train_fnames, get_labels()):
         pathfrom = os.path.join(imagefolder, d)
@@ -108,7 +124,16 @@ def copyfiles(train_fnames, imagefolder, destinationfolder):
 
 
 def movefiles(train_fnames, imagefolder, destinationfolder):
-    """copy files into their respective directories"""
+    """moves files into their respective directories
+    :param train_fnames:
+    :type train_fnames: list
+    :param imagefolder: original folder where images are
+    :type imagefolder: str
+    :param destinationfolder: destination folder of where to copy the files to
+    :type destinationfolder: str
+
+    :return: number of moved images
+    """
     nummoved = []
     for files, d in zip(train_fnames, get_labels()):
         pathfrom = os.path.join(imagefolder, d)
@@ -125,22 +150,23 @@ def checkmove(ntrain, ntest, nval=[0]):
     numimg = []
     for l in get_labels():
         numimg.append(len(os.listdir(os.path.join(args.imagedir, l))))
-    print("pictures to move: " + str(sum(numimg)))
+    print("Pictures to move: " + str(sum(numimg)))
     print("Train pictures: " + str(sum(ntrain)))
     print("Test pictures: " + str(sum(ntest)))
     print("Validation pictures: " + str(sum(nval)))
 
 
 # MAIN starts here
-makedirs()
-train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit)
-numtrain = copyfiles(train_fnames, args.imagedir, os.path.join(args.basedir, "train"))
-numtest = copyfiles(test_fnames, args.imagedir, os.path.join(args.basedir, "test"))
+if __name__ == "__main__":
+    makedirs()
+    train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit)
+    numtrain = copyfiles(train_fnames, args.imagedir, os.path.join(args.basedir, "train"))
+    numtest = copyfiles(test_fnames, args.imagedir, os.path.join(args.basedir, "test"))
 
-if args.validationsplit:
-    train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit)
-    numval = movefiles(val_fnames, os.path.join(args.basedir, "train"), os.path.join(args.basedir, "val"))
-    checkmove(numtrain, numtest, numval)
-else:
-    checkmove(numtrain, numtest)
+    if args.validationsplit:
+        train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit)
+        numval = movefiles(val_fnames, os.path.join(args.basedir, "train"), os.path.join(args.basedir, "val"))
+        checkmove(numtrain, numtest, numval)
+    else:
+        checkmove(numtrain, numtest)
 
