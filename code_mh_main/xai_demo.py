@@ -2,7 +2,7 @@
 """
 
 from flaskutil import FlaskApp
-from flask import Flask,request,g,jsonify
+from flask import Flask, request, g, jsonify   # TODO look up what g is
 from flask.templating import render_template, render_template_string
 import os
 import json
@@ -16,7 +16,6 @@ from dataset import *
 from feature_extractor import FeatureExtractor
 from dataentry import DataEntry
 from near_miss_hits_selection import calc_distances_scores, get_nearest_hits, get_nearest_miss
-
 
 
 def get_prototypes_by_img_files(data, protos_dict:dict):
@@ -67,6 +66,7 @@ def get_dataentry_by_img_path(data, img_path:str):
     data_entry = [entry for entry in data if entry.img_path==img_path][0]
     return data_entry
 
+
 tic = time.time()
 
 # List if local available datasets (global variable)
@@ -90,19 +90,17 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
         if model_name == "SimpleCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name]._binary_model()
             dict_cnn_models[dataset_name].load_model()
         elif model_name == "MultiCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name]._multiclass_model()
             dict_cnn_models[dataset_name].load_model()
 
 
-use_CNN_feature_embedding = True
+# use_CNN_feature_embedding = True
 
 toc = time.time()
-print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), ((toc - tic) % (60 * 60)) - ((toc - tic) % 60),
+print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
                                 ((toc - tic) % 60)))
 
 

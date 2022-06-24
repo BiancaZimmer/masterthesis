@@ -37,15 +37,15 @@ def calc_distances_scores(class_data_entry_list, feature_vector, top_n:int =5, d
     feature_embedding = [x.feature_embedding for x in class_data_entry_list]
 
     if dist == 'euclidean':
-        distances = np.linalg.norm(feature_embedding-feature_vector, axis=1)  
-        distances = np.array([distance.euclidean(feature_vector, feat) for feat in feature_embedding ])
-    elif dist == 'cosine':
-        distances =  np.array([distance.cosine(feature_vector, feat) for feat in feature_embedding ])
+        # distances = np.linalg.norm(feature_embedding-feature_vector, axis=1)
+        distances = np.array([distance.euclidean(feature_vector, feat) for feat in feature_embedding])
+    elif dist == 'cosine':  # carful! 0 means close, 1 means far away
+        distances = np.array([distance.cosine(feature_vector, feat) for feat in feature_embedding])
     elif dist == 'manhattan':
-        distances =  np.array([distance.cityblock(feature_vector, feat) for feat in feature_embedding ])
-        
-    # Top distances 
-    idx_ranked = np.argsort(distances)[:top_n] 
+        distances = np.array([distance.cityblock(feature_vector, feat) for feat in feature_embedding])
+
+    # Top distances
+    idx_ranked = np.argsort(distances)[:top_n]
     if plot_idx:
         print("Index of top distances: ", idx_ranked)
 
@@ -55,7 +55,6 @@ def calc_distances_scores(class_data_entry_list, feature_vector, top_n:int =5, d
         return scores, [class_data_entry_list[i] for i in idx_ranked]
     else:
         return scores
-
 
 
 def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distance_measure:str ='cosine'):
@@ -87,7 +86,7 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     return scores_nearest_hit, ranked_nearest_hit_data_entry
 
 
-def get_nearest_miss(test_dataentry, pred_label, data, fe,  top_n:int =5, distance_measure:str ='cosine'):
+def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n:int =5, distance_measure:str ='cosine'):
     """Function to calculates the near misses in respect to a given test inputs sample (DataEntry).
 
     :param test_dataentry: DataEntry object (test input sample) on which near misses should be selected
@@ -115,124 +114,156 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe,  top_n:int =5, distan
     return scores_nearest_miss, ranked_nearest_miss__data_entry
 
 
-# if __name__ == '__main__':
-#     ###### ==== Select a DATASET ==== ######
-#     # dataset = "quality"
-#     dataset = "mnist"
+def get_nearest_miss_multi(test_dataentry, classes, pred_label, data, fe, top_n:int =5, distance_measure:str ='cosine'):
+    """Function to calculates the near misses for every class in respect to a given test inputs sample (DataEntry).
 
-#     # Initialize Feature Extractor Instance 
-#     fe = FeatureExtractor()
+    :param test_dataentry: DataEntry object (test input sample) on which near misses should be selected
+    :type test_dataentry: DataEntry
+    :param classes: List of the available classes, can be retrieved from DataSet.available_classes
+    :type classes: list
+    :param pred_label: Prediction label of the CNN classifier which should be also explained somewhat, which refers to the folder name (class)
+    :type pred_label: str
+    :param data: Data of DataSet (list of DataEntries)
+    :type data: list
+    :param fe: FeatureExtractor model that is used to extract the features of the test input sample
+    :type fe: FeatureExtractor
+    :param top_n: Set an integer value how many near misses should be selected, defaults to 5
+    :type top_n: int, optional
+    :param distance_measure: Distance applied in feature embedding, e.g. 'euclidean'/'cosine'/'manhattan', defaults to 'cosine'
+    :type distance_measure: str, optional
+    :return:
+        - **scores** (`list`) - List of scores (based on the selected distance)
+        - **ranked_nearest_miss__data_entry** (`list`) - List of the DataEntries of the near misses
+    """
 
-#     # Image path of the dataset
-#     image_path = os.path.join(DATA_DIR,dataset, 'train')
+    available_classes = [c for c in classes if c != pred_label]
 
-#     # Start Timer
-#     tic = time.time()
+    scores = []
+    data_entries = []
+    for miss_class in available_classes:
+        scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_hits(test_dataentry, miss_class, data, fe, top_n, distance_measure)
+        scores.append(scores_nearest_miss)
+        data_entries.append(ranked_nearest_miss_data_entry)
 
-#     # Allowed image extensions
-#     image_extensions = ['.jpg','.jpeg', '.bmp', '.png', '.gif']
-
-#     data = [DataEntry(fe,dataset,os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file.endswith(tuple(image_extensions))]
-
-
-#     # Counter for loaded Images
-#     i = 0
-
-#     for d in data:
-#         if os.path.exists(d.feature_file):
-#             np.load(d.feature_file, allow_pickle=True)
-#             pass
-#         else:
-#             _, x = d.fe.load_preprocess_img(d.img_file)
-#             feat = d.fe.extract_features(x)
-#             np.save(d.feature_file, feat)
-#             print("SAVE...")
-#             i += 1
-#             pass
-
-#     print("... reloaded images, which were not considered yet : ", i)
-
-#     ###### ==== Select a Random Images (-> input image later) ==== ######
-#     #idx_Test = 55
-
-#     # grab a random query image
-#     # = int(len(X_test) * random.random())
-#     #print("==> RANDOM INDEX: ", idx_Test, " (Label: ", int(y_test[idx_Test]), ")")
-#     #rnd_img = os.path.split(X_test[idx_Test])[1]
-#     # rnd_img_path = os.path.join(DATA_DIR,dataset, 'test', 'def_front')
-#     rnd_img_path = os.path.join(DATA_DIR,dataset, 'test', 'class_7')
-#     rnd_img_file = random.choice(os.listdir(rnd_img_path))
-#     print(rnd_img_path)
-#     print(rnd_img_file)
-
-#     rnd_img = DataEntry(fe,dataset,os.path.join(rnd_img_path, rnd_img_file))
-
-#     img, x = fe.load_preprocess_img(rnd_img.img_file)
-#     feature_vector = fe.extract_features(x)
-
-#     top_n = 5
-
-#     distance_measure = 'cosine'
-
-#     hit_class_idx = []
-#     miss_class_idx = []
-
-#     for f in data:
-#         if f.ground_truth_label == rnd_img.ground_truth_label:
-#             hit_class_idx.append(f)
-#         else:
-#             miss_class_idx.append(f)
-
-#     print(np.size(hit_class_idx))
-#     print(np.size(miss_class_idx))
+    return scores, data_entries
 
 
-#     # # hit_class_idx = [int(np.where(img_paths==x)[0]) for x in X_train[np.where(y_train==label_img)[0]]]
-#     # # miss_class_idx = [int(np.where(img_paths==x)[0]) for x in X_train[np.where(y_train!=label_img)[0]]]
+def plot_nmnh(dataentries, similarity_scores: float, title: str = "Near Miss/Near Hit Plot"):
+
+    plt.figure(figsize=(20, 8))
+    plt.suptitle(title)
+    for dataentry, sim, i in zip([x for x in dataentries], similarity_scores, range(len(similarity_scores))):
+        pic = cv2.imread(dataentry.img_path)
+        plt.subplot(int(np.ceil(len(similarity_scores) / 5)), 5, i + 1)
+        plt.title(f"{dataentry.img_name}\n\
+        Actual Label : {dataentry.ground_truth_label}\n\
+        Similarity : {'{:.3f}'.format(sim)}", weight='bold', size=12)
+
+        plt.imshow(pic, cmap='gray')
+        plt.axis('off')
+
+    plt.tight_layout()
+    plt.show()
 
 
-#     # # scores, idx_ranked = calc_distances_scores(feature_embedding[np.where(y_train[:len(feature_embedding)]==label_img)[0]], feature_vector, top_n = top_n, dist = 'L2', return_idx_ranked = True)
-#     scores_nearest_hit, idx_ranked_nearest_hit = calc_distances_scores([x.feature_embedding for x in hit_class_idx], feature_vector, top_n = top_n, dist = distance_measure, return_idx_ranked = True)
-#     scores_nearest_miss, idx_ranked_nearest_miss = calc_distances_scores([x.feature_embedding for x in miss_class_idx], feature_vector, top_n = top_n, dist = distance_measure, return_idx_ranked = True)
+if __name__ == '__main__':
+    from dataset import *
 
+    ###### ==== Select a DATASET ==== ######
+    dataset = DATA_DIR_FOLDERS[0]   # TODO: careful: This is hard coded, always takes first data set
+    # dataset = "mnist"
+    top_n = 5   # number of near hits/misses to show
+    use_prediction = True  # if set to true a prediction of the image is used for the near hits/misses
+    suffix_path = "_multicnn"   # if use_prediction=True then you have to specify which model of the dataset to use
+    distance_measure = 'cosine'  # distance measure for near miss/near hit
 
-#     # Plot similar images
-#     fig = plt.figure(figsize=(16, 12))
+    # You don't have to do anything from here on
+    tic = time.time()
 
-    
-#     columns = 5
-#     rows = np.ceil(top_n / columns) * 2 + 1
+    use_all_datasets = True
+    if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
 
-#     #plot random images / query images
-#     ax = fig.add_subplot(rows, columns, 1)
-#     #fig, ax = plt.subplots(1,1, figsize = (16,12))
-#     ax.imshow(Image.open(rnd_img.img_file))
-#     ax.title.set_text("Label = " + str(rnd_img.ground_truth_label))
-#     ax.axis('off')
+    fe = FeatureExtractor()     # Initialize Feature Extractor Instance
+    data = DataSet(dataset, fe)
 
-#     # print(np.array(hit_class_idx)[idx_ranked_nearest_hit])
+    i = 0   # Counter for newly loaded feature embeddings
+    for d in data.data:
+        if os.path.exists(d.feature_file):
+            np.load(d.feature_file, allow_pickle=True)
+            pass
+        else:  # if feature embedding doesn't exist yet, it is extracted now and saved
+            _, x = d.fe.load_preprocess_img(d.img_file)
+            feat = d.fe.extract_features(x)
+            np.save(d.feature_file, feat)
+            print("SAVE...")
+            i += 1
+            pass
 
-#     for i_n, n in enumerate([idx_ranked_nearest_hit, idx_ranked_nearest_miss]):
+    print("... newly loaded feature embeddings, which were not considered yet : ", i)
 
-#         if np.array_equal(n, idx_ranked_nearest_hit):
-#             X_n = [x.img_file for x in np.array(hit_class_idx)[idx_ranked_nearest_hit]]
-#             scores = scores_nearest_hit
-#             y_n = [x.ground_truth_label for x in np.array(hit_class_idx)[idx_ranked_nearest_hit]]
-#         elif np.array_equal(n,idx_ranked_nearest_miss):
-#             X_n = [x.img_file for x in np.array(miss_class_idx)[idx_ranked_nearest_miss]]
-#             scores = scores_nearest_miss
-#             y_n = [x.ground_truth_label for x in np.array(miss_class_idx)[idx_ranked_nearest_miss]]
+    ###### ==== Select a Random Images (-> input image later) ==== ######
+    # idx_Test = 55
 
+    # grab a random query image
+    rnd_class = random.choice(data.available_classes)
+    rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', rnd_class)
+    rnd_img_file = random.choice(os.listdir(rnd_img_path))
+    # rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', '7')     # 7 -6576 wrong prediction
+    # rnd_img_file = '6576.jpg'
+    print(rnd_img_path)
+    print(rnd_img_file)
 
-#         for i, idx in enumerate(n):
-#             ### img_sim = Image.open(np.array(img_paths)[np.where(y_train==label_img)[0]][idx])
-#             #print(y_train[np.where(X_train==X_n[idx])])
-#             img_sim = Image.open(X_n[i])
-#             # img_sim = Image.open(np.array(img_paths)[np.where(y_train[:len(feature_embedding)]==label_img)[0]][idx])
-#             ax = fig.add_subplot(rows, columns, i+1+columns+i_n*columns)
-#             ax.imshow(img_sim)
-#             ax.title.set_text('Score = ' + str(round(scores[i][0],3)) + ' Label: '+ str(y_n[i]))
-#             #ax.title.set_text('Score = ' + str(scores[i][0]) + ' Label: '+ str(os.path.splitext(os.path.split(np.array(img_paths)[np.where(y_train[:len(feature_embedding)]==label_img)[0]][idx])[1])[0].split('_')[1]))
-#             ax.axis('off')
+    rnd_img = DataEntry(fe, dataset, os.path.join(rnd_img_path, rnd_img_file))
 
-#     plt.show()
+    img, x = fe.load_preprocess_img(rnd_img.img_path)
+    feature_vector = fe.extract_features(x)
+
+    pred_label = rnd_img.ground_truth_label
+    if use_prediction:  # TODO atm only cnn model
+        cnn_model = CNNmodel(selected_dataset=data)
+        cnn_model._preprocess_img_gen()
+        cnn_model.load_model(suffix_path=suffix_path)
+        pred_label, pred_prob = cnn_model.pred_test_img(rnd_img)
+        print("Ground Truth: ", rnd_img.ground_truth_label)
+        print("Prediction: ", pred_label)
+        print("Probability: ", pred_prob)
+
+    hit_class_idx = []
+    miss_class_idx = []
+
+    for f in data.data:
+        if f.ground_truth_label == rnd_img.ground_truth_label:
+            hit_class_idx.append(f)
+        else:
+            miss_class_idx.append(f)
+
+    print("Number of hits: ", np.size(hit_class_idx))
+    print("Number of misses: ", np.size(miss_class_idx))
+
+    # NEW CODE
+    scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(rnd_img, pred_label,
+                                                                         data.data, fe, top_n, distance_measure)
+    scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(rnd_img, pred_label,
+                                                                           data.data, fe, top_n, distance_measure)
+
+    # gets top_n near misses per class instead of over all
+    if not BINARY:
+        scores_nearest_miss_multi, ranked_nearest_miss_multi_data_entry =\
+            get_nearest_miss_multi(rnd_img, data.available_classes, pred_label, data.data, fe, top_n, distance_measure)
+
+    toc = time.time()
+    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60))/60),
+                                    ((toc - tic) % 60)))
+
+    # Show random image and its near misses and hits
+    # pic = cv2.imread(rnd_img.img_path)
+    plt.title(f"{rnd_img.img_name}\n\
+            Actual Label : {rnd_img.ground_truth_label}", weight='bold', size=12)
+    plt.imshow(img, cmap='gray')
+    plt.axis('off')
+
+    plot_nmnh(ranked_nearest_hit_data_entry, scores_nearest_hit, title="Near Hits")
+    plot_nmnh(ranked_nearest_miss_data_entry, scores_nearest_miss, title="Near Misses")
+    if not BINARY:
+        plot_nmnh(np.concatenate(ranked_nearest_miss_multi_data_entry), np.concatenate(scores_nearest_miss_multi),
+                  title="Near Misses per Class")

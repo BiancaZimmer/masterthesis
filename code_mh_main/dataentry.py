@@ -3,6 +3,7 @@ import ntpath
 import numpy as np
 from lazy import lazy
 from PIL import Image, ImageOps
+import math
 
 
 from utils import *
@@ -113,5 +114,7 @@ if __name__ == '__main__':
         # print(d.feature_embedding)
         d.feature_embedding
     print("")
+
     toc = time.time()
-    print("{}h {}min {}sec " .format(round(((toc - tic)/(60*60))), ((toc - tic) % (60*60)) - ((toc - tic) % 60), ((toc - tic) % 60)))
+    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+                                    ((toc - tic) % 60)))
