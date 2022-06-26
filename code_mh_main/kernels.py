@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.metrics.pairwise import rbf_kernel as rbf
 
 
-def default_gamma(X:np.ndarray):
+def default_gamma(X: np.ndarray):
     """Function that calculates a default gamma value if no gamma defined, by using the formula: 1.0/ X.shape[1]
 
     :param X: Data of DataSet which should transformed to a numpy array first
@@ -13,7 +13,8 @@ def default_gamma(X:np.ndarray):
     gamma = 1.0 / X.shape[1]
     return gamma
 
-def rbf_kernel(X:np.ndarray, gamma:float=None):
+
+def rbf_kernel(X: np.ndarray, gamma: float = None):
     """Function that calculated the RBF Kernel.
 
     :param X: Data of DataSet which should transformed to a numpy array first
@@ -28,7 +29,7 @@ def rbf_kernel(X:np.ndarray, gamma:float=None):
     if gamma is None:
         gamma = default_gamma(X)
 
-    K = rbf(X, gamma = gamma)
+    K = rbf(X, gamma=gamma)
     return K
 
 
@@ -60,7 +61,6 @@ def local_rbf_kernel(X:np.ndarray, y:np.ndarray, gamma:float=None):
         print('end', end)
         K[start:end, start:end] = rbf_kernel(X[start:end, :], gamma=gamma)
     return K
-
 
 
 if __name__ == "__main__":

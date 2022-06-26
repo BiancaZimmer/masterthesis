@@ -11,8 +11,7 @@ from dataentry import DataEntry
 from sklearn import preprocessing
 
 
-
-def compute_rbf_kernel(X: np.ndarray, gamma:float=None):
+def compute_rbf_kernel(X: np.ndarray, gamma: float = None):
     """Original function that use function self-create function to calculate the RBF Kernel.
 
     :param X: Data of DataSet which should transformed to a numpy array first
@@ -25,10 +24,8 @@ def compute_rbf_kernel(X: np.ndarray, gamma:float=None):
     K = rbf_kernel(X, gamma)
     return K
 
-    
 
-
-def select_prototypes(K: np.ndarray, num_prototypes:int):
+def select_prototypes(K: np.ndarray, num_prototypes: int):
     """MMD-bases prototype selection implemented by Been Kim.
 
     :param K: RBF Kernel of the data
@@ -40,8 +37,7 @@ def select_prototypes(K: np.ndarray, num_prototypes:int):
     """
     sample_indices = np.arange(0, K.shape[0])
     num_samples = sample_indices.shape[0]
-    
-    
+
     colsum = 2*np.sum(K, axis=0) / num_samples
     is_selected = np.zeros_like(sample_indices)
     selected = sample_indices[is_selected > 0]
@@ -52,7 +48,7 @@ def select_prototypes(K: np.ndarray, num_prototypes:int):
         
         if selected.shape[0] == 0:
             s1 -= np.abs(np.diagonal(K)[candidate_indices])
-            #print("K diag: ", np.shape(np.abs(np.diagonal(K)[candidate_indices])))
+            # print("K diag: ", np.shape(np.abs(np.diagonal(K)[candidate_indices])))
         else:
             temp = K[selected, :][:, candidate_indices]
             s2 = np.sum(temp, axis=0) *2 + np.diagonal(K)[candidate_indices] 

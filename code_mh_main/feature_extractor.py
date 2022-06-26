@@ -31,6 +31,7 @@ class FeatureExtractor():
             model = VGG16(weights='imagenet', include_top=True)
             ## Create Feature Extractor Model based on the Base Model
             self.fe_model = Model(inputs=model.input, outputs=model.get_layer("flatten").output, name = "VGG16")
+        # TODO: add options where we can use a model outside of CNN
         else:
             if BINARY & use_flatten:        # never used
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output,
@@ -44,7 +45,7 @@ class FeatureExtractor():
             else:
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output,
                                       name="SimpleCNN")
-        # TODO: add options where we can use a model outside of CNN
+
 
     def load_preprocess_img(self, path):
         """Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array. 

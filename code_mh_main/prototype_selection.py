@@ -362,13 +362,13 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
 
         :param dataset: Dataset for which prototypes should be selected
         :type dataset: DataSet
-        :param num_prototypes: Number of prototypes, defaults to 3
+        :param num_prototypes: Number of prototypes, defaults to 5
         :type num_prototypes: int, optional
         :param use_image_embeddings: Set to `False` if prototype selection should be run on raw data (i.e. no feature embedding), defaults to True
         :type use_image_embeddings: bool, optional
         :param gamma: Kernel coefficient for RBF kernel, defaults to None, defaults to None
         :type gamma: float, optional
-        :param sel_size: Image size of the images, which is neeed if prototype selection is run on raw data, defaults to 128
+        :param sel_size: Image size of the images, which is needed if prototype selection is run on raw data, defaults to 128
         :type sel_size: int, optional
         :param make_plots: Plot selected prototypes, defaults to True
         :type make_plots: bool, optional
@@ -425,26 +425,34 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
 
         self.prototypes_per_class = {}
 
+        # find prototypes for every class
         for available_class in self.available_classes:
 
+            # get feature embeddings in an array
             if self.use_image_embeddings:
-                X = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(data_per_class[available_class])])
+                X = np.array([item.feature_embedding.flatten().astype(float)
+                              for index, item in enumerate(data_per_class[available_class])])
             else:
-                X = np.array([item.image_numpy(img_size=self.sel_size).flatten() for index, item in enumerate(data_per_class[available_class])])
+                X = np.array([item.image_numpy(img_size=self.sel_size).flatten()
+                              for index, item in enumerate(data_per_class[available_class])])
 
+            # compute Kernel
             if self.gamma is None: 
                 self.gamma = default_gamma(X)
                 print(f'[!!!] Setting default gamma={self.gamma} .. since no gamma value specified')
 
-            ## ToDo local-Kernel!
+            # ToDo local-Kernel!
+            # In original setting of Been Kim, a local kernel in respect to the classes is also applied, which is not
+            # feasible here since near hits and misses alread shows class relation.
+            # However, this could be used for further exploration, maybe sub-classes.
             if self.kernel_type == 'global':
                 K = compute_rbf_kernel(X, self.gamma)
             else:
                 raise KeyError('kernel_type must be either "global" or "local"')
               
-            if self.verbose >= 2: print('Shape of X: ', np.shape(X), "\nKernel Shape:", np.shape(K) )
+            if self.verbose >= 2: print('Shape of X: ', np.shape(X), "\nKernel Shape:", np.shape(K))
 
-            # Prototypes
+            # select Prototypes
             if self.num_prototypes > 0:
                 
                 prototype_indices = select_prototypes(K, self.num_prototypes)
@@ -541,21 +549,6 @@ if __name__ == "__main__":
                     "use_image_embeddings": [True],
                     "num_prototypes": [3]}
 
-    ## quality - VGG16 - 2st
-    # tuned_params = {"gamma": [ 1e-7, 2e-7, 4e-7, 6e-7, 8e-7, 1e-6, 2e-6, 4e-6, 6e-6, 8e-6, 1e-5],
-    #                 "use_image_embeddings": [True],
-    #                 "num_prototypes": [3]}
-
-    ## quality - SimpleCNN - 2st
-    # tuned_params = {"gamma": [ 1e-3, 2e-3, 4e-3, 6e-3, 8e-3, 1e-2, 2e-2, 4e-2, 6e-2, 8e-2, 1e-1],
-    #                 "use_image_embeddings": [True],
-    #                 "num_prototypes": [3]}
-
-    ## quality - rawData - 2st
-    # tuned_params = {"gamma": [ 1e-4, 2e-4, 4e-4, 6e-4, 8e-4, 1e-3, 2e-3, 4e-3, 6e-3, 8e-3, 1e-2],
-    #                 "use_image_embeddings": [False],
-    #                 "num_prototypes": [3]}
-
     ## mnist - VGG16 - 2st
     # tuned_params = {"gamma": [ 1e-6, 2e-6, 4e-6, 6e-6, 8e-6, 1e-5, 2e-5, 4e-5, 6e-5, 8e-5, 1e-4],
     #                 "use_image_embeddings": [True],
@@ -613,21 +606,22 @@ if __name__ == "__main__":
 
     # -- Store prototypes locally  ---------------------------------------
 
-    gamma_vgg16_quality = 6e-06
-    gamma_simpleCNN_quality = 0.006
-    gamma_rawData_quality = 0.0004
+    # gamma_vgg16_quality = 6e-06
+    # gamma_simpleCNN_quality = 0.006
+    # gamma_rawData_quality = 0.0004
     gamma_vgg16_mnist = 4e-05
     gamma_simpleCNN_mnist = 1
     gamma_rawData_mnist = 0.0001
 
     ## Initialize Prototype Selector
-    tester = PrototypesSelector_MMD(dataset, num_prototypes=3, use_image_embeddings=True, gamma= gamma_simpleCNN_mnist, verbose=1, make_plots=True)
+    tester = PrototypesSelector_MMD(dataset, num_prototypes=3, use_image_embeddings=True, gamma=gamma_simpleCNN_mnist,
+                                    verbose=1, make_plots=True)
 
     tester.fit()
     tester.score()
 
     if tester.use_image_embeddings:
-        DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', fe.fe_model.name ,dataset.name)
+        DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', fe.fe_model.name, dataset.name)
     else:
         DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData", dataset.name)
 
