@@ -10,7 +10,9 @@ You can run this code as describe in the extra README file under
 code_kermany > README.md
 
 ### code_mh_main
-Is the modified code provided by Marvin Herchenbach et al. in the paper "XXXX Near Miss Near Hit"
+Is the modified code provided by Marvin Herchenbach et al. in the paper "Explaining Image
+Classifications with Near Misses, Near Hits and Prototypes: Supporting Domain Experts in
+Understanding Decision boundaries".
 It came with a README.md file which I took the liberty to update and expand according to my needs.
 This is the main code I used for conducting my master thesis. The main changes are:
 1. Adding the ability to cope with a multi class data set (as opposed to the original binary classification)

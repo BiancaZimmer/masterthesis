@@ -48,25 +48,25 @@ We propose a method for explaining the results of black box image classifiers to
 - change the utils.py so the global variables fit your data
 - DATA_DIR should contain the data in a folder with name <data_name>
 - inside should be two folders named "test" and "train" wherein your images in separate folders for the classes shall be found
-- change DATA_DIR_FOLDERS to the name of your data folder(s) you want to use
+- change DATA_DIR_FOLDERS in utils.py to the name of your data folder(s) you want to use
 - run cnn_model.py to fit your model - important: for this you'll have to adjust the boolean switches in \_\_main__
 - run dataentry.py to get all feature embeddings - important: change the suffix_path in \_\_main__ to whatever the name of your model
 - run prototype_selection.py - when first running this you might have to evaluate the best number of prototypes via screeplot
-- run xai_demo.py
+- run xai_demo.py - this will run a flask app
+
+Alternative to running the flask app:
+- run near_miss_hits_selection.py - to get near miss, hits and prototypes of a random (or fixed) test image
 
 ## Test settings can be found in the following modules:
-- dataset
-- dataentry
+- dataset.py
+- dataentry.py
 
 ## Main programs can be found in:
 - xai_demo: main file!!!
 - cnn_model: trains a cnn model with training data, evaluates the misclassified data, prints plots
-- Feature_Extractor: don't get it yet
-- flaskutil
-- kernels
 
 ## Things I changed fundamentally:
-- Added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used
-- Added an option "BINARY" which, if set to True, runs the original code with a binary CNN, if set to False a multi-class CNN will be used
-- Added code so that a multi-class CNN can be used by only using the BINARY=False switch
+- added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used
+- added an option "BINARY" which, if set to True, runs the original code with a binary CNN, if set to False a multi-class CNN will be used
+- added code so that a multi-class CNN can be used by only using the BINARY=False switch in the utils.py file
 - 
