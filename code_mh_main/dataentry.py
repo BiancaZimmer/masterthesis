@@ -77,7 +77,6 @@ class DataEntry:
         """
         return self.fe.load_preprocess_img(self.img_path)
 
- 
     def image_numpy(self, img_size:int = None):
         """Function for loading and converting a single image into a numpy array
 
@@ -101,18 +100,33 @@ class DataEntry:
 
 # python code_mh_main/dataentry.py #works as of 20/05/2022
 if __name__ == '__main__':
+    # run this to generate all feature embeddings
+    # needs a trained model for the feature embeddings else VGG16 is used
+
     import time
     from feature_extractor import *
     tic = time.time()
 
     dataset = DATA_DIR_FOLDERS[0]  # TODO: careful takes first data set hardcoded!
-    # fe = FeatureExtractor()  # standard FE
-    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))  # gets FE from a loaded CNN with the dataset name and a suffix
+
+    # set feature extractor
+    # gets FE from a loaded CNN with the dataset name and a suffix
+    # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))
+    # Standard FE for general model:
+    fe = FeatureExtractor()
+    fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
+
+    # fe = FeatureExtractor(loaded_model=VGG16(weights='imagenet', include_top=True))
+    # VGG16(weights='imagenet', include_top=True).input needs to be possible
+
+    # get all data entries
     image_path = os.path.join(DATA_DIR, dataset)
     data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
+
+    # create feature embeddings for all data entries
     for d in data:
         # print(d.feature_embedding)
-        d.feature_embedding
+        d.feature_embedding()
     print("")
 
     toc = time.time()

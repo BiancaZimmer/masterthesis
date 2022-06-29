@@ -87,7 +87,7 @@ class CNNmodel():
             self.labelencoder.fit(y_train)
             y_train = self.labelencoder.transform(y_train)
             y_test = self.labelencoder.transform(y_test)
-            print("LE classes from preprocess img gen: ", self.labelencoder.classes_)
+            # print("LE classes from preprocess img gen: ", self.labelencoder.classes_)
             # convert integers to one hot encoded variables
             y_train = to_categorical(y_train)
             y_test = to_categorical(y_test)
