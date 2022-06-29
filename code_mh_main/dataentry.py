@@ -29,7 +29,7 @@ class DataEntry:
 
         #extract all avaiable folders (classes) of the selected dataset 
         #and the corresponding of the selected image path
-        DIR_TRAIN_DATA = os.path.join(DIR_DATASETS, dataset,'train')
+        DIR_TRAIN_DATA = os.path.join(DATA_DIR, dataset, 'train')
         avaiable_classes = [item for item in os.listdir(DIR_TRAIN_DATA) if os.path.isdir(os.path.join(DIR_TRAIN_DATA,item))]
         folder_name = ntpath.basename(ntpath.dirname(img_path))
 

@@ -224,7 +224,7 @@ class ExamplebasedXAIDemo(FlaskApp):
         elif id == 'explain-button' and type == 'onclick':
 
             # TODO Try catch if self.pred_label, self.pred_prob is None first run classify
-            top_n = 5
+            top_n = TOP_N_NMNH
 
             scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)
             scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)

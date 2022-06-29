@@ -4,14 +4,14 @@
 import os 
 
 # Allowed image extensions
-image_extensions = ['.jpg','.jpeg', '.bmp', '.png', '.gif']
+image_extensions = ['.jpg', '.jpeg', '.bmp', '.png', '.gif']
 
 MAIN_DIR = os.getcwd()
-DATA_DIR = os.path.join(MAIN_DIR,'static', 'data')
-DATA_OUTPUT_DIR = os.path.join(MAIN_DIR, 'data_output')     # os.path.join(DATA_DIR, 'data_output')
-STATIC_DIR = os.path.join(MAIN_DIR,'static')
-DIR_DATASETS = DATA_DIR # os.path.join("./static", 'data')
+STATIC_DIR = os.path.join(MAIN_DIR, 'static')
+DATA_DIR = os.path.join(MAIN_DIR, 'static', 'data')
+DATA_OUTPUT_DIR = os.path.join(MAIN_DIR, 'data_output')
 DIR_FEATURES = os.path.join(MAIN_DIR, 'static', 'feature_embedding')
 DATA_DIR_FOLDERS = ['mnist']    # set to [] if you want to use all folders in the DATA_DIR, else give name of folders as list that should be used
 # DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
-BINARY = False  # is your data set binary? then set to True, otherwise, set to false
+BINARY = False  # is your data set binary? then set to True, otherwise, set to false; algorithms are then chosen automatically for multiclass/binary
+TOP_N_NMNH = 5  # Number of Near Misses/Near Hits to calculate

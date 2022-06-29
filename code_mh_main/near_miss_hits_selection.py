@@ -172,7 +172,7 @@ if __name__ == '__main__':
     ###### ==== Select a DATASET ==== ######
     dataset = DATA_DIR_FOLDERS[0]   # TODO: careful: This is hard coded, always takes first data set
     # dataset = "mnist"
-    top_n = 5   # number of near hits/misses to show
+    top_n = TOP_N_NMNH   # number of near hits/misses to show
     use_prediction = True  # if set to true a prediction of the image is used for the near hits/misses
     suffix_path = "_multicnn"   # if use_prediction=True then you have to specify which model of the dataset to use
     distance_measure = 'cosine'  # distance measure for near miss/near hit

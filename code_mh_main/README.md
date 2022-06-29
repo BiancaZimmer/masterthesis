@@ -67,6 +67,10 @@ Alternative to running the flask app:
 
 ## Things I changed fundamentally:
 - added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used
-- added an option "BINARY" which, if set to True, runs the original code with a binary CNN, if set to False a multi-class CNN will be used
+- added an option "BINARY" which, if set to True, runs the original code with a binary CNN, if set to False a
+multi-class CNN will be used. Option was incorporated in all python files and flask app
 - added code so that a multi-class CNN can be used by only using the BINARY=False switch in the utils.py file
-- 
+- added "TOP_N_NMNH" in utils.py where one can set the number of near miss/hits to be selected globally
+- changed the html/flask app:
+  - made the footer flexible
+  - changed paths to pictures so they would be shown

@@ -15,14 +15,14 @@ from cnn_model import *
 class DataSet():
     """DataSet object for the image dataset containing list of DataEntries
     """
-    def __init__(self, name: str, fe: FeatureExtractor,  path_datasets=DIR_DATASETS, ):
+    def __init__(self, name: str, fe: FeatureExtractor, path_datasets=DATA_DIR, ):
         """Initialization of the DataSet
 
         :param name: Dataset name which should refer to the folder name
         :type name: str
         :param fe: FeatureExtractor model that is used for the feature embedding, e.g. VGG16 for model-agnostic feature extraction
         :type fe: FeatureExtractor
-        :param path_datasets: Local path where the dataset(s) is stored, defaults to DIR_DATASETS
+        :param path_datasets: Local path where the dataset(s) is stored, defaults to DATA_DIR
         :type path_datasets: str, optional
         """
 
@@ -185,10 +185,10 @@ class DataSet():
             plt.show()
 
 
-def get_available_dataset(path_datasets =DIR_DATASETS):
+def get_available_dataset(path_datasets =DATA_DIR):
     """Function to get a list of local available datasets.
 
-    :param path_datasets: Local path where the datasets are stored, defaults to DIR_DATASETS
+    :param path_datasets: Local path where the datasets are stored, defaults to DATA_DIR
     :type path_datasets: str, optional
     
     :return: *self* (`list`) - List of local available datasets
