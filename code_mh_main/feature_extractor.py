@@ -26,12 +26,14 @@ class FeatureExtractor():
         :param use_flatten: Set to True if the feature vector should be retrieved from the Flatten of the simple CNN, otherwise it is retrieved from the first FC layer, defaults to False
         :type use_flatten: bool, optional
         """
+
         if loaded_model is None:
             ## Define the Base Model
             model = VGG16(weights='imagenet', include_top=True)
             ## Create Feature Extractor Model based on the Base Model
             self.fe_model = Model(inputs=model.input, outputs=model.get_layer("flatten").output, name = "VGG16")
         # TODO: add options where we can use a model outside of CNN
+        # TODO add modelname as option for function to give another name
         else:
             if BINARY & use_flatten:        # never used
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output,
@@ -46,6 +48,19 @@ class FeatureExtractor():
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output,
                                       name="SimpleCNN")
 
+    def set_femodel(self, modelpath: str, modelname: str, outputlayer: str = "flatten"):
+        """ Overwrites the model saved in the FeatureExtractor. Useful if you want to load your own model outside of a CNN
+
+        :param modelpath: name of the model inside the STATIC_DIR/model folder
+        :type modelpath: str
+        :param modelname: name you want to give to the model
+        :type modelname: str
+        :param outputlayer: defines which layer to get as a output layer; default = "flatten"
+        :type outputlayer: str, optional
+        """
+
+        model = load_model(os.path.join(STATIC_DIR, 'models', modelpath))
+        self.fe_model = Model(inputs=model.input, outputs=model.get_layer(outputlayer).output, name=modelname)
 
     def load_preprocess_img(self, path):
         """Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array. 
@@ -77,7 +92,10 @@ class FeatureExtractor():
             x = np.expand_dims(x, -1)
             x = np.expand_dims(x, axis=0)
             #print(np.shape(x))
-            x /= 255. 
+            x /= 255.
+        else:
+            # TODO Warning that this function is not defined for this type of model
+            pass
 
         return img_PIL, x
     
@@ -105,13 +123,18 @@ if __name__ == "__main__":
 
     print(f'Possible dataset: {dict_datasets.keys()}')
 
-    sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])  # TODO: careful always takes first data set!
-    sel_model.load_model()
-    sel_model._preprocess_img_gen()
+    # TEST
+    # test if CNN model can be loaded and used as a FE
+    # sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])  # TODO: careful always takes first data set!
+    # sel_model.load_model()
+    # sel_model._preprocess_img_gen()
+    # fe = FeatureExtractor(loaded_model=sel_model.model)
+    # print(fe.fe_model.name)
+    # fe.load_preprocess_img(dict_datasets[sel_model.selected_dataset].data_t[99].img_path)
 
-    fe = FeatureExtractor(loaded_model=sel_model.model)
-
+    # test if general model can be loaded and used as FE
+    fe = FeatureExtractor()
+    fe.set_femodel("results", "retina1")     # ("OCT_retrained_graph_2.pb", "retina1")
     print(fe.fe_model.name)
-    fe.load_preprocess_img(dict_datasets[sel_model.selected_dataset].data_t[99].img_path)
 
 
