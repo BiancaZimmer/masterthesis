@@ -204,13 +204,14 @@ class ExamplebasedXAIDemo(FlaskApp):
             {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
 
         elif id == 'test-dropdown' and type == 'onchange':
-            g.test_img_path = value
+            g.test_img_path = value.split("static/")[1]
             self.test_dataentry = get_dataentry_by_img_path(self.data_t, value)
-            print('test_dataentry', self.test_dataentry)
             print(self.test_dataentry.img_path)
-            return jsonify([{'elem':'test-image','content':render_template_string('<img src="{{ g.test_img_path }}" height="200px">')},
-            {'elem':'test-prediction','content':render_template_string('')},
-            {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
+            return jsonify([{'elem': 'test-image',
+                             'content': render_template_string('<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">')},
+                            {'elem': 'test-prediction','content':render_template_string('')},
+                            {'elem': 'nh-nm-images','content':render_template_string('')},
+                            {'elem': 'protos-images', 'content':render_template_string('')}])
 
         elif id == 'classify-button' and type == 'onclick':
 
@@ -222,6 +223,7 @@ class ExamplebasedXAIDemo(FlaskApp):
 
         elif id == 'explain-button' and type == 'onclick':
 
+            # TODO Try catch if self.pred_label, self.pred_prob is None first run classify
             top_n = 5
 
             scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)
@@ -231,13 +233,13 @@ class ExamplebasedXAIDemo(FlaskApp):
             g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss, ['nm_'+str(i+1) for i in range(top_n)])
 
             # use_CNN_feature_embeddding = True
-            num_prototypes= 3
+            num_prototypes = 3
             # if use_CNN_feature_embeddding:
             #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
             # else:
             #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData",self.sel_dataset)
 
-            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
+            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name, self.sel_dataset)
 
 
             protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(num_prototypes) + '.json')
@@ -253,15 +255,28 @@ class ExamplebasedXAIDemo(FlaskApp):
             g.prototypes = prototypes_per_class[self.pred_label[0]]
             print("PROTOTYPES: ", prototypes_per_class)
 
-            return jsonify([  # FIXME
-            {'elem':'protos-images',
-            'content':render_template_string('<h2>Prototypes:</h2><div class="row"><div class="carousel clearfix"><div class="carousel-view clearfix">\
-            {% for proto in g.prototypes %}<div class="box"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ proto.img_path }}" alt="file://{{ proto.img_path }}" width="200px" height="200px"><figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
-            {'elem':'nh-nm-images',
-            'content':render_template_string('<h2>Nearest Hits:</h2><div class="row">\
-                {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ nearest_hit[0] }}" alt="file://{{ nearest_hit[0] }}" width="200px" height="200px"><figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
-                <h2>Nearest Miss:</h2><div class="row">\
-                {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}"><figure style="float: left; margin-right: 20px; margin-bottom: 20px;"><img src="file://{{ nearest_miss[0] }}" alt="file://{{ nearest_miss[0] }}" width="200px" height="200px"><figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')}])
+            return jsonify([
+                # '<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">'
+                # g.test_img_path = value.split("static/")[1]
+                {'elem': 'protos-images',
+                 'content': render_template_string('<h2>Prototypes:</h2><div class="row">\
+                 <div class="carousel clearfix"><div class="carousel-view clearfix">\
+                 {% for proto in g.prototypes %}<div class="box">\
+                 <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                 <img src="./static/{{ proto.img_path.split("static/")[1] }}" alt="file://{{ proto.img_path }}" width="200px" height="200px">\
+                 <figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
+                {'elem': 'nh-nm-images',
+                 'content': render_template_string('<h2>Nearest Hits:</h2><div class="row">\
+                 {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}">\
+                 <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                 <img src="./static/{{ nearest_hit[0].split("static/")[1] }}" alt="file://{{ nearest_hit[0] }}" width="200px" height="200px">\
+                 <figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
+                 <h2>Nearest Miss:</h2><div class="row">\
+                 {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}">\
+                 <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                 <img src="./static/{{ nearest_miss[0].split("static/")[1] }}" alt="file://{{ nearest_miss[0] }}" width="200px" height="200px">\
+                 <figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')
+                 }])
 
         return super(self).callbacks()
 
