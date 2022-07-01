@@ -1,46 +1,61 @@
-Retina-AI
+# Retina-AI
 
-Dataset Collection:
-	Collect a dataset and split into directories for matching categories
+### Dataset Collection:
+	
+    Collect a dataset and split into directories for matching categories
 	with an all uppercase name inside each of 3 parent directories labeled
 	'train', 'test', and 'val'.
 
-For Example:
+### For Example:
 	When downloading the included OCT dataset, you will notice it contains
 	2 folders (train, test). First, you must move some images from the training or testing sets into a new folder called 'val'. Inside each are 4 folders with their
 	corresponding category (CNV, DME, DRUSEN, NORMAL). The image path expected
 	at command-line matches that of the folder containing the first 3 folders
 	(train, test, val).
 
-Sample Usage:
-	python retrain.py --images /path/to/images 
+### Sample Usage:
+```python retrain.py --images /path/to/images ```
 
-Generating ROC:
+### Generating ROC:
   Uncomment the last few lines in the main function of the retrain.py file. Change [LIST_OF_POS_IDX] with
   a list of indices of the positive categories (per the output_labels.txt file). Run the script.
 
-Occlusion:
+### Occlusion:
+```
         python occlusion.py
                 --image_dir /path/to/image
                 --graph /tmp/output_graph.pb
                 --labels /tmp/output_labels.txt
-
+```
 ----------- 
-Added by Bianca:
+## Added by Bianca:
 
-Sample usage:
+### Sample usage:
+```
 python code_kermany/retrain.py
     --images "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2"
     --output_graph "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/retrained_graph_1.pb"
     --output_labels "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/output_labels.txt"
     --summaries_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/retrain_logs1"
     --training_steps 200
+```
+
+On hydra:
+```
+python2.7 retrain.py
+    --images "/home/zimmer/data/data_kermany_small3"
+    --output_graph "/home/zimmer/data/data_kermany_small3/results/retrained_graph_small.pb"
+    --output_labels "/home/zimmer/data/data_kermany_small3/results/output_labels.txt"
+    --summaries_dir "/home/zimmer/data/data_kermany_small3/results/retrain_logs_small"
+    --bottleneck_dir "/home/zimmer/data/data_kermany_small3/bottelneck/"
+    --training_steps 200
+```
 
 To view Tensorboard go into the results folder and type the following into the terminal:
 
-tensorboard --logdir retrain_logs1
+``` tensorboard --logdir retrain_logs1```
 
-python retrain.py --help
+```python retrain.py --help``` </br>
 usage: retrain.py [-h] [--images IMAGES] [--output_graph OUTPUT_GRAPH]
                   [--output_labels OUTPUT_LABELS]
                   [--summaries_dir SUMMARIES_DIR]
