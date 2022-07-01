@@ -5,7 +5,7 @@ from six.moves import urllib
 # from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
 from sklearn.metrics import auc
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import tensorflow as tf
 import tarfile
 
@@ -27,15 +27,15 @@ def get_image_files(image_dir):
 def generate_roc(y_test, y_score, pos_label = 0):
   fpr, tpr, _ = roc_curve(y_test, y_score, pos_label = pos_label)
   roc_auc = auc(fpr, tpr)
-  plt.figure()
-  plt.plot(fpr, tpr, label="ROC curve (area = %0.2f)" % roc_auc)
-  plt.plot([0, 1], [0, 1], "k--")
-  plt.xlim([0.0, 1.05])
-  plt.ylim([0.0, 1.05])
-  plt.xlabel("False Positive Rate")
-  plt.ylabel("True Positive Rate")
-  plt.title("Receiver operating characteristic curve")
-  plt.show()
+  # plt.figure()
+  # plt.plot(fpr, tpr, label="ROC curve (area = %0.2f)" % roc_auc)
+  # plt.plot([0, 1], [0, 1], "k--")
+  # plt.xlim([0.0, 1.05])
+  # plt.ylim([0.0, 1.05])
+  # plt.xlabel("False Positive Rate")
+  # plt.ylabel("True Positive Rate")
+  # plt.title("Receiver operating characteristic curve")
+  # plt.show()
   return roc_auc
 
 # Download inception model if not already at 'inception_url'
