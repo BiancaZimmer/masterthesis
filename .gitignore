@@ -108,8 +108,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-# venv/
-# venv_py37/
+venv/
+venv_py37/
 
 # Rope project settings
 .ropeproject
