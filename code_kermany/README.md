@@ -32,17 +32,18 @@
 
 ### Sample usage:
 ```
-python code_kermany/retrain.py
-    --images "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2"
-    --output_graph "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/retrained_graph_1.pb"
-    --output_labels "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/output_labels.txt"
-    --summaries_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/results/retrain_logs1"
+python retrain.py
+    --images "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3"
+    --output_graph "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/results/retrained_graph_1.pb"
+    --output_labels "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/results/output_labels.txt"
+    --summaries_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/results/retrain_logs1"
+    --bottleneck_dir "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/bottleneck"
     --training_steps 200
 ```
 
 On hydra:
-```
-python2.7 retrain.py
+
+python3.7 retrain.py
     --images "/home/zimmer/data/data_kermany_small3"
     --output_graph "/home/zimmer/data/data_kermany_small3/results/retrained_graph_small.pb"
     --output_labels "/home/zimmer/data/data_kermany_small3/results/output_labels.txt"

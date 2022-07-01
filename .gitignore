@@ -109,7 +109,7 @@ celerybeat.pid
 
 # Environments
 venv/
-venv_py37/
+venv_tens/
 
 # Rope project settings
 .ropeproject
