@@ -57,11 +57,13 @@ def main(_):
       model_config["input_depth"], model_config["input_mean"],
       model_config["input_std"])
 
+    print("BEFORE")
     # Store image bottlenecks
     train.store_bottlenecks(
       sess, image_lists, FLAGS.images, FLAGS.bottleneck_dir,
       jpeg_data_tensor, decoded_image_tensor, resized_image_tensor,
       bottleneck_tensor)
+    print("AFTER")
 
     # Train newly initialized final layer
     (train_step, cross_entropy, bottleneck_input, ground_truth_input,

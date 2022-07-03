@@ -80,7 +80,7 @@ def create_image_lists(image_dir):
     except StopIteration:
       sys.exit("ERROR: Missing either train/test/val folders in image_dir")
     for diagnosis in bins:
-      print("DIAGNOSIS: ", diagnosis)
+      # print("DIAGNOSIS: ", diagnosis)
       bin_path = os.path.join(category_path, diagnosis)
       if category == "train":
         training_images.append(get_image_files(bin_path))
