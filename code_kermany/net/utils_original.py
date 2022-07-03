@@ -77,6 +77,7 @@ def create_image_lists(image_dir):
     category_path = os.path.join(image_dir, category)
     try:
       bins = next(os.walk(category_path))[1]
+      bins = sorted(bins)
     except StopIteration:
       sys.exit("ERROR: Missing either train/test/val folders in image_dir")
     for diagnosis in bins:
