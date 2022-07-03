@@ -124,8 +124,8 @@ def store_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
   for label_name, label_lists in image_lists.items():
     for category in ["training", "testing", "validation"]:
       category_list = label_lists[category]
-      print("LABEL NAME STORE BOTTLENECK: ",label_name)
-      print("LABEL LIST STORE BOTTLENECK: ", label_lists)
+      #print("LABEL NAME STORE BOTTLENECK: ",label_name)
+      #print("LABEL LIST STORE BOTTLENECK: ", label_lists)
       for index in range(len(category_list)):
         get_bottleneck(
           sess, image_lists, label_name, index, image_dir, category,
