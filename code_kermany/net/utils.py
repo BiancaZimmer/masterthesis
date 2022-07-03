@@ -76,7 +76,7 @@ def create_image_lists(image_dir):
   for category in ["train", "test", "val"]:
     category_path = os.path.join(image_dir, category)
     try:
-      bins = next(os.walk(category_path))[1]
+      bins = next(os.walk(category_path))[1].sort()
     except StopIteration:
       sys.exit("ERROR: Missing either train/test/val folders in image_dir")
     for diagnosis in bins:
@@ -117,10 +117,10 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
   elif("val" in category):
     full_path = os.path.join(image_dir, "val", label_name.upper(), base_name)
 
-  print("label_lists ",label_lists)
-  print("category_list: ",category_list)
-  print("label_name: ",label_name)
-  print("base_name: ",base_name)
+  #print("label_lists ",label_lists)
+  #print("category_list: ",category_list)
+  #print("label_name: ",label_name)
+  #print("base_name: ",base_name)
 
   return full_path
 
