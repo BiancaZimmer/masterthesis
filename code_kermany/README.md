@@ -42,8 +42,8 @@ python retrain.py
 ```
 
 On hydra:
-
-python3.7 retrain.py
+```
+python3 retrain.py
     --images "/home/zimmer/data/data_kermany_small3"
     --output_graph "/home/zimmer/data/data_kermany_small3/results/retrained_graph_small.pb"
     --output_labels "/home/zimmer/data/data_kermany_small3/results/output_labels.txt"
