@@ -117,6 +117,11 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
   elif("val" in category):
     full_path = os.path.join(image_dir, "val", label_name.upper(), base_name)
 
+  print("label_lists ",label_lists)
+  print("category_list: ",category_list)
+  print("label_name: ",label_name)
+  print("base_name: ",base_name)
+
   return full_path
 
 # Return path to bottleneck for a given label and a given index
