@@ -30,6 +30,9 @@
 ----------- 
 ## Added by Bianca:
 
+Changed the code so it will run in parallel (walking through paths is no done in
+alphabetical/sorted order).
+
 ### Sample usage:
 ```
 python retrain.py
