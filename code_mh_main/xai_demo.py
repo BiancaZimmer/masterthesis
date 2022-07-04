@@ -67,6 +67,9 @@ def get_dataentry_by_img_path(data, img_path:str):
     return data_entry
 
 
+# TODO: user input: which model to load
+suffix_path = "_multicnn"
+
 tic = time.time()
 
 # List if local available datasets (global variable)
@@ -82,7 +85,7 @@ dict_datasets_and_embeddings = get_dict_datasets_with_all_embeddings()
 dict_cnn_models = {}
 for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
     print("Dataset: ", dataset_name)
-    #touch the embeddings to load in ram
+    # touch the embeddings to load in ram
     for model_name, value in embedding_dict.items():
         print("Currently touching embeddings of ", model_name, " ...")
         [x.feature_embedding for x in value.data]
@@ -90,11 +93,11 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
         if model_name == "SimpleCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name].load_model()
+            dict_cnn_models[dataset_name].load_model(suffix_path=suffix_path)
         elif model_name == "MultiCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name].load_model()
+            dict_cnn_models[dataset_name].load_model(suffix_path=suffix_path)
 
 
 # use_CNN_feature_embedding = True
@@ -175,7 +178,6 @@ class ExamplebasedXAIDemo(FlaskApp):
             {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
             {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
 
-
         elif id == 'distance-dropdown' and type == 'onchange':
 
             self.distance_measure = value
@@ -187,15 +189,13 @@ class ExamplebasedXAIDemo(FlaskApp):
             {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
             {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
 
-
         elif id == 'dataset-dropdown' and type == 'onchange':
 
             self.sel_dataset = value
 
-            self.data =  self.dict_datasets[self.sel_dataset].data
-            self.data_t =  self.dict_datasets[self.sel_dataset].data_t
+            self.data = self.dict_datasets[self.sel_dataset].data
+            self.data_t = self.dict_datasets[self.sel_dataset].data_t
             self.fe = self.dict_datasets[self.sel_dataset].fe
-
 
             g.test_set =  self.dict_datasets[self.sel_dataset].data_t
 
@@ -240,8 +240,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData",self.sel_dataset)
 
             DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name, self.sel_dataset)
-
-
+            # TODO change to variable in utils
             protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(num_prototypes) + '.json')
 
             if os.path.exists(protos_file):
@@ -255,6 +254,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             g.prototypes = prototypes_per_class[self.pred_label[0]]
             print("PROTOTYPES: ", prototypes_per_class)
 
+            # TODO print img name, print actual label
             return jsonify([
                 # '<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">'
                 # g.test_img_path = value.split("static/")[1]
@@ -290,5 +290,5 @@ if __name__ == '__main__':
         static_folder="./static",        # the folder where static files (e.g. css) are found
         template_folder="./templates"   # where templates are found
         )
-    app.run() # runs the server
+    app.run()  # runs the server
 
