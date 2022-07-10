@@ -54,6 +54,23 @@ class DataEntry:
         self.feature_file = pre + '.npy' 
         pass
 
+    def initiate_feature_embedding(self):
+        """Lazy function for extracting the Feature Vector of a single image for the first time
+
+        :return: *self* (`numpy.ndarray`) - One-dimensional feature vector
+        """
+        if os.path.exists(self.feature_file):
+            # check is implemented whether there are pictures with the same names
+            print("WARNING: feature file of", self.img_path, " already existed.")
+            return np.load(self.feature_file, allow_pickle=True)
+        else:
+            _, x = self.__compute_image
+            feat = self.fe.extract_features(x)
+            np.save(self.feature_file, feat)
+            # print(self.feature_file)
+            return feat
+
+
     @lazy
     def feature_embedding(self):
         """Lazy function for extracting or loading the Feature Vector of a single image
@@ -113,10 +130,10 @@ if __name__ == '__main__':
     # gets FE from a loaded CNN with the dataset name and a suffix
     # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))
     # Standard FE for general model:
-    fe = FeatureExtractor()
-    fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
+    # fe = FeatureExtractor()
+    # fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
 
-    # fe = FeatureExtractor(loaded_model=VGG16(weights='imagenet', include_top=True))
+    fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
     # VGG16(weights='imagenet', include_top=True).input needs to be possible
 
     # get all data entries
@@ -124,9 +141,11 @@ if __name__ == '__main__':
     data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
 
     # create feature embeddings for all data entries
-    for d in data:
+    for count, d in enumerate(data):
         # print(d.feature_embedding)
-        d.feature_embedding()
+        d.initiate_feature_embedding()
+        if count % 100 == 0:
+            print(count, " feature embeddings created")
     print("")
 
     toc = time.time()
