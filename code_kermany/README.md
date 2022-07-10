@@ -55,6 +55,16 @@ python3 retrain.py
     --training_steps 200
 ```
 
+``
+python3 retrain.py
+    --images "/home/zimmer/data/data_kermany_split2"
+    --output_graph "/home/zimmer/data/data_kermany_split2/results/retrained_graph_split2.pb"
+    --output_labels "/home/zimmer/data/data_kermany_split2/results/output_labels.txt"
+    --summaries_dir "/home/zimmer/data/data_kermany_split2/results/retrain_logs_split2"
+    --bottleneck_dir "/home/zimmer/data/data_kermany_split2/bottelneck/"
+    --training_steps 200
+```
+
 To view Tensorboard go into the results folder and type the following into the terminal:
 
 ``` tensorboard --logdir retrain_logs1```
