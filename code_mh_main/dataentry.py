@@ -4,10 +4,9 @@ import numpy as np
 from lazy import lazy
 from PIL import Image, ImageOps
 import math
-
+import time
 
 from utils import *
-
 
 class DataEntry:
     """DataEntry object that refers to a data sample (image) and contains all its information
@@ -115,39 +114,99 @@ class DataEntry:
         return x
        
 
+def code_from_dataentry(dataset, suffix_path=''):
+    from cnn_model import get_CNNmodel
+    from feature_extractor import FeatureExtractor
+
+    # CODE FROM DATAENTRY.PY
+    print("----- CREATION OF FEATURE EMBEDDINGS -----")
+    new_embedding = True
+    feature_embeddings_to_initiate = "current"
+    a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
+    if a == "n":
+        new_embedding = False
+        print("No feature embeddings created.")
+    while a == "help":
+        print("You only need to create the feature embeddings if you haven't created them before. e.g. when you "
+              "trained a brand new model.")
+        a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
+
+    while new_embedding:
+        tic = time.time()
+        # set feature extractor
+        if feature_embeddings_to_initiate == "current":
+            # gets FE from a loaded CNN with the dataset name and a suffix
+            fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path=suffix_path))
+        else:
+            # Standard FE for general model:
+            fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
+        print("Initiating ", fe.fe_model)
+
+        # get all data entries
+        image_path = os.path.join(DATA_DIR, dataset)
+        data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in
+                files if file != ".DS_Store"]
+
+        # create feature embeddings for all data entries
+        for count, d in enumerate(data):
+            d.initiate_feature_embedding()
+            if count % 100 == 0:
+                print(count, " feature embeddings created")
+        print("")
+
+        toc = time.time()
+        print("Training needed: ",
+              "{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+                                        ((toc - tic) % 60)))
+
+        a = input("Do you want to train another feature embedding? [y/n]")
+        if a == "n":
+            new_embedding = False
+        else:
+            feature_embeddings_to_initiate = input("Which feature extractor would you like to train next? [VGG16/...]")
+
+
 # python code_mh_main/dataentry.py #works as of 20/05/2022
 if __name__ == '__main__':
     # run this to generate all feature embeddings
     # needs a trained model for the feature embeddings else VGG16 is used
+    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+    while dataset_to_use == "help":
+        print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be"
+              "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+    suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
+    code_from_dataentry(dataset_to_use, suffix_path)
 
-    import time
-    from feature_extractor import *
-    tic = time.time()
-
-    dataset = DATA_DIR_FOLDERS[0]  # TODO: careful takes first data set hardcoded!
-
-    # set feature extractor
-    # gets FE from a loaded CNN with the dataset name and a suffix
-    # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))
-    # Standard FE for general model:
-    # fe = FeatureExtractor()
-    # fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
-
-    fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
-    # VGG16(weights='imagenet', include_top=True).input needs to be possible
-
-    # get all data entries
-    image_path = os.path.join(DATA_DIR, dataset)
-    data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
-
-    # create feature embeddings for all data entries
-    for count, d in enumerate(data):
-        # print(d.feature_embedding)
-        d.initiate_feature_embedding()
-        if count % 100 == 0:
-            print(count, " feature embeddings created")
-    print("")
-
-    toc = time.time()
-    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
-                                    ((toc - tic) % 60)))
+#### OLD CODE #####
+    # import time
+    # from feature_extractor import *
+    # tic = time.time()
+    #
+    # dataset = DATA_DIR_FOLDERS[0]  # careful takes first data set hardcoded!
+    #
+    # # set feature extractor
+    # # gets FE from a loaded CNN with the dataset name and a suffix
+    # # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))
+    # # Standard FE for general model:
+    # # fe = FeatureExtractor()
+    # # fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
+    #
+    # fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
+    # # VGG16(weights='imagenet', include_top=True).input needs to be possible
+    #
+    # # get all data entries
+    # image_path = os.path.join(DATA_DIR, dataset)
+    # data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
+    #
+    # # create feature embeddings for all data entries
+    # for count, d in enumerate(data):
+    #     # print(d.feature_embedding)
+    #     d.initiate_feature_embedding()
+    #     if count % 100 == 0:
+    #         print(count, " feature embeddings created")
+    # print("")
+    #
+    # toc = time.time()
+    # print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+    #                                 ((toc - tic) % 60)))

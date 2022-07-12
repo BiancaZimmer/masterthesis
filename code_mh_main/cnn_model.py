@@ -505,44 +505,66 @@ def get_CNNmodel(sel_dataset:str, suffix_path:str =''):
     return model
 
 
-if __name__ == "__main__":
-    from dataset import get_dict_datasets, get_available_dataset
+def code_from_ccn_model(dataset_to_use):
+    """ Essentially this is the code to run for fitting/loading/evaluating a cnn model
+    :param dataset_to_use: A string of the folder name of the data set you want to use
 
-    # boolean switches, please adjust to your liking
-    use_CNN_feature_embedding = True    # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
-    fit_model = False    # if True a model is fitted, if false a model is loaded
-    suffix_path = "_multicnn"   # suffix_path = "_multicnn"
-    evaluate = True     # if True evaluation plus plot is run
-    plot_losses = False  # if True the evaluation losses are plotted
-    plotmisclassified = True   # if True misclassified jpgs are shown with classified and true label
+    :return: suffix_path which was given as user input
+    """
+    # CODE FROM CNN_MODEL.PY
+    print("----- TRAINING OF CNN MODEL -----")
+    from dataset import get_dict_datasets
 
-    # from here on you don't have to change anything anymore
-    use_all_datasets = True
-    if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
+    plot_losses = False
+    plotmisclassified = False
 
     # dictionary of data sets to use
+    use_CNN_feature_embedding = True  # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
+    use_all_datasets = True
+    if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
     dict_datasets = get_dict_datasets(use_CNN_feature_embedding, use_all_datasets)
 
-    # TODO: careful: This is hard coded, always takes first data set
-    sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])
+    sel_model = CNNmodel(dict_datasets[dataset_to_use])
 
     # initialize img generator
     sel_model._preprocess_img_gen()
 
-    if fit_model:
+    a = input("Do you want to fit (f) a CNN model or load (l) an exciting one? [f/l]")
+    if a == "f":
         if BINARY:
             sel_model._binary_model()
         else:
             sel_model._multiclass_model()
+        suffix_path = input("What should the suffix of your cnn_model be? Type a string. e.g. '_testcnn'")
+        print("Fitting model ...")
         sel_model.fit(save_model=True, suffix_path=suffix_path)
     else:
+        suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
         sel_model.load_model(suffix_path=suffix_path)
 
-    if evaluate:
+    a = input("Do you want to run the evaluation of your CNN model? [y/n]")
+    if a == "y":
+        b = input("Do you want to plot the loss and accuracy of your CNN model? [y/n]")
+        if b == "y":
+            plot_losses = True
         sel_model.eval(plot_losses=plot_losses)
         sel_model.plot_rand10_pred()
+        b = input("Do you want to plot the evaluation of the miss-classified data of your CNN model? [y/n]")
+        if b == "y":
+            plotmisclassified = True
         quality_misclassified = sel_model.get_misclassified(plot=plotmisclassified)
-        # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number
+
+    return suffix_path
+
+
+if __name__ == "__main__":
+    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+    while dataset_to_use == "help":
+        print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be"
+              "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+
+    code_from_ccn_model(dataset_to_use)
 
     # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
@@ -550,3 +572,43 @@ if __name__ == "__main__":
     # plots activation maps of one image
     # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[42])
     # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[55])
+
+
+    ### OLD  CODE ####
+    # from dataset import get_dict_datasets, get_available_dataset
+    #
+    # # boolean switches, please adjust to your liking
+    # use_CNN_feature_embedding = True    # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
+    # fit_model = False    # if True a model is fitted, if false a model is loaded
+    # suffix_path = "_multicnn"   # suffix_path = "_multicnn"
+    # evaluate = True     # if True evaluation plus plot is run
+    # plot_losses = False  # if True the evaluation losses are plotted
+    # plotmisclassified = True   # if True misclassified jpgs are shown with classified and true label
+    #
+    # # from here on you don't have to change anything anymore
+    # use_all_datasets = True
+    # if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
+    #
+    # # dictionary of data sets to use
+    # dict_datasets = get_dict_datasets(use_CNN_feature_embedding, use_all_datasets)
+    #
+    # # careful: This is hard coded, always takes first data set
+    # sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])
+    #
+    # # initialize img generator
+    # sel_model._preprocess_img_gen()
+    #
+    # if fit_model:
+    #     if BINARY:
+    #         sel_model._binary_model()
+    #     else:
+    #         sel_model._multiclass_model()
+    #     sel_model.fit(save_model=True, suffix_path=suffix_path)
+    # else:
+    #     sel_model.load_model(suffix_path=suffix_path)
+    #
+    # if evaluate:
+    #     sel_model.eval(plot_losses=plot_losses)
+    #     sel_model.plot_rand10_pred()
+    #     quality_misclassified = sel_model.get_misclassified(plot=plotmisclassified)
+    #     # print("Misclassified: ", len(quality_misclassified)) not needed since code above gives number
