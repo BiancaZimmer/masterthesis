@@ -11,11 +11,8 @@ def code_from_prototype_selection(dataset_name):
     print("----- PROTOTYPESELECTION -----")
     print("If you haven't run an evaluation for your prototypes the following code might not yield reliable results. "
           "However you can try it out to get an overview.")
-    a = input("Do you want to create the prototypes for your current data set now? [y/n]")
-    create_prototypes = True
-    if a == "n":
-        create_prototypes = False
 
+    create_prototypes = True
     feature_embeddings_to_use = "current"
     while create_prototypes:
         # Select Feature Extractor
@@ -105,10 +102,28 @@ if __name__ == '__main__':
               "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
+    # Train or load and evaluate CNN Model
+    # If you want to skip this point please specify the suffix_path below
     # suffix_path = ''
     suffix_path = code_from_ccn_model(dataset_to_use)
-    code_from_dataentry(dataset_to_use, suffix_path)
-    code_from_prototype_selection(dataset_to_use)
+
+    # Create feature embeddings
+    a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
+    while a == "help":
+        print("You only need to create the feature embeddings if you haven't created them before. e.g. when you "
+              "trained a brand new model.")
+        a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
+    if a == "n":
+        new_embedding = False
+        print("No feature embeddings created.")
+    else:
+        code_from_dataentry(dataset_to_use, suffix_path)
+
+    # Create prototypes
+    a = input("Do you want to create the prototypes for your current data set now? [y/n]")
+    if a == "y":
+        code_from_prototype_selection(dataset_to_use)
+
 
 
 

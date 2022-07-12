@@ -122,14 +122,6 @@ def code_from_dataentry(dataset, suffix_path=''):
     print("----- CREATION OF FEATURE EMBEDDINGS -----")
     new_embedding = True
     feature_embeddings_to_initiate = "current"
-    a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
-    if a == "n":
-        new_embedding = False
-        print("No feature embeddings created.")
-    while a == "help":
-        print("You only need to create the feature embeddings if you haven't created them before. e.g. when you "
-              "trained a brand new model.")
-        a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
 
     while new_embedding:
         tic = time.time()

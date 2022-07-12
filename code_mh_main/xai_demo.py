@@ -271,7 +271,7 @@ class ExamplebasedXAIDemo(FlaskApp):
                  <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
                  <img src="./static/{{ nearest_hit[0].split("static/")[1] }}" alt="file://{{ nearest_hit[0] }}" width="200px" height="200px">\
                  <figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
-                 <h2>Nearest Miss:</h2><div class="row">\
+                 <h2>Nearest Misses:</h2><div class="row">\
                  {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}">\
                  <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
                  <img src="./static/{{ nearest_miss[0].split("static/")[1] }}" alt="file://{{ nearest_miss[0] }}" width="200px" height="200px">\
