@@ -46,9 +46,9 @@ We propose a method for explaining the results of black box image classifiers to
 
 ## Setup
 - change the utils.py so the global variables fit your data
-- DATA_DIR should contain the data in a folder with name <data_name>
-- inside should be two folders named "test" and "train" wherein your images in separate folders for the classes shall be found
-- change DATA_DIR_FOLDERS in utils.py to the name of your data folder(s) you want to use
+  - DATA_DIR should contain the data in a folder with name <data_name>
+  - inside should be folders named "test", "validation" and "train" wherein your images in separate folders for the classes shall be found
+  - change DATA_DIR_FOLDERS to the name of your data folder(s) you want to use
 - run cnn_model.py to fit your model - important: for this you'll have to adjust the boolean switches in \_\_main__
 - run dataentry.py to get all feature embeddings - important: change the suffix_path in \_\_main__ to whatever the name of your model
 - run prototype_selection.py - when first running this you might have to evaluate the best number of prototypes via screeplot
@@ -74,3 +74,6 @@ multi-class CNN will be used. Option was incorporated in all python files and fl
 - changed the html/flask app:
   - made the footer flexible
   - changed paths to pictures so they would be shown
+- added preprocessing.py which is a complete pipeline to preprocess a data set for the 
+flask app
+- added the crop_to_square() function in helpers.py
