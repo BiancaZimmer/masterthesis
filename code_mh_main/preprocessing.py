@@ -4,6 +4,7 @@ import time
 from feature_extractor import *
 from dataentry import *
 from prototype_selection import *
+from helpers import crop_to_square, walk_directory_return_img_path
 
 
 def code_from_prototype_selection(dataset_name):
@@ -92,35 +93,65 @@ def code_from_prototype_selection(dataset_name):
 
 
 if __name__ == '__main__':
-    a = input("Did you change the folders in the utils.py file as describe in the README? [y/n]")
-    if a == "n":
-        sys.exit("Go and do that or else the file won't run!")
+    # a = input("Did you change the folders in the utils.py file as describe in the README? [y/n] ")
+    # if a == "n":
+    #     sys.exit("Go and do that or else the file won't run!")
+    #
+    # dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    # if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+    #     print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+    #     dataset_to_use = "help"
+    # while dataset_to_use == "help":
+    #     print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
+    #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+    #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    #     if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+    #         print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+    #         dataset_to_use = "help"
 
-    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
-    while dataset_to_use == "help":
-        print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be"
-              "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
-        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+    dataset_to_use = "oct"
+    a = input("Are all your images in a squared format? If not, do you want them to be cropped? [y/n] ")
+    if a == "y":
+        b = input("Do you want them to be center (c) cropped or randomly cropped (r)? [c/r] ")
+        if b == "c":
+            centre = True
+            new_folder = str(dataset_to_use + "_cc")
+        else:
+            centre = False
+            new_folder = str(dataset_to_use + "_rc")
+
+        print("Cropping training data ...")
+        for img in walk_directory_return_img_path(os.path.join(DATA_DIR, dataset_to_use, 'train')):
+            new_path = os.path.join(DATA_DIR, new_folder, 'train', img.split("/")[-2], img.split("/")[-1])
+            crop_to_square(img, centre=centre, save=True, new_path=new_path)
+        print("Cropping test data ...")
+        for img in walk_directory_return_img_path(os.path.join(DATA_DIR, dataset_to_use, 'test')):
+            new_path = os.path.join(DATA_DIR, new_folder, 'test', img.split("/")[-2], img.split("/")[-1])
+            crop_to_square(img, centre=centre, save=True, new_path=new_path)
+        print("Cropping validation data ...")
+        for img in walk_directory_return_img_path(os.path.join(DATA_DIR, dataset_to_use, 'val')):
+            new_path = os.path.join(DATA_DIR, new_folder, 'val', img.split("/")[-2], img.split("/")[-1])
+            crop_to_square(img, centre=centre, save=True, new_path=new_path)
 
     # Train or load and evaluate CNN Model
     # If you want to skip this point please specify the suffix_path below
     # suffix_path = ''
-    suffix_path = code_from_ccn_model(dataset_to_use)
+    # suffix_path = code_from_ccn_model(dataset_to_use)
 
     # Create feature embeddings
-    a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
+    a = input("Do you want to create the feature embeddings for this model? [y/n/help] ")
     while a == "help":
         print("You only need to create the feature embeddings if you haven't created them before. e.g. when you "
-              "trained a brand new model.")
-        a = input("Do you want to create the feature embeddings for this model? [y/n/help]")
+              "trained a brand new model. ")
+        a = input("Do you want to create the feature embeddings for this model? [y/n/help] ")
     if a == "n":
         new_embedding = False
-        print("No feature embeddings created.")
+        print("No feature embeddings created. ")
     else:
         code_from_dataentry(dataset_to_use, suffix_path)
 
     # Create prototypes
-    a = input("Do you want to create the prototypes for your current data set now? [y/n]")
+    a = input("Do you want to create the prototypes for your current data set now? [y/n] ")
     if a == "y":
         code_from_prototype_selection(dataset_to_use)
 

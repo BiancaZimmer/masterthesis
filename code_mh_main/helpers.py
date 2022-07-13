@@ -1,3 +1,4 @@
+# Some helper functions
 
 def removesuffix(path: str, suffix: str, /) -> str:
     if path.endswith(suffix):
@@ -5,8 +6,79 @@ def removesuffix(path: str, suffix: str, /) -> str:
     else:
         return path[:]
 
+
 def removeprefix(self: str, prefix: str, /) -> str:
     if self.startswith(prefix):
         return self[len(prefix):]
     else:
         return self[:]
+
+
+def crop_to_square(img_path, centre=True, save=False, new_path=''):
+    """Function to crop an image to a square. The smallest side is automatically used as a reference size.
+
+    :param img_path: path to the original image
+    :param centre: If true center crop will be used, else a random point is chosen
+    :param save: Set to True if you want to save the new image
+    :type save: bool, optional, default = False
+    :param new_path: path where the image should be saved
+    :type new_path: str, optional, default = ''
+
+    :return: the cropped image
+    """
+    from PIL import Image
+    from random import randint
+    import os
+
+    # Opens a image in RGB mode
+    img = Image.open(img_path)
+    # Size of the image in pixels (size of original image)
+    width, height = img.size
+    new_size = min(width, height)
+
+    if width == height: #img is already squared
+        img_new = img
+    else:
+        # Setting the points for cropped image
+        if centre:
+            left = (width - new_size)//2
+            top = (height - new_size)//2
+        else:
+            left = randint(0, width-new_size)
+            top = randint(0, height-new_size)
+            pass
+        right = left + new_size
+        bottom = top + new_size
+
+        # Cropped image of above dimension
+        img_new = img.crop((left, top, right, bottom))
+
+    if save:
+        if os.path.exists(new_path):
+            print("WARNING: Picture already exists! Will not be overwritten. ", new_path)
+        else:
+            if not os.path.exists(new_path.rsplit('/', 1)[0]):
+                os.makedirs(new_path.rsplit('/', 1)[0], exist_ok=True)
+            img_new.save(new_path)
+    return img_new
+
+
+def walk_directory_return_img_path(folder_to_walk):
+    import os
+    from utils import image_extensions
+
+    return [os.path.join(path, file) for path, _, files in os.walk(folder_to_walk) for file in files if
+            file.endswith(tuple(image_extensions))]
+
+
+if __name__ == "__main__":
+    # Test the crop to square function
+    # img_path = "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/test/DRUSEN/DRUSEN-224974-14.jpeg"
+    # # for i in range(1,1000):
+    # cropped = crop_to_square(img_path, centre=False, save=True,
+    #                          new_path='/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/DRUSEN-224974-14.jpeg')
+    # # cropped.show()
+
+    # Test
+    t = walk_directory_return_img_path("/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/test")
+    # print(t[1].rsplit('/', 1))
