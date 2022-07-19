@@ -184,6 +184,10 @@ class DataSet():
             plt.title(f'Class: {available_class} - The Silhouette Method', fontsize=14, fontweight = 'demibold')
             plt.show()
 
+    def statistical_overview(self):
+        # TODO: implement method to do some descriptive statistics
+        pass
+
 
 def get_available_dataset(path_datasets =DATA_DIR):
     """Function to get a list of local available datasets.
