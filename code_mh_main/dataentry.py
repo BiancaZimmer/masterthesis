@@ -93,24 +93,25 @@ class DataEntry:
         """
         return self.fe.load_preprocess_img(self.img_path)
 
-    def image_numpy(self, img_size:int = None):
-        """Function for loading and converting a single image into a numpy array
+    def image_numpy(self, img_size: int = None, mode='L'):
+        """Function for loading and converting a single image into a numpy array. If img_size is given it will be resized.
 
         :param img_size: Select a image size (commonly used `128`), defaults to None
         :type img_size: int, optional
+        :param mode: Color mode of the output image. use 'L' for grayscalale and 'RGB' for RGB, defaults to 'L'
 
         :return: *self* (`numpy.ndarray`) - Normalized image as numpy array
         """
-        x = Image.open(self.img_path).convert('L')
+        x = Image.open(self.img_path).convert(mode)
         if img_size is not None:
-            x = x.resize((img_size,img_size))
+            x = x.resize((img_size, img_size))
            
         x = np.array(x, dtype=np.float64)
 
         #Normalize to [0,1]
         x /= 255.
 
-        #print(np.shape(x))
+        # print(np.shape(x))
         return x
        
 
