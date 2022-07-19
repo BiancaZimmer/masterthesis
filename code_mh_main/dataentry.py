@@ -148,7 +148,7 @@ def code_from_dataentry(dataset, suffix_path=''):
         print("")
 
         toc = time.time()
-        print("Training needed: ",
+        print("Creating Feature Embeddings needed: ",
               "{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
                                         ((toc - tic) % 60)))
 
