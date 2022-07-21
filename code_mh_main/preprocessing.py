@@ -5,6 +5,7 @@ from feature_extractor import *
 from dataentry import *
 from prototype_selection import *
 from helpers import crop_to_square, walk_directory_return_img_path
+from models import *
 
 
 def code_from_prototype_selection(dataset_name):
@@ -92,28 +93,17 @@ def code_from_prototype_selection(dataset_name):
                 json.dump(protos_img_files, fp)
 
 
-if __name__ == '__main__':
-    # a = input("Did you change the folders in the utils.py file as describe in the README? [y/n] ")
-    # if a == "n":
-    #     sys.exit("Go and do that or else the file won't run!")
-    #
-    # dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    # if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
-    #     print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
-    #     dataset_to_use = "help"
-    # while dataset_to_use == "help":
-    #     print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
-    #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
-    #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    #     if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
-    #         print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
-    #         dataset_to_use = "help"
-
-    dataset_to_use = "oct"
+def questions_cropping():
+    b = None
     a = input("Are all your images in a squared format? If not, do you want them to be cropped? [y/n] ")
     if a == "y":
         b = input("Do you want them to be center (c) cropped or randomly cropped (r)? [c/r] ")
-        if b == "c":
+    return [a, b]
+
+
+def crop_train_test_val(dataset_to_use, crop='y', centre='c'):
+    if crop == "y":
+        if centre == "c":
             centre = True
             new_folder = str(dataset_to_use + "_cc")
         else:
@@ -133,10 +123,60 @@ if __name__ == '__main__':
             new_path = os.path.join(DATA_DIR, new_folder, 'val', img.split("/")[-2], img.split("/")[-1])
             crop_to_square(img, centre=centre, save=True, new_path=new_path)
 
+
+def questions_training():
+    fit = input("Do you want to fit (f) a CNN model or load (l) an exciting one? [f/l]")
+    modeltype = input("What kind of model do you want to train? [cnn/vgg/inception]")
+    if fit == "f":
+        suffix_path = input("What should the suffix of your cnn_model be? Type a string. e.g. '_testcnn'")
+    else:
+        suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
+
+    a = input("Do you want to run the evaluation of your CNN model? [y/n]")
+    eval = False
+    loss = False
+    missclassified = False
+    if a == "y":
+        eval = True
+        b = input("Do you want to plot the loss and accuracy of your CNN model? [y/n]")
+        if b == "y":
+            loss = True
+        b = input("Do you want to plot the evaluation of the miss-classified data of your CNN model? [y/n]")
+        if b == "y":
+            missclassified = True
+
+    return [fit, modeltype, suffix_path, eval, loss, missclassified]
+
+
+if __name__ == '__main__':
+    # a = input("Did you change the folders in the utils.py file as describe in the README? [y/n] ")
+    # if a == "n":
+    #     sys.exit("Go and do that or else the file won't run!")
+    #
+    # dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    # if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+    #     print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+    #     dataset_to_use = "help"
+    # while dataset_to_use == "help":
+    #     print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
+    #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+    #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    #     if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+    #         print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+    #         dataset_to_use = "help"
+
+    dataset_to_use = "oct"
+
+    # centre crop images?
+    crop, centre = questions_cropping()
+    crop_train_test_val(dataset_to_use, crop = crop, centre = centre)
+
     # Train or load and evaluate CNN Model
-    # If you want to skip this point please specify the suffix_path below
-    # suffix_path = ''
-    # suffix_path = code_from_ccn_model(dataset_to_use)
+    # training = [False, 'vgg', '_smallvgg', True, False, True]
+    training = questions_training()
+    # train_eval_model(dataset_to_use, fit = False, type = 'vgg', suffix_path = '_smallvgg',
+    #                      eval = True, loss = False, missclassified = True)
+    suffix_path = training[2]
 
     # Create feature embeddings
     a = input("Do you want to create the feature embeddings for this model? [y/n/help] ")
