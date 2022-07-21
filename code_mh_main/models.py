@@ -37,7 +37,7 @@ from keras.applications.inception_v3 import InceptionV3
 
 
 #from dataentry import *
-#from dataset import *
+from dataset import *
 from utils import *
 
 
@@ -72,6 +72,7 @@ class ModelSetup():
         # Image Generator
         self.train_set = None
         self.test_set = None
+        self.mode_rgb = None
         # Model specific
         self.model = None
         self.model_history = None
@@ -85,9 +86,11 @@ class ModelSetup():
 
         # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
         if rgb:  # convert image to rgb, no array expansion needed
+            self.mode_rgb = True
             train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                           for x in self.dataset.data]
         else:  # convert image to grayscale, need to expand array by 1 dimension
+            self.mode_rgb = False
             train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
                           for x in self.dataset.data]
         X_train = np.array(list(zip(*train_data))[0])
@@ -273,7 +276,7 @@ class ModelSetup():
         :param save_model: Set to `False` if the model should not be saved, defaults to True
         :type save_model: bool, optional
         """
-
+        # TODO: add over/undersampling for biased datasets
         model_save_path = os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5')
 
         early_stop = EarlyStopping(monitor='val_loss', patience=patience)
@@ -354,7 +357,12 @@ class ModelSetup():
             - **predicted_label** (`str`) - Predicted label by using Simple CNN
             - **prob** (`float`) - Probability score for the predicted label
         """
-        img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
+
+        if self.mode_rgb:
+            img_pred = np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size, mode='RGB'), 0)
+            pass
+        else:
+            img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
         
         prediction = self.model.predict(img_pred)
         #print(prediction)
@@ -396,26 +404,12 @@ class ModelSetup():
 
         plt.figure(figsize=(20, 8))
         for i, idx in enumerate(rand_idx):
-            
-            img_pred = np.expand_dims(np.expand_dims(self.dataset.data_t[idx].image_numpy(img_size=self.img_size),0), -1)
-            
-            prediction = self.model.predict(img_pred)
-            #print(prediction)
+
+            predicted_label, prob = self.pred_test_img(self.dataset.data_t[idx], plot = False)
             
             img = cv2.imread(self.dataset.data_t[idx].img_path)
             label = self.dataset.data_t[idx].ground_truth_label
-            
-            if BINARY:
-                if prediction < 0.5:
-                    predicted_label = self.dataset.available_classes[0]
-                    prob = (1-prediction.sum()) * 100
-                else:
-                    predicted_label = self.dataset.available_classes[1]
-                    prob = prediction.sum() * 100
-            else:
-                predicted_label = self.labelencoder.inverse_transform(np.argmax(prediction, axis=1))
-                prob = np.max(prediction) * 100
-            
+
             plt.subplot(2, 5, i+1)
             
             plt.title(f"{self.dataset.data_t[idx].img_name}\n\
@@ -482,24 +476,21 @@ class ModelSetup():
 
         idx_misclassified = np.where(self.predictions != groundtruth)[0]
         idx_misclassified = list(idx_misclassified)
+        misclassified_names = [self.dataset.data_t[idx].img_name for idx in idx_misclassified]
 
         misclassified = []
         
-        print(f'[=>] {len(idx_misclassified)} missclassfied Images with indices: {idx_misclassified}')
+        print(f'[=>] {len(idx_misclassified)} missclassfied Images with names: {misclassified_names}')
 
         plt.figure(figsize=(20,8))
         for i, idx in enumerate(idx_misclassified):
 
-            misclassified.append(self.dataset.data_t[idx]) 
-            
-            img_pred = np.expand_dims(np.expand_dims(self.dataset.data_t[idx].image_numpy(img_size=self.img_size), 0), -1)
-            
-            prediction = self.model.predict(img_pred)
+            misclassified.append(self.dataset.data_t[idx])
 
             img = cv2.imread(self.dataset.data_t[idx].img_path)
             label = self.dataset.data_t[idx].ground_truth_label
 
-            predicted_label, prob = self.transform_prediction(prediction)
+            predicted_label, prob = self.pred_test_img(self.dataset.data_t[idx], plot=False)
             
             if plot:
                 plt.subplot(int(np.ceil(len(idx_misclassified)/5)), 5, i+1)
@@ -615,27 +606,29 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
 
     # dictionary of data sets to use
     use_CNN_feature_embedding = False  # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
-    use_all_datasets = True
-    if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
-    dict_datasets = get_dict_datasets(use_CNN_feature_embedding, use_all_datasets)
+    if use_CNN_feature_embedding:
+        fe_CNNmodel = FeatureExtractor(loaded_model=get_CNNmodel(sel_dataset=dataset_to_use))
+        dataset_used = DataSet(name=dataset_to_use, fe=fe_CNNmodel)
+    else:
+        dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=None))
 
-    sel_model = ModelSetup(dict_datasets[dataset_to_use])
+    sel_model = ModelSetup(dataset_used)
 
     # initialize img generator
-    # sel_model._preprocess_img_gen(rgb=True)
+    if type == 'cnn':
+        sel_model._preprocess_img_gen(rgb=False)
+    else:
+        sel_model._preprocess_img_gen(rgb=True)
 
     if fit:
         if BINARY:
             sel_model._binary_cnn_model()
         else:
             if type == 'cnn':
-                sel_model._preprocess_img_gen(rgb=False)
                 sel_model._multiclass_cnn_model()
             elif type == 'vgg':
-                sel_model._preprocess_img_gen(rgb=True)
                 sel_model._multiclass_transferlearning_vgg16_model()
             else:
-                sel_model._preprocess_img_gen(rgb=True)
                 sel_model._multiclass_transferlearning_inception_model()
         print("Fitting model ...")
         sel_model.fit(save_model=True, suffix_path=suffix_path)
@@ -662,7 +655,7 @@ if __name__ == "__main__":
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
     train_eval_model(dataset_to_use, fit = False, type = 'vgg', suffix_path = '_smallvgg',
-                     eval = True, loss = True, missclassified = True)
+                     eval = True, loss = False, missclassified = True)
 
     # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
