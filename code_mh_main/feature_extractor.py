@@ -12,9 +12,6 @@ from PIL import Image, ImageOps
 from numpy.core.records import array
 from utils import *
 
-
-from cnn_model import *
-
 class FeatureExtractor():
     """Feature Extractor model
     """
@@ -47,20 +44,6 @@ class FeatureExtractor():
             else:
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output,
                                       name="SimpleCNN")
-
-    def set_femodel(self, modelpath: str, modelname: str, outputlayer: str = "flatten"):
-        """ Overwrites the model saved in the FeatureExtractor. Useful if you want to load your own model outside of a CNN
-
-        :param modelpath: name of the model inside the STATIC_DIR/model folder
-        :type modelpath: str
-        :param modelname: name you want to give to the model
-        :type modelname: str
-        :param outputlayer: defines which layer to get as a output layer; default = "flatten"
-        :type outputlayer: str, optional
-        """
-
-        model = load_model(os.path.join(STATIC_DIR, 'models', modelpath))
-        self.fe_model = Model(inputs=model.input, outputs=model.get_layer(outputlayer).output, name=modelname)
 
     def load_preprocess_img(self, path):
         """Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array. 
@@ -131,10 +114,5 @@ if __name__ == "__main__":
     # fe = FeatureExtractor(loaded_model=sel_model.model)
     # print(fe.fe_model.name)
     # fe.load_preprocess_img(dict_datasets[sel_model.selected_dataset].data_t[99].img_path)
-
-    # test if general model can be loaded and used as FE
-    fe = FeatureExtractor()
-    fe.set_femodel("results", "retina1")     # ("OCT_retrained_graph_2.pb", "retina1")
-    print(fe.fe_model.name)
 
 
