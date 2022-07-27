@@ -8,6 +8,7 @@ import time
 
 from utils import *
 
+
 class DataEntry:
     """DataEntry object that refers to a data sample (image) and contains all its information
     """

@@ -9,7 +9,8 @@ from sklearn.metrics import silhouette_score
 from dataentry import *
 from utils import *
 from feature_extractor import *
-from cnn_model import *
+from modelsetup import *
+# from cnn_model import *
 
 
 class DataSet():

@@ -1,11 +1,11 @@
 import sys
-from cnn_model import *
+# from cnn_model import *
 import time
 from feature_extractor import *
 from dataentry import *
 from prototype_selection import *
 from helpers import crop_to_square, walk_directory_return_img_path
-from models import *
+from modelsetup import *
 
 
 def code_from_prototype_selection(dataset_name):
@@ -165,17 +165,17 @@ if __name__ == '__main__':
     #         print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
     #         dataset_to_use = "help"
 
-    dataset_to_use = "oct"
+    dataset_to_use = "mnist"
 
     # centre crop images?
     crop, centre = questions_cropping()
     crop_train_test_val(dataset_to_use, crop = crop, centre = centre)
 
     # Train or load and evaluate CNN Model
-    # training = [False, 'vgg', '_smallvgg', True, False, True]
-    training = questions_training()
-    # train_eval_model(dataset_to_use, fit = False, type = 'vgg', suffix_path = '_smallvgg',
-    #                      eval = True, loss = False, missclassified = True)
+    # training = questions_training()
+    training = [False, 'cnn', '_multicnn', False, False, False]
+    train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
+                     eval=training[3], loss=training[4], missclassified=training[5])
     suffix_path = training[2]
 
     # Create feature embeddings
