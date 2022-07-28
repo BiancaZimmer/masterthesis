@@ -79,7 +79,6 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     _, x = fe.load_preprocess_img(test_dataentry.img_path)
     feature_vector = fe.extract_features(x)
 
-
     hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
     scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores(hit_class_data_entry, feature_vector, top_n = top_n, dist = distance_measure, return_data_entry_ranked = True)
     

@@ -58,6 +58,8 @@ class FeatureExtractor():
         img_PIL = None
         x = None
 
+        # TODO: same as dataentry.image_numpy()?
+
         if self.fe_model.name == 'VGG16':
             img_PIL = Image.open(path).convert('RGB')
             img_PIL = img_PIL.resize(self.fe_model.input_shape[1:3])
@@ -74,7 +76,7 @@ class FeatureExtractor():
             #print("1: ", np.shape(x))
             x = np.expand_dims(x, -1)
             x = np.expand_dims(x, axis=0)
-            #print(np.shape(x))
+            # print(np.shape(x))
             x /= 255.
         else:
             # TODO Warning that this function is not defined for this type of model
