@@ -103,17 +103,25 @@ class DataEntry:
 
         :return: *self* (`numpy.ndarray`) - Normalized image as numpy array
         """
+
+        # TODO check occurrences, cuz might be same as fe.load_preprocess_img(self, path)
+        # part answer: not the same since axes are not expanded
+
         x = Image.open(self.img_path).convert(mode)
         if img_size is not None:
             x = x.resize((img_size, img_size))
-           
         x = np.array(x, dtype=np.float64)
-
         #Normalize to [0,1]
         x /= 255.
-
         # print(np.shape(x))
         return x
+
+    def dataentry_to_nparray(self, use_fe: bool = False):
+        _, x = self.fe.load_preprocess_img(self.img_path)
+        if use_fe:
+            feature_vector = self.fe.extract_features(x)
+            return feature_vector # TODO: returns wrong dimensions for nparray
+        return np.squeeze(x, axis=0)
        
 
 def code_from_dataentry(dataset, suffix_path=''):
