@@ -10,7 +10,7 @@ tf.compat.v1.disable_eager_execution()
 # import for LRP
 import innvestigate
 import innvestigate.utils.visualizations as ivis
-import utils_innvestigate as uinn
+import helpers_innvestigate
 
 # import from NMNH code
 from utils import *
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # Create analyzers
     # data eventuell preprocess(x_train) from mnistutils.create_preprocessing_f(x_train, input_range)
-    analyzers = uinn.create_analyzers([file.dataentry_to_nparray(use_fe=False) for file in dataset_used.data],
+    analyzers = helpers_innvestigate.create_analyzers([file.dataentry_to_nparray(use_fe=False) for file in dataset_used.data],
                                       methods, model_wo_softmax)
 
     n = 2
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             # Analyze.
             a = analyzer.analyze(x)
             # Apply common postprocessing, e.g., re-ordering the channels for plotting.
-            a = uinn.postprocess(a)
+            a = helpers_innvestigate.postprocess(a)
             # Apply analysis postprocessing, e.g., creating a heatmap.
             a = methods[aidx][2](a)
             # Store the analysis.
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     col_labels = ["".join(method[3]) for method in methods]
 
     # Plot the analysis.
-    uinn.plot_image_grid(
+    helpers_innvestigate.plot_image_grid(
         grid,
         row_labels_left,
         row_labels_right,
