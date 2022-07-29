@@ -584,6 +584,7 @@ def get_CNNmodel(sel_dataset:str, suffix_path:str =''):
 
 
 def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_testincep',
+                     model_for_feature_embedding = None,
                      eval = False, loss = False, missclassified = False):
     """ Essentially this is the code to run for fitting/loading/evaluating a cnn model
     :param dataset_to_use: A string of the folder name of the data set you want to use
@@ -605,12 +606,7 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
     suffix_path = suffix_path
 
     # dictionary of data sets to use
-    use_CNN_feature_embedding = False  # Set to True in order to save the CNN-based feature embedding; else VGG16 embedding is used
-    if use_CNN_feature_embedding:
-        fe_CNNmodel = FeatureExtractor(loaded_model=get_CNNmodel(sel_dataset=dataset_to_use))
-        dataset_used = DataSet(name=dataset_to_use, fe=fe_CNNmodel)
-    else:
-        dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=None))
+    dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model_for_feature_embedding))
 
     sel_model = ModelSetup(dataset_used)
 
@@ -644,7 +640,7 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
             plotmisclassified = True
         quality_misclassified = sel_model.get_misclassified(plot=plotmisclassified)
 
-    return suffix_path
+    return sel_model
 
 
 if __name__ == "__main__":
@@ -655,6 +651,7 @@ if __name__ == "__main__":
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
     train_eval_model(dataset_to_use, fit = False, type = 'vgg', suffix_path = '_smallvgg',
+                     model_for_feature_embedding = None,
                      eval = True, loss = False, missclassified = True)
 
     # predicts one test image

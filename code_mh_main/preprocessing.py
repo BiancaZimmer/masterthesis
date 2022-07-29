@@ -124,13 +124,18 @@ def crop_train_test_val(dataset_to_use, crop='y', centre='c'):
             crop_to_square(img, centre=centre, save=True, new_path=new_path)
 
 
-def questions_training():
+def questions_training(dataset_to_use):
+    from tensorflow.keras.models import load_model
+
     fit = input("Do you want to fit (f) a CNN model or load (l) an exciting one? [f/l]")
     modeltype = input("What kind of model do you want to train? [cnn/vgg/inception]")
     if fit == "f":
         suffix_path = input("What should the suffix of your cnn_model be? Type a string. e.g. '_testcnn'")
+        model_for_feature_embedding = None
     else:
         suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
+        model_for_feature_embedding = load_model(
+            os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
 
     a = input("Do you want to run the evaluation of your CNN model? [y/n]")
     eval = False
@@ -145,7 +150,7 @@ def questions_training():
         if b == "y":
             missclassified = True
 
-    return [fit, modeltype, suffix_path, eval, loss, missclassified]
+    return [fit, modeltype, suffix_path, model_for_feature_embedding, eval, loss, missclassified]
 
 
 if __name__ == '__main__':
@@ -172,10 +177,11 @@ if __name__ == '__main__':
     crop_train_test_val(dataset_to_use, crop = crop, centre = centre)
 
     # Train or load and evaluate CNN Model
-    # training = questions_training()
-    training = [False, 'cnn', '_multicnn', False, False, False]
-    train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
-                     eval=training[3], loss=training[4], missclassified=training[5])
+    # training = questions_training(dataset_to_use)
+    training = [False, 'cnn', '_multicnn', None, False, False, False]
+    setup_model = train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
+                                   model_for_feature_embedding=training[3],
+                                   eval=training[4], loss=training[5], missclassified=training[6])
     suffix_path = training[2]
 
     # Create feature embeddings
@@ -195,6 +201,7 @@ if __name__ == '__main__':
     if a == "y":
         code_from_prototype_selection(dataset_to_use)
 
+    # Create LRP Heatmaps
 
 
 
