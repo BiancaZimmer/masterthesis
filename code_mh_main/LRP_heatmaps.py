@@ -14,13 +14,13 @@ import helpers_innvestigate
 
 # import from NMNH code
 from utils import *
-import modelsetup
+from modelsetup import *
 
 
 def methods_grayscale():
 
     def scale(X):
-        return X/255
+        return X
 
     def bk_proj(X):
         return ivis.graymap(X)
@@ -43,16 +43,65 @@ def methods_grayscale():
         # Interaction
         ("lrp.z", {}, heatmap, "LRP-Z"),
         ("lrp.epsilon", {"epsilon": 1}, heatmap, "LRP-Epsilon"),
+        ("lrp.w_square", {}, heatmap, "LRPWSquare"),
+        ("lrp.flat", {}, heatmap, "LRPFlat"),
+        ("lrp.alpha_beta", {"alpha": 3, "beta": 2}, heatmap, "LRPAlphaBeta"),
+        ("lrp.alpha_2_beta_1_IB", {}, heatmap, "LRPAlpha2Beta1IgnoreBias"),
+        ("lrp.alpha_1_beta_0", {}, heatmap, "LRPAlpha1Beta0"),
+        ("lrp.alpha_1_beta_0_IB", {}, heatmap, "LRPAlpha1Beta0IgnoreBias"),
+        ("lrp.z_plus", {}, heatmap, "LRPZPlus"),
+        ("lrp.z_plus_fast", {}, heatmap, "LRPZPlusFast"),
+        ("lrp.sequential_preset_a", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetA"),
+        ("lrp.sequential_preset_b", {"epsilon": 0.11}, heatmap, "LRPSequentialPresetB"),
+        ("lrp.sequential_preset_a_flat", {}, heatmap, "LRPSequentialPresetAFlat"),
+        ("lrp.sequential_preset_b_flat", {}, heatmap, "LRPSequentialPresetBFlat"),
+        ("lrp.sequential_preset_b_flat_until_idx", {}, heatmap, "LRPSequentialPresetBFlatUntilIdx"),
     ]
     return methods
 
 
-if __name__ == '__main__':
-    from dataset import DataSet
-    from feature_extractor import FeatureExtractor
+def methods_mnist():
 
-    dataset_to_use = "mnist"
-    suffix_path = "_multicnn"
+    def scale(X):
+        return X
+
+    def bk_proj(X):
+        return ivis.graymap(X)
+
+    def heatmap(X):
+        return ivis.heatmap(X)
+
+    def graymap(X):
+        return ivis.graymap(np.abs(X), input_is_positive_only=True)
+
+    # Configure analysis methods and properties
+    methods = [
+        # NAME                    OPT.PARAMS                POSTPROC FXN            TITLE
+        # Show input
+        ("input", {}, scale, "Input"),
+        # Function
+        ("gradient", {"postprocess": "abs"}, graymap, "Gradient"),
+        # Signal
+        ("guided_backprop", {}, bk_proj, "Guided Backprop"),
+        # Interaction
+        ("lrp.z", {}, heatmap, "LRP-Z"),
+        ("lrp.epsilon", {"epsilon": 1}, heatmap, "LRP-Epsilon"),
+        ("lrp.alpha_beta", {"alpha": 3, "beta": 2}, heatmap, "LRPAlphaBeta"),
+        ("lrp.alpha_2_beta_1_IB", {}, heatmap, "LRPAlpha2Beta1IgnoreBias"),
+        ("lrp.alpha_1_beta_0", {}, heatmap, "LRPAlpha1Beta0"),
+        ("lrp.alpha_1_beta_0_IB", {}, heatmap, "LRPAlpha1Beta0IgnoreBias"),
+        ("lrp.z_plus", {}, heatmap, "LRPZPlus"),
+        ("lrp.z_plus_fast", {}, heatmap, "LRPZPlusFast"),
+        ("lrp.sequential_preset_a", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetA"),
+        ("lrp.sequential_preset_b", {"epsilon": 0.11}, heatmap, "LRPSequentialPresetB"),
+        ("lrp.sequential_preset_a_flat", {}, heatmap, "LRPSequentialPresetAFlat"),
+        ("lrp.sequential_preset_b_flat", {}, heatmap, "LRPSequentialPresetBFlat"),
+        ("lrp.sequential_preset_b_flat_until_idx", {}, heatmap, "LRPSequentialPresetBFlatUntilIdx"),
+    ]
+    return methods
+
+
+def generate_method_comparison(dataset_to_use, suffix_path, methods, number_images = 10):
 
     print(
         os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),
@@ -60,9 +109,20 @@ if __name__ == '__main__':
     model = load_model(
         os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
 
-    dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model))
+    # dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model))
+    # sel_model = ModelSetup(dataset_used)
+    # sel_model.load_model(suffix_path=suffix_path)
 
-    methods = methods_grayscale()
+    setup_model = train_eval_model(dataset_to_use, fit=False, type='cnn', suffix_path=suffix_path,
+                         model_for_feature_embedding=model,
+                         eval=False, loss=False, missclassified=False)
+    train_data = setup_model.dataset.data
+    x_test = [file.dataentry_to_nparray(use_fe=False) for file in setup_model.dataset.data]
+    y_test = [file.ground_truth_label for file in setup_model.dataset.data]
+
+    rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
+    test_images = list(zip([x_test[i] for i in rand_idx],
+                           [y_test[i] for i in rand_idx]))
 
     # Create model without trailing softmax
     model_wo_softmax = innvestigate.model_wo_softmax(model)
@@ -71,21 +131,12 @@ if __name__ == '__main__':
     # for layer in model_wo_softmax.layers:
     #     print(layer.name)
 
-    # Preprocess data
-    # data = ( preprocess(x_train), y_train, preprocess(x_test), y_test, )
-    ###
-
     # Create analyzers
     # data eventuell preprocess(x_train) from mnistutils.create_preprocessing_f(x_train, input_range)
-    analyzers = helpers_innvestigate.create_analyzers([file.dataentry_to_nparray(use_fe=False) for file in dataset_used.data],
-                                      methods, model_wo_softmax)
-
-    n = 2
-
-    test_images = list(zip([file.dataentry_to_nparray(use_fe=False) for file in dataset_used.data_t][:n],
-                           [file.ground_truth_label for file in dataset_used.data_t][:n]))
-
-    analysis = np.zeros([len(test_images), len(analyzers), 28, 28, 3])
+    # data = ( preprocess(x_train), y_train, preprocess(x_test), y_test, )
+    analyzers = helpers_innvestigate.create_analyzers([file.dataentry_to_nparray(use_fe=False) for file in train_data],
+                                                      methods, model_wo_softmax)
+    analysis = np.zeros([len(test_images), len(analyzers), 28, 28, 3])  # TODO fixed image size
     text = []
 
     for i, (x, y) in enumerate(test_images):
@@ -95,7 +146,9 @@ if __name__ == '__main__':
         # Predict final activations, probabilities, and label.
         presm = model_wo_softmax.predict_on_batch(x)[0]
         prob = model.predict_on_batch(x)[0]
-        y_hat = prob.argmax()
+        y_hat = np.argmax(prob)  # prob.argmax()
+        if not BINARY:
+            y_hat = setup_model.labelencoder.inverse_transform([y_hat])
 
         # Save prediction info:
         text.append(
@@ -141,4 +194,19 @@ if __name__ == '__main__':
         col_labels,
         file_name=os.environ.get("plot_file_name", None),
     )
+
+
+if __name__ == '__main__':
+    from dataset import DataSet
+    from feature_extractor import FeatureExtractor
+    from modelsetup import ModelSetup
+
+    generate_method_comparison(dataset_to_use="mnist", suffix_path="_multicnn",
+                               methods=methods_mnist(), number_images = 20)
+
+    # possible inputs for "methods":
+    # methods_grayscale()   for grayscale data
+    # methods_mnist()       for dataset mnist
+
+
 
