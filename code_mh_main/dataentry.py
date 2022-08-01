@@ -27,26 +27,26 @@ class DataEntry:
         :type img_path: str
         """
 
-        #extract all avaiable folders (classes) of the selected dataset 
-        #and the corresponding of the selected image path
+        # extract all avaiable folders (classes) of the selected dataset
+        # and the corresponding of the selected image path
         DIR_TRAIN_DATA = os.path.join(DATA_DIR, dataset, 'train')
         avaiable_classes = [item for item in os.listdir(DIR_TRAIN_DATA) if os.path.isdir(os.path.join(DIR_TRAIN_DATA,item))]
         folder_name = ntpath.basename(ntpath.dirname(img_path))
 
-        #entire path to the image
+        # entire path to the image
         self.img_path = img_path 
-        #image file name
+        # image file name
         self.img_name = ntpath.basename(img_path) 
-        #class of the image referring to the folder name
+        # class of the image referring to the folder name
         self.ground_truth_label = folder_name 
-        #extract index of folder name/class -> int value for the class
+        # extract index of folder name/class -> int value for the class
         self.y = avaiable_classes.index(folder_name) 
-        self.fe = fe #selected FeatureExtractor 
+        self.fe = fe  # selected FeatureExtractor
 
         # construct PATH where the feature vector is saved
         DIR_FEATURE_EMBEDDING_DATASET = os.path.join(DIR_FEATURES, fe.fe_model.name, dataset)
         # create the folder for feature vectors if it is not created yet
-        if os.path.exists(DIR_FEATURE_EMBEDDING_DATASET) == False:
+        if not os.path.exists(DIR_FEATURE_EMBEDDING_DATASET):
             os.makedirs(DIR_FEATURE_EMBEDDING_DATASET)
 
         pre, _ = os.path.splitext(os.path.join(DIR_FEATURE_EMBEDDING_DATASET,ntpath.basename(img_path)))
@@ -116,8 +116,8 @@ class DataEntry:
         # print(np.shape(x))
         return x
 
-    def dataentry_to_nparray(self, use_fe: bool = False):
-        _, x = self.fe.load_preprocess_img(self.img_path)
+    def dataentry_to_nparray(self, use_fe: bool = False, rgb: bool = False):
+        _, x = self.fe.load_preprocess_img(self.img_path, rgb=rgb)
         if use_fe:
             feature_vector = self.fe.extract_features(x)
             return feature_vector # TODO: returns wrong dimensions for nparray

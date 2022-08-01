@@ -101,6 +101,56 @@ def methods_mnist():
     return methods
 
 
+def methods_oct():
+
+    def scale(X): # scale data between [0,1]
+        a, b = X.min(), X.max()
+        c, d = [0, 1]
+        # shift original data to [0, b-a] (and copy)
+        X = X - a
+        # scale to new range gap [0, d-c]
+        X /= b - a
+        X *= d - c
+        # shift to desired output range
+        X += c
+        return X
+
+    def bk_proj(X):
+        return ivis.graymap(X)
+
+    def heatmap(X):
+        return ivis.heatmap(X)
+
+    def graymap(X):
+        return ivis.graymap(np.abs(X), input_is_positive_only=True)
+
+    # Configure analysis methods and properties
+    methods = [
+        # NAME                    OPT.PARAMS                POSTPROC FXN            TITLE
+        # Show input
+        ("input", {}, scale, "Input"),
+        # Function
+        ("gradient", {"postprocess": "abs"}, graymap, "Gradient"),
+        # Signal
+        ("guided_backprop", {}, bk_proj, "Guided Backprop"),
+        # Interaction
+        ("lrp.z", {}, heatmap, "LRP-Z"),
+        ("lrp.epsilon", {"epsilon": 1}, heatmap, "LRP-Epsilon"),
+        ("lrp.alpha_beta", {"alpha": 3, "beta": 2}, heatmap, "LRPAlphaBeta"),
+        ("lrp.alpha_2_beta_1_IB", {}, heatmap, "LRPAlpha2Beta1IgnoreBias"),
+        ("lrp.alpha_1_beta_0", {}, heatmap, "LRPAlpha1Beta0"),
+        ("lrp.alpha_1_beta_0_IB", {}, heatmap, "LRPAlpha1Beta0IgnoreBias"),
+        ("lrp.z_plus", {}, heatmap, "LRPZPlus"),
+        ("lrp.z_plus_fast", {}, heatmap, "LRPZPlusFast"),
+        ("lrp.sequential_preset_a", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetA"),
+        ("lrp.sequential_preset_b", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetB"),
+        ("lrp.sequential_preset_a_flat", {}, heatmap, "LRPSequentialPresetAFlat"),
+        ("lrp.sequential_preset_b_flat", {}, heatmap, "LRPSequentialPresetBFlat"),
+        ("lrp.sequential_preset_b_flat_until_idx", {}, heatmap, "LRPSequentialPresetBFlatUntilIdx")
+    ]
+    return methods
+
+
 def generate_method_comparison(dataset_to_use, suffix_path, methods, number_images = 10):
 
     print(
@@ -113,12 +163,14 @@ def generate_method_comparison(dataset_to_use, suffix_path, methods, number_imag
     # sel_model = ModelSetup(dataset_used)
     # sel_model.load_model(suffix_path=suffix_path)
 
-    setup_model = train_eval_model(dataset_to_use, fit=False, type='cnn', suffix_path=suffix_path,
-                         model_for_feature_embedding=model,
-                         eval=False, loss=False, missclassified=False)
+    setup_model = train_eval_model(dataset_to_use, fit=False, type='vgg', suffix_path=suffix_path,
+                                   model_for_feature_embedding=model,
+                                   eval=False, loss=False, missclassified=False,
+                                   feature_model_output_layer=model.get_layer('flatten').output)
+    print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
-    x_test = [file.dataentry_to_nparray(use_fe=False) for file in setup_model.dataset.data]
-    y_test = [file.ground_truth_label for file in setup_model.dataset.data]
+    x_test = [file.dataentry_to_nparray(use_fe=False, rgb=setup_model.mode_rgb) for file in setup_model.dataset.data_t]
+    y_test = [file.ground_truth_label for file in setup_model.dataset.data_t]
 
     rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
     test_images = list(zip([x_test[i] for i in rand_idx],
@@ -127,21 +179,27 @@ def generate_method_comparison(dataset_to_use, suffix_path, methods, number_imag
     # Create model without trailing softmax
     model_wo_softmax = innvestigate.model_wo_softmax(model)
 
-    model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
+    try:
+        model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
+    except ValueError:
+        pass
     # for layer in model_wo_softmax.layers:
     #     print(layer.name)
 
     # Create analyzers
     # data eventuell preprocess(x_train) from mnistutils.create_preprocessing_f(x_train, input_range)
     # data = ( preprocess(x_train), y_train, preprocess(x_test), y_test, )
-    analyzers = helpers_innvestigate.create_analyzers([file.dataentry_to_nparray(use_fe=False) for file in train_data],
+
+    analyzers = helpers_innvestigate.create_analyzers([file.dataentry_to_nparray(use_fe=False, rgb=setup_model.mode_rgb) for file in train_data],
                                                       methods, model_wo_softmax)
-    analysis = np.zeros([len(test_images), len(analyzers), 28, 28, 3])  # TODO fixed image size
+    analysis = np.zeros([len(test_images), len(analyzers), setup_model.img_size, setup_model.img_size, 3])
     text = []
 
     for i, (x, y) in enumerate(test_images):
         # Add batch axis.
         x = x[None, :, :, :]
+        print("Computing LRP Heatmaps for image #", i, " ...")
+        # print(np.shape(x))
 
         # Predict final activations, probabilities, and label.
         presm = model_wo_softmax.predict_on_batch(x)[0]
@@ -201,8 +259,11 @@ if __name__ == '__main__':
     from feature_extractor import FeatureExtractor
     from modelsetup import ModelSetup
 
-    generate_method_comparison(dataset_to_use="mnist", suffix_path="_multicnn",
-                               methods=methods_mnist(), number_images = 20)
+    # generate_method_comparison(dataset_to_use="mnist", suffix_path="_multicnn",
+    #                            methods=methods_mnist(), number_images = 10)
+
+    generate_method_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg",
+                               methods=methods_oct(), number_images=2)
 
     # possible inputs for "methods":
     # methods_grayscale()   for grayscale data
