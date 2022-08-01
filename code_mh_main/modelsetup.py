@@ -108,6 +108,7 @@ class ModelSetup():
                          for x in self.dataset.data_t]
         X_test = np.array(list(zip(*test_data))[0])
         y_test = np.array(list(zip(*test_data))[1])
+        # print('X_test shape: ', X_test.shape)
         # print(y_test)
 
         if not BINARY:
@@ -585,7 +586,8 @@ def get_CNNmodel(sel_dataset:str, suffix_path:str =''):
 
 def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_testincep',
                      model_for_feature_embedding = None,
-                     eval = False, loss = False, missclassified = False):
+                     eval = False, loss = False, missclassified = False,
+                     feature_model_output_layer = None):
     """ Essentially this is the code to run for fitting/loading/evaluating a cnn model
     :param dataset_to_use: A string of the folder name of the data set you want to use
 
@@ -604,9 +606,14 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
     plot_losses = False
     plotmisclassified = False
     suffix_path = suffix_path
+    options_cnn = False
+    if type == "cnn":
+        options_cnn = True
 
     # dictionary of data sets to use
-    dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model_for_feature_embedding))
+    dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model_for_feature_embedding,
+                                                                    model_name=str.upper(type), options_cnn=options_cnn,
+                                                                    feature_model_output_layer=feature_model_output_layer))
 
     sel_model = ModelSetup(dataset_used)
 

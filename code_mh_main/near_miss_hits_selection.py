@@ -76,7 +76,7 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
         - **scores** (`list`) - List of scores (based on the selected distance)
         - **ranked_nearest_hit_data_entry** (`list`) - List of the DataEntries of the near hits
     """
-    _, x = fe.load_preprocess_img(test_dataentry.img_path)
+    _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=False)
     feature_vector = fe.extract_features(x)
 
     hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
@@ -214,7 +214,7 @@ if __name__ == '__main__':
 
     rnd_img = DataEntry(fe, dataset, os.path.join(rnd_img_path, rnd_img_file))
 
-    img, x = fe.load_preprocess_img(rnd_img.img_path)
+    img, x = fe.load_preprocess_img(rnd_img.img_path, rgb=False)
     feature_vector = fe.extract_features(x)
 
     pred_label = rnd_img.ground_truth_label
