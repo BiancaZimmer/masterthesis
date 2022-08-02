@@ -1,5 +1,7 @@
-# All function in here are copied from the innvestigate git repository
+# Most function in here are copied exactly from the innvestigate git repository from the examples
 # this also includes the TODOs
+# The rest are functions derived from the code of the examples in the innvestigate git repository
+# slight modification might have been conducted
 # https://github.com/albermax/innvestigate/
 
 import innvestigate
@@ -14,11 +16,12 @@ def postprocess(X):
     return X
 
 
-def create_analyzers(data, methods, model_wo_softmax):
+def create_analyzers(data, methods, model_wo_softmax, neuron_selection_mode):
     """ Creates analyzers for all methods
 
     :param data: x_train data
     :param methods: vector of methods e.g. created with methods_grayscale()
+    :param neuron_selection_mode: How to select the neuron to analyze. Possible values are ‘max_activation’, ‘index’ for the neuron (expects indices at analyze() calls), ‘all’ take all neurons.
     :return: analyzers
     """
     analyzers = []
@@ -26,6 +29,7 @@ def create_analyzers(data, methods, model_wo_softmax):
         analyzer = innvestigate.create_analyzer(
             method[0],  # analysis method identifier
             model_wo_softmax,  # model without softmax output
+            neuron_selection_mode=neuron_selection_mode,
             **method[1]
         )  # optional analysis parameters
 
@@ -51,7 +55,7 @@ def plot_image_grid(
     if figsize is None:
         figsize = (n_cols, n_rows + 1)
 
-    plt.clf()
+    # plt.clf()
     plt.rc("font", family="sans-serif")
 
     plt.figure(figsize=figsize)
@@ -114,3 +118,4 @@ def plot_image_grid(
         print(f"Saving figure to {file_name}")
         plt.savefig(file_name, orientation="landscape", dpi=dpi, bbox_inches="tight")
         plt.show()
+    plt.close('all')
