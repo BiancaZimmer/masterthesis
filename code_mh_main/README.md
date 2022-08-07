@@ -44,6 +44,11 @@ We propose a method for explaining the results of black box image classifiers to
 
 # By Bianca
 
+## Main programs can be found in:
+- preprocessing: file to preprocess data, train model, generate prototypes, ... for the web
+application
+- xai_demo: web application
+
 ## Setup
 - change the utils.py so the global variables fit your data
   - DATA_DIR should contain the data in a folder with name <data_name>
@@ -57,15 +62,8 @@ We propose a method for explaining the results of black box image classifiers to
 Alternative to running the flask app:
 - run near_miss_hits_selection.py - to get near miss, hits and prototypes of a random (or fixed) test image
 
-## Test settings can be found in the following modules:
-- dataset.py
-- dataentry.py
-
-## Main programs can be found in:
-- xai_demo: main file!!!
-- cnn_model: trains a cnn model with training data, evaluates the misclassified data, prints plots
-
 ## Things I changed fundamentally:
+- README - now more readably and more documentation
 - added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used
 - added an option "BINARY" which, if set to True, runs the original code with a binary CNN, if set to False a
 multi-class CNN will be used. Option was incorporated in all python files and flask app
@@ -77,3 +75,8 @@ multi-class CNN will be used. Option was incorporated in all python files and fl
 - added preprocessing.py which is a complete pipeline to preprocess a data set for the 
 flask app
 - added the crop_to_square() function in helpers.py
+- changed the cnn_model.py to models.py:
+  - added functions to fit a vgg16 and inception v3 via transferlearning
+  - changed the image preprocessing function, so it can convert images to rgb or
+  grayscale depending on the use case
+  - changed eval functions so they can also handle rgb pictures + models

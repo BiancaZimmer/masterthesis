@@ -5,13 +5,17 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
+import cv2
+import ssim.ssimlib as pyssim
+from skimage.metrics import structural_similarity as ssim
 
 from feature_extractor import FeatureExtractor
 from dataentry import DataEntry
 from utils import *
 
 
-def calc_distances_scores(class_data_entry_list, feature_vector, top_n:int =5, dist:str ='cosine', return_data_entry_ranked = False, plot_idx:bool =False):
+def calc_distances_scores(class_data_entry_list, feature_vector, top_n: int = 5, dist: str = 'cosine',
+                          return_data_entry_ranked: bool = False, plot_idx: bool = False):
     """ This function determines the top n closest DataEntries with respect to a given feature vector of another DataEntry (test input). Thereby, it iterate over
     the given list of DataEntries and calculate the distances (dissimiliarty) and rank them. 
 
@@ -57,6 +61,86 @@ def calc_distances_scores(class_data_entry_list, feature_vector, top_n:int =5, d
         return scores
 
 
+def calc_image_distance(image_paths_list, image_path_test, top_n: int = 5, dist: str = 'SSIM',
+                        return_data_entry_ranked: bool = False, plot_idx: bool = False):
+    """
+
+    :param image_paths_list: List of image paths, note class reference/filter has to be done in advance if required.
+    :type image_paths_list: list
+    :param image_path_test: Image path of the image for which distances should be computed
+    :param top_n: Set an integer value how many nearest samples should be selected, defaults to 5
+    :type top_n: int, optional
+    :param dist: Distance applied to images, e.g. 'SWIFT'/'SSIM'/'CW-SSIM', defaults to 'SSIM'
+    :param return_data_entry_ranked: Set True in order to get a list of the DataEntries of the nearest samples, defaults to False
+    :type return_data_entry_ranked: bool, optional
+    :param plot_idx: Set to True in order to plot the indices of the nearest data samples, defaults to False
+    :type plot_idx: bool, optional
+
+    :return:
+        - **scores** (`list`) - List of scores (based on the selected distance)
+        - **ranked_dataentry** (`list`) - If 'return_data_entry_ranked' set to True, a list of the DataEntries of the nearest samples
+    """
+
+    images = [cv2.imread(img, cv2.IMREAD_GRAYSCALE) for img in image_paths_list]
+    img_test = cv2.imread(image_path_test, cv2.IMREAD_GRAYSCALE)
+
+    def sift_similarity(im1, im2, sift_ratio: float = 0.7):
+        # Using OpenCV for feature detection and matching
+        sift = cv2.xfeatures2d.SIFT_create()
+        k1, d1 = sift.detectAndCompute(im1, None)
+        k2, d2 = sift.detectAndCompute(im2, None)
+
+        bf = cv2.BFMatcher()
+        matches = bf.knnMatch(d1, d2, k=2)
+
+        good_matches = 0.0
+        for m, n in matches:
+            if m.distance < sift_ratio * n.distance:
+                good_matches += 1.0
+
+        # calculation of similarity:
+        if len(matches) == 0:
+            similarity = 0.0
+        else:
+            similarity = good_matches/len(matches)
+
+        # # Custom normalization for better variance in the similarity matrix
+        # if good_matches == len(matches):
+        #     similarity = 1.0
+        # elif good_matches > 1.0:
+        #     similarity = 1.0 - 1.0 / good_matches
+        # elif good_matches == 1.0:
+        #     similarity = 0.1
+        # else:
+        #     similarity = 0.0
+
+        return similarity
+
+    if dist == 'SIFT':
+        distances = [sift_similarity(image, img_test, sift_ratio=0.7) for image in images]
+
+    elif dist == 'CW-SSIM':
+        # FOR EXPERIMENTS ONLY!
+        # Very slow algorithm - up to 50x times slower than SIFT or SSIM.
+        # Optimization using CUDA or Cython code should be explored in the future.
+        distances = [pyssim.SSIM(image).cw_ssim_value(img_test) for image in images]
+    else:  # dist == SSIM
+        # Default SSIM implementation of Scikit-Image
+        distances = [ssim(image, img_test) for image in images]
+
+    # Top distances
+    idx_ranked = np.argsort(distances)[:top_n]
+    if plot_idx:
+        print("Index of top distances: ", idx_ranked)
+
+    scores = distances[idx_ranked]
+
+    if return_data_entry_ranked:
+        return scores, [image_paths_list[i] for i in idx_ranked]
+    else:
+        return scores
+
+
 def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distance_measure:str ='cosine'):
     """Function to calculates the near hits in respect to a given test inputs sample (DataEntry).
 
@@ -76,12 +160,24 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
         - **scores** (`list`) - List of scores (based on the selected distance)
         - **ranked_nearest_hit_data_entry** (`list`) - List of the DataEntries of the near hits
     """
-    _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=False)
-    feature_vector = fe.extract_features(x)
 
-    hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
-    scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores(hit_class_data_entry, feature_vector, top_n = top_n, dist = distance_measure, return_data_entry_ranked = True)
-    
+    if distance_measure in ['cosine', 'manhatten', 'euclidean']:
+        _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=False)
+        feature_vector = fe.extract_features(x)
+
+        hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
+        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores(hit_class_data_entry, feature_vector,
+                                                                                  top_n=top_n,
+                                                                                  dist=distance_measure,
+                                                                                  return_data_entry_ranked=True)
+    else:
+        # TODO: implement LRP Heatmap
+        hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
+        hit_class_img_paths = [img.img_path for img in hit_class_data_entry]
+        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_image_distance(hit_class_img_paths,
+                                                                                test_dataentry.img_path,
+                                                                                top_n=top_n, dist=distance_measure,
+                                                                                return_data_entry_ranked=True)
     return scores_nearest_hit, ranked_nearest_hit_data_entry
 
 
@@ -104,12 +200,25 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
         - **scores** (`list`) - List of scores (based on the selected distance)
         - **ranked_nearest_miss__data_entry** (`list`) - List of the DataEntries of the near misses
     """
-    _, x = fe.load_preprocess_img(test_dataentry.img_path)
-    feature_vector = fe.extract_features(x)
 
-    miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
-    scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distances_scores(miss_class_data_entry, feature_vector, top_n = top_n, dist = distance_measure, return_data_entry_ranked = True)
-    
+    if distance_measure in ['cosine', 'manhatten', 'euclidean']:
+        _, x = fe.load_preprocess_img(test_dataentry.img_path)
+        feature_vector = fe.extract_features(x)
+
+        miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
+        scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distances_scores(miss_class_data_entry,
+                                                                                     feature_vector, top_n=top_n,
+                                                                                     dist=distance_measure,
+                                                                                     return_data_entry_ranked=True)
+    else:
+        # TODO: implement LRP Heatmap
+        miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
+        miss_class_img_paths = [img.img_path for img in miss_class_data_entry]
+        scores_nearest_miss, ranked_nearest_miss__data_entry = calc_image_distance(miss_class_img_paths,
+                                                                                   test_dataentry.img_path, top_n=top_n,
+                                                                                   dist=distance_measure,
+                                                                                   return_data_entry_ranked=True)
+
     return scores_nearest_miss, ranked_nearest_miss__data_entry
 
 
@@ -165,22 +274,18 @@ def plot_nmnh(dataentries, similarity_scores: float, title: str = "Near Miss/Nea
     plt.show()
 
 
-if __name__ == '__main__':
-    from dataset import *
+def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine',
+                      top_n=TOP_N_NMNH, use_prediction=True):
+    # top_n = TOP_N_NMNH   # number of near hits/misses to show
+    # use_prediction = True  # if set to true a prediction of the image is used for the near hits/misses
+    # suffix_path = "_multicnn"   # if use_prediction=True then you have to specify which model of the dataset to use
+    # distance_measure = 'cosine'  # distance measure for near miss/near hit
 
-    ###### ==== Select a DATASET ==== ######
-    dataset = DATA_DIR_FOLDERS[0]   # TODO: careful: This is hard coded, always takes first data set
-    # dataset = "mnist"
-    top_n = TOP_N_NMNH   # number of near hits/misses to show
-    use_prediction = True  # if set to true a prediction of the image is used for the near hits/misses
-    suffix_path = "_multicnn"   # if use_prediction=True then you have to specify which model of the dataset to use
-    distance_measure = 'cosine'  # distance measure for near miss/near hit
+    from dataset import DataSet
+    from modelsetup import ModelSetup
 
     # You don't have to do anything from here on
     tic = time.time()
-
-    use_all_datasets = True
-    if len(DATA_DIR_FOLDERS) > 0: use_all_datasets = False
 
     fe = FeatureExtractor()     # Initialize Feature Extractor Instance
     data = DataSet(dataset, fe)
@@ -202,8 +307,6 @@ if __name__ == '__main__':
 
     ###### ==== Select a Random Images (-> input image later) ==== ######
     # idx_Test = 55
-
-    # grab a random query image
     rnd_class = random.choice(data.available_classes)
     rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', rnd_class)
     rnd_img_file = random.choice(os.listdir(rnd_img_path))
@@ -218,11 +321,11 @@ if __name__ == '__main__':
     feature_vector = fe.extract_features(x)
 
     pred_label = rnd_img.ground_truth_label
-    if use_prediction:  # TODO atm only cnn model
-        cnn_model = CNNmodel(selected_dataset=data)
-        cnn_model._preprocess_img_gen()
-        cnn_model.load_model(suffix_path=suffix_path)
-        pred_label, pred_prob = cnn_model.pred_test_img(rnd_img)
+    if use_prediction:
+        sel_model = ModelSetup(selected_dataset=data)
+        sel_model._preprocess_img_gen(rgb=False)  # TODO atm only cnn model
+        sel_model.load_model(suffix_path=suffix_path)
+        pred_label, pred_prob = sel_model.pred_test_img(rnd_img)
         print("Ground Truth: ", rnd_img.ground_truth_label)
         print("Prediction: ", pred_label)
         print("Probability: ", pred_prob)
@@ -247,17 +350,17 @@ if __name__ == '__main__':
 
     # gets top_n near misses per class instead of over all
     if not BINARY:
-        scores_nearest_miss_multi, ranked_nearest_miss_multi_data_entry =\
+        scores_nearest_miss_multi, ranked_nearest_miss_multi_data_entry = \
             get_nearest_miss_multi(rnd_img, data.available_classes, pred_label, data.data, fe, top_n, distance_measure)
 
     toc = time.time()
-    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60))/60),
+    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
                                     ((toc - tic) % 60)))
 
     # Show random image and its near misses and hits
     # pic = cv2.imread(rnd_img.img_path)
     plt.title(f"{rnd_img.img_name}\n\
-            Actual Label : {rnd_img.ground_truth_label}", weight='bold', size=12)
+                Actual Label : {rnd_img.ground_truth_label}", weight='bold', size=12)
     plt.imshow(img, cmap='gray')
     plt.axis('off')
 
@@ -266,3 +369,11 @@ if __name__ == '__main__':
     if not BINARY:
         plot_nmnh(np.concatenate(ranked_nearest_miss_multi_data_entry), np.concatenate(scores_nearest_miss_multi),
                   title="Near Misses per Class")
+
+
+if __name__ == '__main__':
+    dataset_to_use = "mnist"
+
+    get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_multicnn")
+
+
