@@ -20,7 +20,7 @@ def code_from_prototype_selection(dataset_name):
         # Select Feature Extractor
         if feature_embeddings_to_use == "current":
             # gets FE from a loaded CNN with the dataset name and a suffix
-            fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path=suffix_path))
+            fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name, suffix_path=suffix_path))
         else:
             # Standard FE for general model:
             fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
@@ -178,6 +178,7 @@ if __name__ == '__main__':
 
     # Train or load and evaluate CNN Model
     # training = questions_training(dataset_to_use)
+    # training = [True, 'cnn', '_multicnn2', None, True, True, False]
     training = [False, 'cnn', '_multicnn', None, False, False, False]
     setup_model = train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
                                    model_for_feature_embedding=training[3],
