@@ -264,6 +264,8 @@ class ModelSetup():
         print(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5'), " loading ...")
         self.model = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5'))
         self.model_history = json.load(open(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.json'), 'r'))
+        print(self.model.summary())
+        print("Model input shape: ", self.model.input_shape)
 
     def fit(self, n_epochs: int = 50, patience: int = 10, suffix_path: str = '',  save_model: bool = True):
         """Fit the SimpleCNN on the given dataset
@@ -593,6 +595,8 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
 
     :return: suffix_path which was given as user input
     """
+    from dataset import DataSet
+    from feature_extractor import FeatureExtractor
     # fit = input("Do you want to fit (f) a model or load (l) an exciting one? [f/l]")
     # options[1] = input("What should the suffix of your cnn_model be? Type a string. e.g. '_testcnn'")
     # options[2] = input("Do you want to run the evaluation of your CNN model? [y/n]")
