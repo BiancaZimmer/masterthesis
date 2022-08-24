@@ -282,12 +282,12 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
     # distance_measure = 'cosine'  # distance measure for near miss/near hit
 
     from dataset import DataSet
-    from modelsetup import ModelSetup
+    from modelsetup import ModelSetup, get_CNNmodel
 
     # You don't have to do anything from here on
     tic = time.time()
 
-    fe = FeatureExtractor()     # Initialize Feature Extractor Instance
+    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path=suffix_path)) # Initialize Feature Extractor Instance
     data = DataSet(dataset, fe)
 
     i = 0   # Counter for newly loaded feature embeddings
@@ -296,7 +296,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
             np.load(d.feature_file, allow_pickle=True)
             pass
         else:  # if feature embedding doesn't exist yet, it is extracted now and saved
-            _, x = d.fe.load_preprocess_img(d.img_file)
+            _, x = d.fe.load_preprocess_img(d.img_file, rgb=False)
             feat = d.fe.extract_features(x)
             np.save(d.feature_file, feat)
             print("SAVE...")
@@ -318,7 +318,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
     rnd_img = DataEntry(fe, dataset, os.path.join(rnd_img_path, rnd_img_file))
 
     img, x = fe.load_preprocess_img(rnd_img.img_path, rgb=False)
-    feature_vector = fe.extract_features(x)
+    # feature_vector = fe.extract_features(x)
 
     pred_label = rnd_img.ground_truth_label
     if use_prediction:
@@ -374,6 +374,6 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
 if __name__ == '__main__':
     dataset_to_use = "mnist"
 
-    get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_multicnn")
+    get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_multicnn2")
 
 
