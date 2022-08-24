@@ -55,7 +55,7 @@ class FeatureExtractor:
         else:
             self.fe_model = Model(inputs=loaded_model.input, outputs=feature_model_output_layer,
                                   name=model_name)
-            print("FeatureModel input shape: ", self.fe_model.input_shape)
+        print("FeatureModel input shape: ", self.fe_model.input_shape)
 
     def load_preprocess_img(self, path, rgb=False):
         """Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array. 
