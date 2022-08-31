@@ -12,11 +12,11 @@ from utils import *
 class DataEntry:
     """DataEntry object that refers to a data sample (image) and contains all its information
     """
-    img_path : str
-    feature_file : str
-    ground_truth_label : str
+    img_path: str
+    feature_file: str
+    ground_truth_label: str
 
-    def __init__(self,fe ,dataset:str,img_path : str):
+    def __init__(self, fe, dataset: str, img_path: str):
         """Initialise DataEntry object, preferably via DataSet initialisation with List Comprehension of DataEntry objects. 
 
         :param fe: FeatureExtractor model used for feature extraction (Note: A name view Keras Model is mandatory)
@@ -49,7 +49,7 @@ class DataEntry:
         if not os.path.exists(DIR_FEATURE_EMBEDDING_DATASET):
             os.makedirs(DIR_FEATURE_EMBEDDING_DATASET)
 
-        pre, _ = os.path.splitext(os.path.join(DIR_FEATURE_EMBEDDING_DATASET,ntpath.basename(img_path)))
+        pre, _ = os.path.splitext(os.path.join(DIR_FEATURE_EMBEDDING_DATASET, ntpath.basename(img_path)))
         #entire path to the feature vector of the images
         self.feature_file = pre + '.npy' 
         pass
@@ -62,13 +62,13 @@ class DataEntry:
         if os.path.exists(self.feature_file):
             # check is implemented whether there are pictures with the same names
             print("WARNING: feature file of", self.img_path, " already existed.")
-            return np.load(self.feature_file, allow_pickle=True)
+            # return np.load(self.feature_file, allow_pickle=True)
         else:
-            _, x = self.__compute_image
+            _, x = self.fe.load_preprocess_img(self.img_path)
             feat = self.fe.extract_features(x)
             np.save(self.feature_file, feat)
             # print(self.feature_file)
-            return feat
+            # return feat
 
 
     @lazy
@@ -80,7 +80,7 @@ class DataEntry:
         if os.path.exists(self.feature_file):
             return np.load(self.feature_file, allow_pickle=True)
         else:
-            _, x = self.__compute_image
+            _, x = self.fe.load_preprocess_img(self.img_path)
             feat = self.fe.extract_features(x)
             np.save(self.feature_file, feat)
             print(self.feature_file)
@@ -116,33 +116,32 @@ class DataEntry:
         # print(np.shape(x))
         return x
 
-    def dataentry_to_nparray(self, use_fe: bool = False, rgb: bool = False):
-        _, x = self.fe.load_preprocess_img(self.img_path, rgb=rgb)
+    def dataentry_to_nparray(self, use_fe: bool = False):
+        _, x = self.fe.load_preprocess_img(self.img_path)
         if use_fe:
             feature_vector = self.fe.extract_features(x)
-            return feature_vector # TODO: returns wrong dimensions for nparray
+            return feature_vector  # TODO: returns wrong dimensions for nparray
         return np.squeeze(x, axis=0)
        
 
-def code_from_dataentry(dataset, suffix_path=''):
-    from cnn_model import get_CNNmodel
+def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate='current'):
+    from modelsetup import load_model_from_folder
     from feature_extractor import FeatureExtractor
 
     # CODE FROM DATAENTRY.PY
     print("----- CREATION OF FEATURE EMBEDDINGS -----")
     new_embedding = True
-    feature_embeddings_to_initiate = "current"
 
     while new_embedding:
         tic = time.time()
         # set feature extractor
         if feature_embeddings_to_initiate == "current":
             # gets FE from a loaded CNN with the dataset name and a suffix
-            fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path=suffix_path))
+            fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset, suffix_path=suffix_path))
         else:
             # Standard FE for general model:
             fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
-        print("Initiating ", fe.fe_model)
+        print("Initiating ", fe.fe_model.name)
 
         # get all data entries
         image_path = os.path.join(DATA_DIR, dataset)
@@ -178,7 +177,7 @@ if __name__ == '__main__':
               "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
     suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
-    code_from_dataentry(dataset_to_use, suffix_path)
+    code_from_dataentry(dataset_to_use, suffix_path, 'vgg')
 
 #### OLD CODE #####
     # import time
@@ -189,7 +188,7 @@ if __name__ == '__main__':
     #
     # # set feature extractor
     # # gets FE from a loaded CNN with the dataset name and a suffix
-    # # fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path="_multicnn"))
+    # # fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset, suffix_path="_multicnn"))
     # # Standard FE for general model:
     # # fe = FeatureExtractor()
     # # fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
