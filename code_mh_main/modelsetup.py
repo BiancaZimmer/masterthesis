@@ -254,7 +254,7 @@ class ModelSetup():
         self.model = self._pretrained_network(pretrained_model, optimizer)
         print(self.model.summary())
 
-    def load_model(self, suffix_path: str = ''):
+    def set_model(self, suffix_path: str = ''):
         """Load the already trained SimpleCNN and its history about training.
 
         :param suffix_path: Optional suffix to give a model a special name, defaults to ''
@@ -572,8 +572,8 @@ class ModelSetup():
         plt.show()
 
 
-def get_CNNmodel(sel_dataset:str, suffix_path:str =''):
-    """Load solely the  trained SimpleCNN.
+def load_model_from_folder(sel_dataset: str, suffix_path: str = ''):
+    """Load a trained model from the static/models folder.
 
     :param sel_dataset: Name of the `Dataset` for which the trained classifier is loaded
     :type sel_dataset: str
@@ -640,7 +640,7 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
         print("Fitting model ...")
         sel_model.fit(save_model=True, suffix_path=suffix_path)
     else:
-        sel_model.load_model(suffix_path=suffix_path)
+        sel_model.set_model(suffix_path=suffix_path)
 
     if eval:
         if loss:
