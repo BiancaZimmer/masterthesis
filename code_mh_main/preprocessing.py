@@ -20,7 +20,7 @@ def code_from_prototype_selection(dataset_name):
         # Select Feature Extractor
         if feature_embeddings_to_use == "current":
             # gets FE from a loaded CNN with the dataset name and a suffix
-            fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name, suffix_path=suffix_path))
+            fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset_name, suffix_path=suffix_path))
         else:
             # Standard FE for general model:
             fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
@@ -95,7 +95,7 @@ def code_from_prototype_selection(dataset_name):
 
 def questions_cropping():
     b = None
-    a = input("Are all your images in a squared format? If not, do you want them to be cropped? [y/n] ")
+    a = input("All your images need to be in a squared format. Do you want them to be cropped? [y/n] ")
     if a == "y":
         b = input("Do you want them to be center (c) cropped or randomly cropped (r)? [c/r] ")
     return [a, b]
@@ -127,26 +127,26 @@ def crop_train_test_val(dataset_to_use, crop='y', centre='c'):
 def questions_training(dataset_to_use):
     from tensorflow.keras.models import load_model
 
-    fit = input("Do you want to fit (f) a CNN model or load (l) an exciting one? [f/l]")
-    modeltype = input("What kind of model do you want to train? [cnn/vgg/inception]")
+    fit = input("Do you want to fit (f) a CNN model or load (l) an exciting one? [f/l] ")
+    modeltype = input("What kind of model do you want to train? [cnn/vgg/inception] ")
     if fit == "f":
-        suffix_path = input("What should the suffix of your cnn_model be? Type a string. e.g. '_testcnn'")
+        suffix_path = input("What should the suffix of your cnn_model be? Type a string. e.g. _testcnn ")
         model_for_feature_embedding = None
     else:
-        suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
+        suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. _testcnn ")
         model_for_feature_embedding = load_model(
             os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
 
-    a = input("Do you want to run the evaluation of your CNN model? [y/n]")
+    a = input("Do you want to run the evaluation of your CNN model? [y/n] ")
     eval = False
     loss = False
     missclassified = False
     if a == "y":
         eval = True
-        b = input("Do you want to plot the loss and accuracy of your CNN model? [y/n]")
+        b = input("Do you want to plot the loss and accuracy of your CNN model? [y/n] ")
         if b == "y":
             loss = True
-        b = input("Do you want to plot the evaluation of the miss-classified data of your CNN model? [y/n]")
+        b = input("Do you want to plot the evaluation of the miss-classified data of your CNN model? [y/n] ")
         if b == "y":
             missclassified = True
 
@@ -158,28 +158,28 @@ if __name__ == '__main__':
     # if a == "n":
     #     sys.exit("Go and do that or else the file won't run!")
     #
-    # dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    # if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
-    #     print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
-    #     dataset_to_use = "help"
-    # while dataset_to_use == "help":
-    #     print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
-    #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
-    #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    #     if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
-    #         print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
-    #         dataset_to_use = "help"
+    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+        print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+        dataset_to_use = "help"
+    while dataset_to_use == "help":
+        print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
+              "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+        if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+            print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+            dataset_to_use = "help"
 
-    dataset_to_use = "mnist"
+    # dataset_to_use = "mnist"
 
     # centre crop images?
     crop, centre = questions_cropping()
     crop_train_test_val(dataset_to_use, crop = crop, centre = centre)
 
     # Train or load and evaluate CNN Model
-    # training = questions_training(dataset_to_use)
+    training = questions_training(dataset_to_use)
     # training = [True, 'cnn', '_multicnn2', None, True, True, False]
-    training = [False, 'cnn', '_multicnn', None, False, False, False]
+    # training = [False, 'cnn', '_multicnn', None, False, False, False]
     setup_model = train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
                                    model_for_feature_embedding=training[3],
                                    eval=training[4], loss=training[5], missclassified=training[6])
