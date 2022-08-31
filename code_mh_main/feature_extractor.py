@@ -27,6 +27,8 @@ class FeatureExtractor:
         :type use_flatten: bool, optional
         """
 
+        self.rgb = None
+
         if (not options_cnn) and feature_model_output_layer is None:
             options_cnn = True
             warnings.warn("No output layer for feature model specified. Standards for CNN will be used."
@@ -57,7 +59,13 @@ class FeatureExtractor:
                                   name=model_name)
         print("FeatureModel input shape: ", self.fe_model.input_shape)
 
-    def load_preprocess_img(self, path, rgb=False):
+        # find out how the image input should be transformed -> 3 channel = rgb else, grayscale
+        if self.fe_model.input_shape[-1] == 3:
+            self.rgb = True
+        else:
+            self.rgb = False
+
+    def load_preprocess_img(self, path):
         """Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array. 
         The latter element can be used for CNN-based predictions.
 
@@ -72,7 +80,7 @@ class FeatureExtractor:
 
         # TODO: same as dataentry.image_numpy()?
 
-        if rgb:
+        if self.rgb:
             img_PIL = Image.open(path).convert('RGB')
             img_PIL = img_PIL.resize(self.fe_model.input_shape[1:3])
             x = np.array(img_PIL)
@@ -100,7 +108,7 @@ class FeatureExtractor:
         :type x: numpy.ndarray
         :return: *self* (`numpy.ndarray`) - One-dimensional feature vector
         """
-        return self.fe_model.predict(x)[0]
+        return self.fe_model.predict(x, verbose=0)[0]
 
 
 if __name__ == "__main__":

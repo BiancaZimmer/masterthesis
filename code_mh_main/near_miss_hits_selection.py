@@ -192,7 +192,7 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int = 5, distan
     hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
 
     if distance_measure in ['cosine', 'manhatten', 'euclidean']:
-        _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=rgb)
+        _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
 
         scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores(hit_class_data_entry, feature_vector,
@@ -231,7 +231,7 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n: int = 5, dista
     miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
 
     if distance_measure in ['cosine', 'manhatten', 'euclidean']:
-        _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=rgb)
+        _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
 
         scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distances_scores(miss_class_data_entry,
@@ -309,12 +309,12 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
     # TODO rgb option
 
     from dataset import DataSet
-    from modelsetup import ModelSetup, get_CNNmodel
+    from modelsetup import ModelSetup, load_model_from_folder
 
     # You don't have to do anything from here on
     tic = time.time()
 
-    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset, suffix_path=suffix_path)) # Initialize Feature Extractor Instance
+    fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset, suffix_path=suffix_path)) # Initialize Feature Extractor Instance
     data = DataSet(dataset, fe)
 
     i = 0   # Counter for newly loaded feature embeddings
@@ -323,7 +323,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
             np.load(d.feature_file, allow_pickle=True)
             pass
         else:  # if feature embedding doesn't exist yet, it is extracted now and saved
-            _, x = d.fe.load_preprocess_img(d.img_file, rgb=False)
+            _, x = d.fe.load_preprocess_img(d.img_file)
             feat = d.fe.extract_features(x)
             np.save(d.feature_file, feat)
             print("SAVE...")
@@ -343,14 +343,14 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
 
     rnd_img = DataEntry(fe, dataset, os.path.join(rnd_img_path, rnd_img_file))
 
-    img, x = fe.load_preprocess_img(rnd_img.img_path, rgb=False)
+    img, x = fe.load_preprocess_img(rnd_img.img_path)
     feature_vector = fe.extract_features(x)
 
     pred_label = rnd_img.ground_truth_label
     if use_prediction:
         sel_model = ModelSetup(selected_dataset=data)
         sel_model._preprocess_img_gen(rgb=False)  # TODO atm only cnn model
-        sel_model.load_model(suffix_path=suffix_path)
+        sel_model.set_model(suffix_path=suffix_path)
         pred_label, pred_prob = sel_model.pred_test_img(rnd_img)
         print("Ground Truth: ", rnd_img.ground_truth_label)
         print("Prediction: ", pred_label)

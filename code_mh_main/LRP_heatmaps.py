@@ -143,7 +143,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
-    x_test = [file.dataentry_to_nparray(use_fe=False, rgb=setup_model.mode_rgb) for file in setup_model.dataset.data_t]
+    x_test = [file.dataentry_to_nparray(use_fe=False) for file in setup_model.dataset.data_t]
     y_test = [file.ground_truth_label for file in setup_model.dataset.data_t]
 
     rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
@@ -162,7 +162,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
 
     # Create analyzers
     analyzers = helpers_innvestigate.create_analyzers(
-        [file.dataentry_to_nparray(use_fe=False, rgb=setup_model.mode_rgb) for file in train_data],
+        [file.dataentry_to_nparray(use_fe=False) for file in train_data],
         methods,
         model_wo_softmax,
         "max_activation"
@@ -243,7 +243,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
-    x_test = [file.dataentry_to_nparray(use_fe=False, rgb=setup_model.mode_rgb) for file in setup_model.dataset.data_t]
+    x_test = [file.dataentry_to_nparray(use_fe=False) for file in setup_model.dataset.data_t]
     y_test = [file.ground_truth_label for file in setup_model.dataset.data_t]
 
     rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
@@ -263,7 +263,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
 
     # Create analyzers
     analyzers = helpers_innvestigate.create_analyzers(
-        [file.dataentry_to_nparray(use_fe=False, rgb=setup_model.mode_rgb) for file in train_data],
+        [file.dataentry_to_nparray(use_fe=False) for file in train_data],
         methods,
         model_wo_softmax,
         "index"
