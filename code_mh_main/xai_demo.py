@@ -11,7 +11,8 @@ import numpy as np
 import time
 
 from utils import *
-from cnn_model import *
+# from cnn_model import *  # TODO see if this works
+from modelsetup import *
 from dataset import *
 from feature_extractor import FeatureExtractor
 from dataentry import DataEntry
@@ -93,11 +94,11 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
         if model_name == "SimpleCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name].load_model(suffix_path=suffix_path)
+            dict_cnn_models[dataset_name].set_model(suffix_path=suffix_path)
         elif model_name == "MultiCNN":
             dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
-            dict_cnn_models[dataset_name].load_model(suffix_path=suffix_path)
+            dict_cnn_models[dataset_name].set_model(suffix_path=suffix_path)
 
 
 # use_CNN_feature_embedding = True
