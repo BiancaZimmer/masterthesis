@@ -61,7 +61,7 @@ def calc_distances_scores(class_data_entry_list, feature_vector, top_n: int = 5,
         return scores
 
 
-def calc_image_distance(class_data_entry_list, image_path_test, top_n: int = 5, dist: str = 'SSIM',
+def calc_image_distance(class_data_entry_list, image_path_test, top_n: int = 5, dist: str = 'SSIM', lrp: bool = True,
                         return_data_entry_ranked: bool = False, plot_idx: bool = False):
     """
 
@@ -71,6 +71,7 @@ def calc_image_distance(class_data_entry_list, image_path_test, top_n: int = 5, 
     :param top_n: Set an integer value how many nearest samples should be selected, defaults to 5
     :type top_n: int, optional
     :param dist: Distance applied to images, e.g. 'SWIFT'/'SSIM'/'CW-SSIM', defaults to 'SSIM'
+    :param lrp: base the distance measurement on the lrp heatmaps (True) or on the raw images (False), defaults to True
     :param return_data_entry_ranked: Set True in order to get a list of the DataEntries of the nearest samples, defaults to False
     :type return_data_entry_ranked: bool, optional
     :param plot_idx: Set to True in order to plot the indices of the nearest data samples, defaults to False
@@ -81,7 +82,11 @@ def calc_image_distance(class_data_entry_list, image_path_test, top_n: int = 5, 
         - **ranked_dataentry** (`list`) - If 'return_data_entry_ranked' set to True, a list of the DataEntries of the nearest samples
     """
 
-    image_paths_list = [img.img_path for img in class_data_entry_list]
+    raw_image_paths_list = [img.img_path for img in class_data_entry_list]
+    image_paths_list = raw_image_paths_list
+    if lrp:
+        # TODO: img_path to lrp heatmap, currently distance on raw image
+        image_paths_list = raw_image_paths_list
     images = [cv2.imread(img, cv2.IMREAD_GRAYSCALE) for img in image_paths_list]
     img_test = cv2.imread(image_path_test, cv2.IMREAD_GRAYSCALE)
 
@@ -163,7 +168,7 @@ def calc_image_distance(class_data_entry_list, image_path_test, top_n: int = 5, 
         return scores
 
 
-def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distance_measure:str ='cosine'):
+def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int = 5, distance_measure: str = 'cosine', rgb: bool = False):
     """Function to calculates the near hits in respect to a given test inputs sample (DataEntry).
 
     :param test_dataentry: DataEntry object (test input sample) on which near hits should be selected
@@ -178,6 +183,7 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     :type top_n: int, optional
     :param distance_measure: Distance applied in feature embedding, e.g. 'euclidean'/'cosine'/'manhattan', defaults to 'cosine'
     :type distance_measure: str, optional
+    :param rgb: image input for model in rgb (3 channel) or grayscale (1 channel); defaults to False -> grayscale
     :return: 
         - **scores** (`list`) - List of scores (based on the selected distance)
         - **ranked_nearest_hit_data_entry** (`list`) - List of the DataEntries of the near hits
@@ -186,7 +192,7 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
 
     if distance_measure in ['cosine', 'manhatten', 'euclidean']:
-        _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=False)
+        _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=rgb)
         feature_vector = fe.extract_features(x)
 
         scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores(hit_class_data_entry, feature_vector,
@@ -202,7 +208,7 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     return scores_nearest_hit, ranked_nearest_hit_data_entry
 
 
-def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n:int =5, distance_measure:str ='cosine'):
+def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n: int = 5, distance_measure: str = 'cosine', rgb: bool = False):
     """Function to calculates the near misses in respect to a given test inputs sample (DataEntry).
 
     :param test_dataentry: DataEntry object (test input sample) on which near misses should be selected
@@ -217,6 +223,7 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     :type top_n: int, optional
     :param distance_measure: Distance applied in feature embedding, e.g. 'euclidean'/'cosine'/'manhattan', defaults to 'cosine'
     :type distance_measure: str, optional
+    :param rgb: image input for model in rgb (3 channel) or grayscale (1 channel); defaults to False -> grayscale
     :return: 
         - **scores** (`list`) - List of scores (based on the selected distance)
         - **ranked_nearest_miss__data_entry** (`list`) - List of the DataEntries of the near misses
@@ -224,7 +231,7 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, top_n:int =5, distanc
     miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
 
     if distance_measure in ['cosine', 'manhatten', 'euclidean']:
-        _, x = fe.load_preprocess_img(test_dataentry.img_path)
+        _, x = fe.load_preprocess_img(test_dataentry.img_path, rgb=rgb)
         feature_vector = fe.extract_features(x)
 
         scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distances_scores(miss_class_data_entry,
