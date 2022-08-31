@@ -72,6 +72,7 @@ multi-class CNN will be used. Option was incorporated in all python files and fl
 - changed the html/flask app:
   - made the footer flexible
   - changed paths to pictures so they would be shown
+  - added distance metrics to drop-down menu
 - added preprocessing.py which is a complete pipeline to preprocess a data set for the 
 flask app
 - added the crop_to_square() function in helpers.py
@@ -80,3 +81,4 @@ flask app
   - changed the image preprocessing function, so it can convert images to rgb or
   grayscale depending on the use case
   - changed eval functions so they can also handle rgb pictures + models
+- added LRP_heatmaps.py which computes LRP heatmaps
