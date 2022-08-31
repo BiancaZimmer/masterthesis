@@ -25,8 +25,8 @@
         <div class="row">
             <div class="container-model-options">
                 <span> Feature Extractor: </span>
-                <input id="model-specific-button" type="radio" name="myRadios" onclick="callback('onchange','model-specific-button',this.value)" value="SimpleCNN" method="POST" action="/"checked /> Model-specific 
-                <input id="model-agnostic-button" type="radio" name="myRadios" onclick="callback('onchange','model-agnostic-button',this.value)" value="VGG16" method="POST" action="/"/> Model-agnostic
+                <input id="model-specific-button" type="radio" name="myRadios" onclick="callback('onchange','model-specific-button',this.value)" value="SimpleCNN" method="POST" action="/"checked /> Model-specific (CNN)
+                <input id="model-agnostic-button" type="radio" name="myRadios" onclick="callback('onchange','model-agnostic-button',this.value)" value="VGG16" method="POST" action="/"/> Model-agnostic (VGG16)
             </div>
             <div class="container-slider">
                 <input type="range" min="1" max="5" value="1" onchange="slider(this.value)">
@@ -38,6 +38,8 @@
                     <option value= "cosine" selected >Cosine Distance</option>
                     <option value= "euclidean" >Euclidean Distance</option>
                     <option value= "manhattan" >Manhattan Distance</option>
+                    <option value= "SSIM" >Structural Similarity Index (SSIM) as Dissimilarity (DSSIM)</option>
+                    <option value= "CW-SSIM" >Complex Wavelet SSIM (CW-SSIM)</option>
                 </select>
             </div>
         </div>
