@@ -120,6 +120,7 @@ class ExamplebasedXAIDemo(FlaskApp):
     distance_measure = 'cosine'
 
     cnn_model = None
+    rgb = False
 
     prototypes_per_class_img_files = None
 
@@ -153,6 +154,7 @@ class ExamplebasedXAIDemo(FlaskApp):
         """
         if id == 'model-specific-button' and type == 'onchange':
             self.dict_datasets = {}
+            self.rgb = False
             for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
                 if BINARY:
                     self.dict_datasets[dataset_name] = embedding_dict['SimpleCNN']
@@ -168,6 +170,7 @@ class ExamplebasedXAIDemo(FlaskApp):
 
         elif id == 'model-agnostic-button' and type == 'onchange':
             self.dict_datasets = {}
+            self.rgb = True
             for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
                 self.dict_datasets[dataset_name] = embedding_dict['VGG16']
 
@@ -197,7 +200,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             self.data_t = self.dict_datasets[self.sel_dataset].data_t
             self.fe = self.dict_datasets[self.sel_dataset].fe
 
-            g.test_set =  self.dict_datasets[self.sel_dataset].data_t
+            g.test_set = self.dict_datasets[self.sel_dataset].data_t
 
             return jsonify([{'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{%for test_sample in g.test_set %}<option value= {{test_sample.img_path}} >{{ test_sample.img_name }}</option>{% endfor %}')},
             {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
@@ -226,8 +229,8 @@ class ExamplebasedXAIDemo(FlaskApp):
             # TODO Try catch if self.pred_label, self.pred_prob is None first run classify
             top_n = TOP_N_NMNH
 
-            scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)
-            scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure)
+            scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure, rgb=self.rgb)
+            scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure,  rgb=self.rgb)
 
             g.nearest_hits = zip([x.img_path for x in ranked_nearest_hit_data_entry], scores_nearest_hit, ['nh_'+str(i+1) for i in range(top_n)])
             g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss, ['nm_'+str(i+1) for i in range(top_n)])
