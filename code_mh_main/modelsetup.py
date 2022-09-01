@@ -81,35 +81,42 @@ class ModelSetup():
         self.labelencoder = None
 
     def _preprocess_img_gen(self, rgb=False):
-        """Based on the given dataset, the ImageDataGenerator for the CNN are created.
+        """Based on the given dataset, the ImageDataGenerator for the models are created.
         """
 
         # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
-        if rgb:  # convert image to rgb, no array expansion needed
-            self.mode_rgb = True
-            train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
-                          for x in self.dataset.data]
-        else:  # convert image to grayscale, need to expand array by 1 dimension
-            self.mode_rgb = False
-            train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
-                          for x in self.dataset.data]
+        if BINARY:  # difference to not BINARY is only that we use ground_truth_label instead of y (folder index vs str)
+            if rgb:  # convert image to rgb, no array expansion needed
+                self.mode_rgb = True
+                train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
+                              for x in self.dataset.data]
+                test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
+                             for x in self.dataset.data_t]
+            else:  # convert image to grayscale, need to expand array by 1 dimension
+                self.mode_rgb = False
+                train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
+                              for x in self.dataset.data]
+                test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
+                             for x in self.dataset.data_t]
+        else:
+            if rgb:  # convert image to rgb, no array expansion needed
+                self.mode_rgb = True
+                train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
+                              for x in self.dataset.data]
+                test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
+                             for x in self.dataset.data_t]
+            else:  # convert image to grayscale, need to expand array by 1 dimension
+                self.mode_rgb = False
+                train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
+                              for x in self.dataset.data]
+                test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
+                             for x in self.dataset.data_t]
+
         X_train = np.array(list(zip(*train_data))[0])
         y_train = np.array(list(zip(*train_data))[1])
-        print('X_train shape: ', X_train.shape)
-        # print('Sample: ', X_train[0], ' label: ', y_train[0])
-        # print('y_train shape', y_train.shape)
-        # print(y_train)
-
-        if rgb:
-            test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
-                         for x in self.dataset.data_t]
-        else:
-            test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
-                         for x in self.dataset.data_t]
         X_test = np.array(list(zip(*test_data))[0])
         y_test = np.array(list(zip(*test_data))[1])
-        # print('X_test shape: ', X_test.shape)
-        # print(y_test)
+        print('X_train shape: ', X_train.shape)
 
         if not BINARY:
             # encode class values as integers
@@ -121,8 +128,6 @@ class ModelSetup():
             # convert integers to one hot encoded variables
             y_train = to_categorical(y_train)
             y_test = to_categorical(y_test)
-            # print('y_train shape: ', y_train.shape)
-            # print(y_train)
 
         print('Initializing Image Generator ...')
         
@@ -143,13 +148,9 @@ class ModelSetup():
 
         image_gen_test = ImageDataGenerator()
 
-        self.train_set = image_gen.flow(X_train, y_train, 
-                            batch_size=self.batch_size, 
-                            shuffle=True)
+        self.train_set = image_gen.flow(X_train, y_train, batch_size=self.batch_size, shuffle=True)
 
-        self.test_set = image_gen_test.flow(X_test, y_test, 
-                                    batch_size=self.batch_size, 
-                                    shuffle=False)
+        self.test_set = image_gen_test.flow(X_test, y_test, batch_size=self.batch_size, shuffle=False)
 
     def _binary_cnn_model(self):
         """Set up SimpleCNN for binary image classification.
@@ -172,9 +173,7 @@ class ModelSetup():
         self.model.add(Dense(1))
         self.model.add(Activation('sigmoid'))
 
-        self.model.compile(loss='binary_crossentropy',
-                    optimizer='adam',
-                    metrics=['accuracy'])
+        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         print(self.model.summary())
 
@@ -199,9 +198,7 @@ class ModelSetup():
         self.model.add(Dense(len(self.labelencoder.classes_)))
         self.model.add(Activation('softmax'))
 
-        self.model.compile(loss='categorical_crossentropy',
-                    optimizer='adam',
-                    metrics=['accuracy'])
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         print(self.model.summary())
 
@@ -216,14 +213,8 @@ class ModelSetup():
         # Train top layer
         for layer in base_model.layers:
             layer.trainable = False
-        model.compile(loss='categorical_crossentropy',
-                      optimizer=optimizer,
-                      metrics=['accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
-        # Fit model
-        # callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_acc', patience=3, verbose=1)]
-        # history = model.fit(xtrain, ytrain, epochs=numepochs, class_weight=classweight, validation_data=(xtest, ytest),
-        #                     verbose=1, callbacks=[MetricsCheckpoint('logs')])
         return model
 
     def _multiclass_transferlearning_inception_model(self):
@@ -338,7 +329,7 @@ class ModelSetup():
             annot=True,
             annot_kws={'size': 14, 'weight': 'bold'},
             fmt='d',
-            #cmap=plt.cm.Blues,
+            # cmap=plt.cm.Blues,
             cmap=custom_map,
             xticklabels=self.dataset.available_classes,
             yticklabels=self.dataset.available_classes)
@@ -368,7 +359,7 @@ class ModelSetup():
             img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
         
         prediction = self.model.predict(img_pred)
-        #print(prediction)
+        # print(prediction)
         
         img = cv2.imread(test_dataentry.img_path)
         label = test_dataentry.ground_truth_label
