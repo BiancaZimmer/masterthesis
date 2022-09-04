@@ -171,13 +171,13 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
 if __name__ == '__main__':
     # run this to generate all feature embeddings
     # needs a trained model for the feature embeddings else VGG16 is used
-    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
     while dataset_to_use == "help":
         print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be"
               "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
-        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
-    suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn'")
-    code_from_dataentry(dataset_to_use, suffix_path, 'vgg')
+        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. '_testcnn' ")
+    code_from_dataentry(dataset_to_use, suffix_path)
 
 #### OLD CODE #####
     # import time

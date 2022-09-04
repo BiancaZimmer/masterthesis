@@ -16,7 +16,7 @@ from modelsetup import *
 class DataSet():
     """DataSet object for the image dataset containing list of DataEntries
     """
-    def __init__(self, name: str, fe: FeatureExtractor, path_datasets=DATA_DIR, ):
+    def __init__(self, name: str, fe: FeatureExtractor, path_datasets=DATA_DIR):
         """Initialization of the DataSet
 
         :param name: Dataset name which should refer to the folder name
@@ -217,6 +217,7 @@ def get_dict_datasets_with_all_embeddings():
 
     :return: *self* (`dict`) - Dictionary with all feature embeddings in respect to the avaiable datasets
     """
+    from modelsetup import load_model_from_folder
     # LOAD the DATASETS
     if len(DATA_DIR_FOLDERS) > 0:
         dataset_list = DATA_DIR_FOLDERS
@@ -226,10 +227,10 @@ def get_dict_datasets_with_all_embeddings():
     for dataset_name in dataset_list:
         dict_embeddings = {}
             
-        fe_CNNmodel = FeatureExtractor(loaded_model=get_CNNmodel(sel_dataset=dataset_name))
-        dict_embeddings[fe_CNNmodel.fe_model.name] = DataSet(name = dataset_name, fe = fe_CNNmodel)
+        fe_CNNmodel = FeatureExtractor(loaded_model=load_model_from_folder(sel_dataset=dataset_name, suffix_path='_cnn'))
+        dict_embeddings[fe_CNNmodel.fe_model.name] = DataSet(name = dataset_name, fe=fe_CNNmodel)
         fe_VGG16 = FeatureExtractor(loaded_model=None)
-        dict_embeddings[fe_VGG16.fe_model.name] = DataSet(name = dataset_name, fe = fe_VGG16)
+        dict_embeddings[fe_VGG16.fe_model.name] = DataSet(name = dataset_name, fe=fe_VGG16)
 
         dict_datasets_embeddings[dataset_name] = dict_embeddings
 
@@ -256,7 +257,7 @@ def get_dict_datasets(use_CNN_feature_embeddding:bool, use_all_datasets: bool):
     dict_datasets = {}
     for dataset_name in dataset_list:
         if use_CNN_feature_embeddding:
-            fe_CNNmodel = FeatureExtractor(loaded_model=get_CNNmodel(sel_dataset=dataset_name))
+            fe_CNNmodel = FeatureExtractor(loaded_model=load_model_from_folder(sel_dataset=dataset_name))
             dict_datasets[dataset_name] = DataSet(name = dataset_name, fe = fe_CNNmodel)
         else:
             fe_VGG16 = FeatureExtractor(loaded_model=None)
@@ -300,7 +301,7 @@ if __name__ == "__main__":
 
     ## Select feature Extractor
     ## Simple or MultiCNN (set BINARY to False)
-    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name))
+    fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset_name))
     ## VGG16 -> loaded_model = None
     # fe = FeatureExtractor(loaded_model=None)
 
