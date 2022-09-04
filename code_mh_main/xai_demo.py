@@ -69,12 +69,12 @@ def get_dataentry_by_img_path(data, img_path:str):
 
 
 # TODO: user input: which model to load
-suffix_path = "_multicnn"
+# also change in dataset.get_dict_datasets_with_all_embeddings()
+suffix_path = "_cnn"
 
 tic = time.time()
 
 # List if local available datasets (global variable)
-# dataset_list = get_available_dataset()
 if len(DATA_DIR_FOLDERS) > 0:
     dataset_list = DATA_DIR_FOLDERS
 else:
@@ -92,11 +92,11 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
         [x.feature_embedding for x in value.data]
         # for x in value.data: x.feature_embedding
         if model_name == "SimpleCNN":
-            dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
+            dict_cnn_models[dataset_name] = ModelSetup(selected_dataset=value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
             dict_cnn_models[dataset_name].set_model(suffix_path=suffix_path)
         elif model_name == "MultiCNN":
-            dict_cnn_models[dataset_name] = CNNmodel(selected_dataset = value)
+            dict_cnn_models[dataset_name] = ModelSetup(selected_dataset=value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
             dict_cnn_models[dataset_name].set_model(suffix_path=suffix_path)
 
@@ -164,10 +164,21 @@ class ExamplebasedXAIDemo(FlaskApp):
 
             g.datasets = dataset_list
 
-            return jsonify([{'elem':'dataset-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{% for dataset_option in g.datasets %}<option value= {{dataset_option}} >{{ dataset_option }}</option>{% endfor %}')},
-            {'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>')},
-            {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
-            {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
+            try:
+                self.data = self.dict_datasets[self.sel_dataset].data
+                self.data_t = self.dict_datasets[self.sel_dataset].data_t
+                self.fe = self.dict_datasets[self.sel_dataset].fe
+            except AttributeError:
+                return jsonify([{'elem': 'dataset-dropdown', 'content': render_template_string(
+                    '<option selected disabled>Choose here</option>\
+                    {% for dataset_option in g.datasets %}<option value= {{dataset_option}} >\
+                    {{ dataset_option }}</option>{% endfor %}')},
+                                {'elem': 'test-dropdown',
+                                 'content': render_template_string('<option selected disabled>Choose here</option>')},
+                                {'elem': 'test-image', 'content': render_template_string('')},
+                                {'elem': 'test-prediction', 'content': render_template_string('')},
+                                {'elem': 'nh-nm-images', 'content': render_template_string('')},
+                                {'elem': 'protos-images', 'content': render_template_string('')}])
 
         elif id == 'model-agnostic-button' and type == 'onchange':
             self.dict_datasets = {}
@@ -177,10 +188,21 @@ class ExamplebasedXAIDemo(FlaskApp):
 
             g.datasets = dataset_list
 
-            return jsonify([{'elem':'dataset-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{% for dataset_option in g.datasets %}<option value= {{dataset_option}} >{{ dataset_option }}</option>{% endfor %}')},
-            {'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>')},
-            {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
-            {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
+            try:
+                self.data = self.dict_datasets[self.sel_dataset].data
+                self.data_t = self.dict_datasets[self.sel_dataset].data_t
+                self.fe = self.dict_datasets[self.sel_dataset].fe
+            except AttributeError:
+                return jsonify([{'elem': 'dataset-dropdown', 'content': render_template_string(
+                    '<option selected disabled>Choose here</option>\
+                    {% for dataset_option in g.datasets %}<option value= {{dataset_option}} >\
+                    {{ dataset_option }}</option>{% endfor %}')},
+                                {'elem': 'test-dropdown',
+                                 'content': render_template_string('<option selected disabled>Choose here</option>')},
+                                {'elem': 'test-image', 'content': render_template_string('')},
+                                {'elem': 'test-prediction', 'content': render_template_string('')},
+                                {'elem': 'nh-nm-images', 'content': render_template_string('')},
+                                {'elem': 'protos-images', 'content': render_template_string('')}])
 
         elif id == 'distance-dropdown' and type == 'onchange':
 
@@ -188,10 +210,10 @@ class ExamplebasedXAIDemo(FlaskApp):
 
             g.datasets = dataset_list
 
-            return jsonify([{'elem':'dataset-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{% for dataset_option in g.datasets %}<option value= {{dataset_option}} >{{ dataset_option }}</option>{% endfor %}')},
-            {'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>')},
-            {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
-            {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
+            # return jsonify([{'elem':'dataset-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{% for dataset_option in g.datasets %}<option value= {{dataset_option}} >{{ dataset_option }}</option>{% endfor %}')},
+            # {'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>')},
+            # {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
+            # {'elem':'nh-nm-images','content':render_template_string('')}, {'elem':'protos-images','content':render_template_string('')}])
 
         elif id == 'dataset-dropdown' and type == 'onchange':
 
@@ -201,7 +223,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             self.data_t = self.dict_datasets[self.sel_dataset].data_t
             self.fe = self.dict_datasets[self.sel_dataset].fe
 
-            g.test_set = self.dict_datasets[self.sel_dataset].data_t
+            g.test_set = self.data_t
 
             return jsonify([{'elem':'test-dropdown','content':render_template_string('<option selected disabled>Choose here</option>{%for test_sample in g.test_set %}<option value= {{test_sample.img_path}} >{{ test_sample.img_name }}</option>{% endfor %}')},
             {'elem':'test-image','content':render_template_string('')},{'elem':'test-prediction','content':render_template_string('')},
@@ -212,10 +234,11 @@ class ExamplebasedXAIDemo(FlaskApp):
             self.test_dataentry = get_dataentry_by_img_path(self.data_t, value)
             print(self.test_dataentry.img_path)
             return jsonify([{'elem': 'test-image',
-                             'content': render_template_string('<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">')},
+                             'content': render_template_string('<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">\
+                                 <p>Image Name: <b>{{ g.test_img_path.split("test/")[1] }}</b></p>')},
                             {'elem': 'test-prediction','content':render_template_string('')},
-                            {'elem': 'nh-nm-images','content':render_template_string('')},
-                            {'elem': 'protos-images', 'content':render_template_string('')}])
+                            {'elem': 'nh-nm-images','content':render_template_string('')} ])  #,
+                            # {'elem': 'protos-images', 'content':render_template_string('')}])
 
         elif id == 'classify-button' and type == 'onclick':
 
@@ -226,8 +249,13 @@ class ExamplebasedXAIDemo(FlaskApp):
             return jsonify([{'elem':'test-prediction','content':render_template_string('<p>Predicted Label: <b>{{ g.pred_label }}</b></p><p>Predicted Probability: <b>{{ g.pred_prob }}</b></p>')}])
 
         elif id == 'explain-button' and type == 'onclick':
+            try:
+                g.pred_label, g.pred_prob = self.pred_label, self.pred_prob
+            except AttributeError:
+                self.cnn_model = dict_cnn_models[self.sel_dataset]
+                self.pred_label, self.pred_prob = self.cnn_model.pred_test_img(self.test_dataentry)
+                g.pred_label, g.pred_prob = self.pred_label, self.pred_prob
 
-            # TODO Try catch if self.pred_label, self.pred_prob is None first run classify
             top_n = TOP_N_NMNH
 
             scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure, rgb=self.rgb)
@@ -236,39 +264,38 @@ class ExamplebasedXAIDemo(FlaskApp):
             g.nearest_hits = zip([x.img_path for x in ranked_nearest_hit_data_entry], scores_nearest_hit, ['nh_'+str(i+1) for i in range(top_n)])
             g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss, ['nm_'+str(i+1) for i in range(top_n)])
 
-            # use_CNN_feature_embeddding = True
-            num_prototypes = 3
-            # if use_CNN_feature_embeddding:
-            #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
+            # # use_CNN_feature_embeddding = True
+            # num_prototypes = 3
+            # # if use_CNN_feature_embeddding:
+            # #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
+            # # else:
+            # #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData",self.sel_dataset)
+            #
+            # DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name, self.sel_dataset)
+            # protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(num_prototypes) + '.json')
+            #
+            # if os.path.exists(protos_file):
+            #     print('LOADING ...')
+            #     with open(protos_file, 'r') as fp:
+            #         self.prototypes_per_class_img_files = json.load(fp)
             # else:
-            #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData",self.sel_dataset)
-
-            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name, self.sel_dataset)
-            # TODO change to variable in utils
-            protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(num_prototypes) + '.json')
-
-            if os.path.exists(protos_file):
-                print('LOADING ...')
-                with open(protos_file, 'r') as fp:
-                    self.prototypes_per_class_img_files = json.load(fp)
-            else:
-                print(protos_file)
-
-            prototypes_per_class = get_prototypes_by_img_files(data=self.data, protos_dict=self.prototypes_per_class_img_files)
-            g.prototypes = prototypes_per_class[self.pred_label[0]]
-            print("PROTOTYPES: ", prototypes_per_class)
+            #     print(protos_file)
+            #
+            # prototypes_per_class = get_prototypes_by_img_files(data=self.data, protos_dict=self.prototypes_per_class_img_files)
+            # g.prototypes = prototypes_per_class[self.pred_label[0]]
+            # print("PROTOTYPES: ", prototypes_per_class)
 
             # TODO print img name, print actual label
             return jsonify([
                 # '<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">'
                 # g.test_img_path = value.split("static/")[1]
-                {'elem': 'protos-images',
-                 'content': render_template_string('<h2>Prototypes:</h2><div class="row">\
-                 <div class="carousel clearfix"><div class="carousel-view clearfix">\
-                 {% for proto in g.prototypes %}<div class="box">\
-                 <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
-                 <img src="./static/{{ proto.img_path.split("static/")[1] }}" alt="file://{{ proto.img_path }}" width="200px" height="200px">\
-                 <figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
+                # {'elem': 'protos-images',
+                #  'content': render_template_string('<h2>Prototypes:</h2><div class="row">\
+                #  <div class="carousel clearfix"><div class="carousel-view clearfix">\
+                #  {% for proto in g.prototypes %}<div class="box">\
+                #  <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                #  <img src="./static/{{ proto.img_path.split("static/")[1] }}" alt="file://{{ proto.img_path }}" width="200px" height="200px">\
+                #  <figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
                 {'elem': 'nh-nm-images',
                  'content': render_template_string('<h2>Nearest Hits:</h2><div class="row">\
                  {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}">\
@@ -280,7 +307,89 @@ class ExamplebasedXAIDemo(FlaskApp):
                  <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
                  <img src="./static/{{ nearest_miss[0].split("static/")[1] }}" alt="file://{{ nearest_miss[0] }}" width="200px" height="200px">\
                  <figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')
-                 }])
+                 },
+                {'elem': 'test-prediction', 'content': render_template_string(
+                    '<p>Predicted Label: <b>{{ g.pred_label }}</b></p><p>Predicted Probability: <b>{{ g.pred_prob }}</b></p>')}
+            ])
+
+        elif id == 'random-button' and type == 'onclick':
+            # from test-dropdown
+            test_img = random.choice(self.data_t)
+            g.test_img_path = test_img.img_path.split("static/")[1]
+            self.test_dataentry = test_img
+            print(self.test_dataentry.img_path)
+
+            # from classify-button
+            self.cnn_model = dict_cnn_models[self.sel_dataset]
+            self.pred_label, self.pred_prob = self.cnn_model.pred_test_img(self.test_dataentry)
+            g.pred_label, g.pred_prob = self.pred_label, self.pred_prob
+
+            # from explain button
+            top_n = TOP_N_NMNH
+
+            scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label,
+                                                                                 self.data, self.fe, top_n,
+                                                                                 self.distance_measure, rgb=self.rgb)
+            scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry,
+                                                                                    self.pred_label, self.data, self.fe,
+                                                                                    top_n, self.distance_measure,
+                                                                                    rgb=self.rgb)
+
+            g.nearest_hits = zip([x.img_path for x in ranked_nearest_hit_data_entry], scores_nearest_hit,
+                                 ['nh_' + str(i + 1) for i in range(top_n)])
+            g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss,
+                                   ['nm_' + str(i + 1) for i in range(top_n)])
+
+            # # use_CNN_feature_embeddding = True
+            # num_prototypes = 3
+            # # if use_CNN_feature_embeddding:
+            # #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', dict_datasets[self.sel_dataset].fe.fe_model.name ,self.sel_dataset)
+            # # else:
+            # #     DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData",self.sel_dataset)
+            #
+            # DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dict_datasets[self.sel_dataset].fe.fe_model.name, self.sel_dataset)
+            # protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(num_prototypes) + '.json')
+            #
+            # if os.path.exists(protos_file):
+            #     print('LOADING ...')
+            #     with open(protos_file, 'r') as fp:
+            #         self.prototypes_per_class_img_files = json.load(fp)
+            # else:
+            #     print(protos_file)
+            #
+            # prototypes_per_class = get_prototypes_by_img_files(data=self.data, protos_dict=self.prototypes_per_class_img_files)
+            # g.prototypes = prototypes_per_class[self.pred_label[0]]
+            # print("PROTOTYPES: ", prototypes_per_class)
+
+            return jsonify([{'elem': 'test-image',
+                             'content': render_template_string(
+                                 '<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">\
+                                 <p>Image Name: <b>{{ g.test_img_path.split("test/")[1] }}</b></p>')},
+                            {'elem': 'test-prediction', 'content': render_template_string(
+                                '<p>Predicted Label: <b>{{ g.pred_label }}</b></p>\
+                                <p>Predicted Probability: <b>{{ g.pred_prob }}</b></p>')},
+                            # '<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">'
+                            # g.test_img_path = value.split("static/")[1]
+                            # {'elem': 'protos-images',
+                            #  'content': render_template_string('<h2>Prototypes:</h2><div class="row">\
+                            #  <div class="carousel clearfix"><div class="carousel-view clearfix">\
+                            #  {% for proto in g.prototypes %}<div class="box">\
+                            #  <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                            #  <img src="./static/{{ proto.img_path.split("static/")[1] }}" alt="file://{{ proto.img_path }}" width="200px" height="200px">\
+                            #  <figcaption>{{ proto.ground_truth_label }}</figcaption></figure></div>{% endfor %}</div></div></div>')},
+                            {'elem': 'nh-nm-images',
+                             'content': render_template_string('<h2>Nearest Hits:</h2><div class="row">\
+                         {% for nearest_hit in g.nearest_hits %}<div id="{{ nearest_hit[2] }}">\
+                         <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                         <img src="./static/{{ nearest_hit[0].split("static/")[1] }}" alt="file://{{ nearest_hit[0] }}" width="200px" height="200px">\
+                         <figcaption>{{ nearest_hit[1] }}</figcaption></figure></div>{% endfor %}</div>\
+                         <h2>Nearest Misses:</h2><div class="row">\
+                         {% for nearest_miss in g.nearest_misses %}<div id="{{ nearest_miss[2] }}">\
+                         <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">\
+                         <img src="./static/{{ nearest_miss[0].split("static/")[1] }}" alt="file://{{ nearest_miss[0] }}" width="200px" height="200px">\
+                         <figcaption>{{ nearest_miss[1] }}</figcaption></figure></div>{% endfor %}</div>')
+                             }
+                            ])
 
         return super(self).callbacks()
 
