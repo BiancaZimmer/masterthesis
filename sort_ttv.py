@@ -224,5 +224,5 @@ if __name__ == "__main__":
     checkmove()
 
     toc = time.time()
-    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+    print("{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
                                     ((toc - tic) % 60)))

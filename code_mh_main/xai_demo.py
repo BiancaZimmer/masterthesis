@@ -104,7 +104,7 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
 # use_CNN_feature_embedding = True
 
 toc = time.time()
-print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+print("{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
                                 ((toc - tic) % 60)))
 
 

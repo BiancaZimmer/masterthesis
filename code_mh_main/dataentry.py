@@ -157,7 +157,7 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
 
         toc = time.time()
         print("Creating Feature Embeddings needed: ",
-              "{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+              "{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
                                         ((toc - tic) % 60)))
 
         a = input("Do you want to train another feature embedding? [y/n]")
@@ -209,5 +209,5 @@ if __name__ == '__main__':
     # print("")
     #
     # toc = time.time()
-    # print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+    # print("{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
     #                                 ((toc - tic) % 60)))

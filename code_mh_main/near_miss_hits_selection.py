@@ -380,7 +380,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
             get_nearest_miss_multi(rnd_img, data.available_classes, pred_label, data.data, fe, top_n, distance_measure)
 
     toc = time.time()
-    print("{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+    print("{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
                                     ((toc - tic) % 60)))
 
     # Show random image and its near misses and hits
