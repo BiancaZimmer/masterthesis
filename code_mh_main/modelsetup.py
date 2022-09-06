@@ -23,6 +23,7 @@ from tensorflow.keras import backend
 from tensorflow.keras.optimizers import RMSprop, Adam
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.preprocessing import LabelEncoder
+from sklearn.utils import compute_class_weight
 
 
 import keras
@@ -270,20 +271,30 @@ class ModelSetup():
         :param save_model: Set to `False` if the model should not be saved, defaults to True
         :type save_model: bool, optional
         """
-        # TODO: add over/undersampling for biased datasets
+
         model_save_path = os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5')
 
         early_stop = EarlyStopping(monitor='val_loss', patience=patience)
         checkpoint = ModelCheckpoint(filepath=model_save_path, verbose=1, save_best_only=save_model, monitor='val_loss')
+        class_weights = None
 
         tic = time.time()
-        results = self.model.fit_generator(self.train_set, 
-                                    epochs=n_epochs, 
-                                    validation_data=self.test_set,
-                                    callbacks=[early_stop, checkpoint])
+
+        # if data set is imbalanced calculate class weights for the loss function; else this is None
+        if IMBALANCED:
+            y_train = [x.y for x in self.dataset.data]
+            class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+            class_weights = {i: class_weights[i] for i in np.unique(y_train)}
+            print("Class weights for imbalanced data: ", class_weights)
+
+        results = self.model.fit_generator(self.train_set,
+                                           epochs=n_epochs,
+                                           validation_data=self.test_set,
+                                           callbacks=[early_stop, checkpoint],
+                                           class_weight=class_weights)
         toc = time.time()
         print("Training needed: ",
-              "{}h {}min {}sec ".format(round(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+              "{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
                                         ((toc - tic) % 60)))
         
         if save_model:
@@ -638,7 +649,7 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
             plot_losses = True
         sel_model.eval(plot_losses=plot_losses)
         sel_model.plot_rand10_pred()
-        if missclassified:
+        if missclassified:   # TODO redundant? rename?
             plotmisclassified = True
         quality_misclassified = sel_model.get_misclassified(plot=plotmisclassified)
 
