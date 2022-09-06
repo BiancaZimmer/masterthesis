@@ -30,21 +30,21 @@ def code_from_prototype_selection(dataset_name):
         dataset = DataSet(name=dataset_name, fe=fe)
 
         # Initialize Prototype Selector
-        num_prototypes = input("How many prototypes do you want to calculate? Type an integer.")
+        num_prototypes = input("How many prototypes do you want to calculate? Type an integer. ")
 
-        a = input("Do you want to show the selected prototypes? [y/n]")
+        a = input("Do you want to show the selected prototypes? [y/n] ")
         make_plots_protos = True
         if a == "n":
             make_plots_protos = False
 
         a = input("Should the prototypes be calculated on the basis of the embeddings "
-                                                   "or on the raw data? [e/r]")
+                  "or on the raw data? [e/r] ")
         use_image_embeddings_for_protoypes = False
         if a == "e":
             use_image_embeddings_for_protoypes = True
 
         gamma_value = input("What gamma value do you want to use for the prototype selection?"
-                            "Type a positive floating number or 'help'.")
+                            "Type a positive floating number or 'help'. ")
         while gamma_value == "help" or gamma_value < 0:
             print("Your gamma value is either smaller than 0 or you typed help. \n"
                   "Here are some sample gamma values that we deem to be a good fit: \n"
@@ -59,7 +59,7 @@ def code_from_prototype_selection(dataset_name):
                   "For 4 class Kermany et al. OCT data set: \n"
                   "-------------")
             gamma_value = input("What gamma value do you want to use for the prototype selection?"
-                                "Type a positive floating number or 'help'.")
+                                "Type a positive floating number or 'help'. ")
 
         tester = PrototypesSelector_MMD(dataset, num_prototypes=int(num_prototypes),
                                         use_image_embeddings=use_image_embeddings_for_protoypes,
@@ -127,26 +127,29 @@ def crop_train_test_val(dataset_to_use, crop='y', centre='c'):
 def questions_training(dataset_to_use):
     from tensorflow.keras.models import load_model
 
-    fit = input("Do you want to fit (f) a CNN model or load (l) an exciting one? [f/l] ")
-    modeltype = input("What kind of model do you want to train? [cnn/vgg/inception] ")
+    fit = input("Do you want to fit (f) a model or load (l) an exciting one? [f/l] ")
     if fit == "f":
-        suffix_path = input("What should the suffix of your cnn_model be? Type a string. e.g. _testcnn ")
+        modeltype = input("What kind of model do you want to train? [cnn/vgg/inception] ")
+        suffix_path = input("What should the suffix of your model be? Type a string. e.g. _testcnn ")
         model_for_feature_embedding = None
+        fit = True
     else:
-        suffix_path = input("What is the suffix of your cnn_model? Type a string. e.g. _testcnn ")
+        suffix_path = input("What is the suffix of your model? Type a string. e.g. _testcnn ")
+        modeltype = input("What kind of model is your loaded model? [cnn/vgg/inception] ")
         model_for_feature_embedding = load_model(
             os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
+        fit = False
 
-    a = input("Do you want to run the evaluation of your CNN model? [y/n] ")
+    a = input("Do you want to run the evaluation of your model? [y/n] ")
     eval = False
     loss = False
     missclassified = False
     if a == "y":
         eval = True
-        b = input("Do you want to plot the loss and accuracy of your CNN model? [y/n] ")
+        b = input("Do you want to plot the loss and accuracy of your model? [y/n] ")
         if b == "y":
             loss = True
-        b = input("Do you want to plot the evaluation of the miss-classified data of your CNN model? [y/n] ")
+        b = input("Do you want to plot the evaluation of the miss-classified data of your model? [y/n] ")
         if b == "y":
             missclassified = True
 
