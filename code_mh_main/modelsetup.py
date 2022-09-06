@@ -195,6 +195,7 @@ class ModelSetup():
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Flatten())
         self.model.add(Dense(224))
+        # self.model.add(Dropout(0.8))
         self.model.add(Activation('relu'))
         self.model.add(Dense(len(self.labelencoder.classes_)))
         self.model.add(Activation('softmax'))
@@ -369,7 +370,7 @@ class ModelSetup():
         else:
             img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
         
-        prediction = self.model.predict(img_pred)
+        prediction = self.model.predict(img_pred, verbose=0)
         # print(prediction)
         
         img = cv2.imread(test_dataentry.img_path)
@@ -485,19 +486,18 @@ class ModelSetup():
 
         misclassified = []
         
-        print(f'[=>] {len(idx_misclassified)} missclassfied Images with names: {misclassified_names}')
+        print(f'[=>] {len(idx_misclassified)} misclassified images with names: {misclassified_names}')
 
-        plt.figure(figsize=(20,8))
+        plt.figure(figsize=(20, 8))
         for i, idx in enumerate(idx_misclassified):
 
             misclassified.append(self.dataset.data_t[idx])
-
-            img = cv2.imread(self.dataset.data_t[idx].img_path)
-            label = self.dataset.data_t[idx].ground_truth_label
-
-            predicted_label, prob = self.pred_test_img(self.dataset.data_t[idx], plot=False)
             
             if plot:
+                img = cv2.imread(self.dataset.data_t[idx].img_path)
+                label = self.dataset.data_t[idx].ground_truth_label
+                predicted_label, prob = self.pred_test_img(self.dataset.data_t[idx], plot=False)
+
                 plt.subplot(int(np.ceil(len(idx_misclassified)/5)), 5, i+1)
                 
                 plt.title(f"{self.dataset.data_t[idx].img_name}\n\
