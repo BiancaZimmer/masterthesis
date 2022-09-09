@@ -31,6 +31,7 @@ class FeatureExtractor:
 
         if (not options_cnn) and feature_model_output_layer is None:
             options_cnn = True
+            print("CARFEUL!")
             warnings.warn("No output layer for feature model specified. Standards for CNN will be used."
                           "Possible values would be for example: \n"
                           "loaded_model.get_layer('flatten').output for VGG16 \n"
@@ -43,10 +44,10 @@ class FeatureExtractor:
             self.fe_model = Model(inputs=model.input, outputs=model.get_layer("flatten").output, name="VGG16")
         elif options_cnn:
             if BINARY & use_flatten:        # never used
-                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output,
+                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.get_layer("flatten").output,  # layers[-5].output,
                                       name="SimpleCNN_flatten")
             elif (not BINARY) & use_flatten:  # never used
-                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-5].output,
+                self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.get_layer("flatten").output,  # layers[-5].output,
                                       name="MultiCNN_flatten")
             elif not BINARY:
                 self.fe_model = Model(inputs=loaded_model.input, outputs=loaded_model.layers[-3].output,

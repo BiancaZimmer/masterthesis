@@ -610,17 +610,19 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
     plotmisclassified = False
     suffix_path = suffix_path
     options_cnn = False
-    if type == "cnn":
+    if type_of_model == "cnn":
         options_cnn = True
 
     # dictionary of data sets to use
-    dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model_for_feature_embedding,
-                                                                    model_name=str.upper(type), options_cnn=options_cnn,
-                                                                    feature_model_output_layer=feature_model_output_layer))
+    dataset_used = DataSet(name=dataset_to_use,
+                           fe=FeatureExtractor(loaded_model=model_for_feature_embedding,
+                                               model_name=str.upper(type_of_model),
+                                               options_cnn=options_cnn,
+                                               feature_model_output_layer=feature_model_output_layer))
     # initialize model
     sel_model = ModelSetup(dataset_used)
     sel_model.correct_for_imbalanced_data = correct_for_imbalanced_data
-    if type == 'cnn':
+    if type_of_model == 'cnn':
         sel_model.mode_rgb = False
     else:
         sel_model.mode_rgb = True
@@ -632,9 +634,9 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
         if BINARY:
             sel_model._binary_cnn_model()
         else:
-            if type == 'cnn':
+            if type_of_model == 'cnn':
                 sel_model._multiclass_cnn_model()
-            elif type == 'vgg':
+            elif type_of_model == 'vgg':
                 sel_model._multiclass_transferlearning_vgg16_model()
             else:
                 sel_model._multiclass_transferlearning_inception_model()
@@ -662,7 +664,7 @@ if __name__ == "__main__":
               "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
-    train_eval_model(dataset_to_use, fit = False, type = 'vgg', suffix_path = '_smallvgg',
+    train_eval_model(dataset_to_use, fit = False, type_of_model='vgg', suffix_path ='_smallvgg',
                      model_for_feature_embedding = None,
                      eval = True, loss = False, missclassified = True)
 

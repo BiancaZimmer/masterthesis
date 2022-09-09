@@ -128,7 +128,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
     else:
         feature_model_output_layer = model.layers[-3].output
 
-    setup_model = train_eval_model(dataset_to_use, fit=False, type=type_of_model, suffix_path=suffix_path,
+    setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
                                    eval=False, loss=False, missclassified=False,
                                    feature_model_output_layer=feature_model_output_layer)
@@ -228,7 +228,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
     else:
         feature_model_output_layer = model.layers[-3].output
 
-    setup_model = train_eval_model(dataset_to_use, fit=False, type=type_of_model, suffix_path=suffix_path,
+    setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
                                    eval=False, loss=False, missclassified=False,
                                    feature_model_output_layer=feature_model_output_layer)

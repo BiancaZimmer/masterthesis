@@ -183,7 +183,7 @@ if __name__ == '__main__':
     training = questions_training(dataset_to_use)
     # training = [True, 'cnn', '_cnnori_balanced', None, True, True, False, True]
     # training = [False, 'cnn', '_cnn5c2d6bn_balanced', None, False, False, False]
-    setup_model = train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
+    setup_model = train_eval_model(dataset_to_use, fit=training[0], type_of_model=training[1], suffix_path=training[2],
                                    model_for_feature_embedding=training[3],
                                    eval=training[4], loss=training[5], missclassified=training[6],
                                    correct_for_imbalanced_data=training[7])
@@ -199,7 +199,7 @@ if __name__ == '__main__':
         new_embedding = False
         print("No feature embeddings created. ")
     else:
-        code_from_dataentry(dataset_to_use, suffix_path)
+        code_from_dataentry(dataset_to_use, suffix_path, type_of_model=training[1])
 
     # Create prototypes
     a = input("Do you want to create the prototypes for your current data set now? [y/n] ")
