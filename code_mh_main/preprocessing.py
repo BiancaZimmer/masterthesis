@@ -127,12 +127,15 @@ def crop_train_test_val(dataset_to_use, crop='y', centre='c'):
 def questions_training(dataset_to_use):
     from tensorflow.keras.models import load_model
 
+    imbalanced = False
     fit = input("Do you want to fit (f) a model or load (l) an exciting one? [f/l] ")
     if fit == "f":
         modeltype = input("What kind of model do you want to train? [cnn/vgg/inception] ")
         suffix_path = input("What should the suffix of your model be? Type a string. e.g. _testcnn ")
         model_for_feature_embedding = None
         fit = True
+        if input("Do you want to correct the training for imbalanced data set? [y/n] ") == 'y':
+            imbalanced = True
     else:
         suffix_path = input("What is the suffix of your model? Type a string. e.g. _testcnn ")
         modeltype = input("What kind of model is your loaded model? [cnn/vgg/inception] ")
@@ -140,20 +143,17 @@ def questions_training(dataset_to_use):
             os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
         fit = False
 
-    a = input("Do you want to run the evaluation of your model? [y/n] ")
-    eval = False
+    eval_ = False
     loss = False
-    missclassified = False
-    if a == "y":
-        eval = True
-        b = input("Do you want to plot the loss and accuracy of your model? [y/n] ")
-        if b == "y":
+    misclassified = False
+    if input("Do you want to run the evaluation of your model? [y/n] ") == "y":
+        eval_ = True
+        if input("Do you want to plot the loss and accuracy of your model? [y/n] ") == "y":
             loss = True
-        b = input("Do you want to plot the evaluation of the miss-classified data of your model? [y/n] ")
-        if b == "y":
-            missclassified = True
+        if input("Do you want to plot the evaluation of the miss-classified data of your model? [y/n] ") == "y":
+            misclassified = True
 
-    return [fit, modeltype, suffix_path, model_for_feature_embedding, eval, loss, missclassified]
+    return [fit, modeltype, suffix_path, model_for_feature_embedding, eval_, loss, misclassified, imbalanced]
 
 
 if __name__ == '__main__':
@@ -181,11 +181,12 @@ if __name__ == '__main__':
 
     # Train or load and evaluate CNN Model
     training = questions_training(dataset_to_use)
-    # training = [True, 'cnn', '_multicnn2', None, True, True, False]
-    # training = [False, 'cnn', '_multicnn', None, False, False, False]
+    # training = [True, 'cnn', '_cnnori_balanced', None, True, True, False, True]
+    # training = [False, 'cnn', '_cnn5c2d6bn_balanced', None, False, False, False]
     setup_model = train_eval_model(dataset_to_use, fit=training[0], type=training[1], suffix_path=training[2],
                                    model_for_feature_embedding=training[3],
-                                   eval=training[4], loss=training[5], missclassified=training[6])
+                                   eval=training[4], loss=training[5], missclassified=training[6],
+                                   correct_for_imbalanced_data=training[7])
     suffix_path = training[2]
 
     # Create feature embeddings

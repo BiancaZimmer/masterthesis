@@ -78,8 +78,6 @@ def methods_mnist():
         # Signal
         ("guided_backprop", {}, bk_proj, "Guided Backprop"),
         # # Interaction
-        # ("lrp.z", {}, heatmap, "LRP-Z"),
-        # ("lrp.epsilon", {"epsilon": 1}, heatmap, "LRP-Epsilon"),
         ("lrp.sequential_preset_a", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetA"),
         ("lrp.sequential_preset_b", {"epsilon": 0.11}, heatmap, "LRPSequentialPresetB"),
         ("lrp.sequential_preset_a_flat", {}, heatmap, "LRPSequentialPresetAFlat"),
@@ -108,17 +106,10 @@ def methods_oct():
         # NAME                    OPT.PARAMS                POSTPROC FXN            TITLE
         # Show input
         ("input", {}, scale, "Input"),
-        # # Function
-        # ("gradient", {"postprocess": "abs"}, graymap, "Gradient"),
-        # # Signal
-        # ("guided_backprop", {}, bk_proj, "Guided Backprop"),
         # # Interaction
-        # ("lrp.alpha_2_beta_1_IB", {}, heatmap, "LRPAlpha2Beta1IgnoreBias"),
         ("lrp.alpha_1_beta_0", {}, heatmap, "LRPAlpha1Beta0"),
         ("lrp.sequential_preset_a", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetA"),  # epsilon?
-        # ("lrp.sequential_preset_b", {}, heatmap, "LRPSequentialPresetB"),
         ("lrp.sequential_preset_a_flat", {}, heatmap, "LRPSequentialPresetAFlat"),
-        # ("lrp.sequential_preset_b_flat", {}, heatmap, "LRPSequentialPresetBFlat"),
         ("lrp.sequential_preset_b_flat_until_idx", {}, heatmap, "LRPSequentialPresetBFlatUntilIdx")
     ]
     return methods

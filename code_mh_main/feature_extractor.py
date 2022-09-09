@@ -125,13 +125,5 @@ if __name__ == "__main__":
 
     print(f'Possible dataset: {dict_datasets.keys()}')
 
-    # TEST
-    # test if CNN model can be loaded and used as a FE
-    # sel_model = CNNmodel(dict_datasets[DATA_DIR_FOLDERS[0]])  # TODO: careful always takes first data set!
-    # sel_model.load_model()
-    # sel_model._preprocess_img_gen()
-    # fe = FeatureExtractor(loaded_model=sel_model.model)
-    # print(fe.fe_model.name)
-    # fe.load_preprocess_img(dict_datasets[sel_model.selected_dataset].data_t[99].img_path)
 
 
