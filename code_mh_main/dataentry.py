@@ -124,8 +124,8 @@ class DataEntry:
         return np.squeeze(x, axis=0)
        
 
-def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate='current'):
-    from modelsetup import load_model_from_folder
+def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate='current', type_of_model="cnn"):
+    from modelsetup import load_model_from_folder, get_output_layer
     from feature_extractor import FeatureExtractor
 
     # CODE FROM DATAENTRY.PY
@@ -137,7 +137,10 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
         # set feature extractor
         if feature_embeddings_to_initiate == "current":
             # gets FE from a loaded CNN with the dataset name and a suffix
-            fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset, suffix_path=suffix_path))
+            sel_model = load_model_from_folder(dataset, suffix_path=suffix_path)
+            fe = FeatureExtractor(loaded_model=sel_model,
+                                  options_cnn=True if type_of_model == "cnn" else False,
+                                  feature_model_output_layer=get_output_layer(sel_model, type_of_model))
         else:
             # Standard FE for general model:
             fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)

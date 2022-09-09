@@ -123,10 +123,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
     model = load_model(
         os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
 
-    if type_of_model == "vgg":
-        feature_model_output_layer = model.get_layer('flatten').output
-    else:
-        feature_model_output_layer = model.layers[-3].output
+    feature_model_output_layer = get_output_layer(model, type_of_model)
 
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
@@ -223,10 +220,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
     model = load_model(
         os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
 
-    if type_of_model == "vgg":
-        feature_model_output_layer = model.get_layer('flatten').output
-    else:
-        feature_model_output_layer = model.layers[-3].output
+    feature_model_output_layer = get_output_layer(model, type_of_model)
 
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,

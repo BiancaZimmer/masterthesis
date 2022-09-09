@@ -585,10 +585,21 @@ def load_model_from_folder(sel_dataset: str, suffix_path: str = ''):
     return model
 
 
-def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_testincep',
+def get_output_layer(model, type_of_model):
+    if type_of_model == "vgg":
+        return model.get_layer('flatten').output
+    elif type_of_model == "cnn":
+        return model.layers[-3].output
+    else:
+        print("Output layer not defined for this type of model")
+        warnings.warn("Output layer not defined for this type of model")
+        return None
+
+
+def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_path ='_testincep',
                      model_for_feature_embedding = None,
                      eval = False, loss = False, missclassified = False,
-                     feature_model_output_layer = None):
+                     feature_model_output_layer = None, correct_for_imbalanced_data = True):
     """ Essentially this is the code to run for fitting/loading/evaluating a cnn model
     :param dataset_to_use: A string of the folder name of the data set you want to use
 
@@ -612,6 +623,8 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
     options_cnn = False
     if type_of_model == "cnn":
         options_cnn = True
+    if model_for_feature_embedding is not None:
+        feature_model_output_layer = get_output_layer(model_for_feature_embedding, type_of_model)
 
     # dictionary of data sets to use
     dataset_used = DataSet(name=dataset_to_use,
