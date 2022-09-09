@@ -16,7 +16,7 @@ import math
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Conv2D, MaxPooling2D, BatchNormalization
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.utils import plot_model, to_categorical
 from tensorflow.keras import backend
@@ -176,24 +176,49 @@ class ModelSetup():
 
         print(self.model.summary())
 
-    def _multiclass_cnn_model(self):
+    def _multiclass_cnn_model(self, use_original_cnn: bool = False):
         """Set up MultiCNN for multi class image classification.
+
+        :param use_original_cnn: If set to True the smaller, original CNN of Marvin Herchenbach et al. is used. Else a bigger one with Batch Normalization is used
+        :type use_original_cnn: boolean, optional, default = False
         """
         image_shape = (self.img_size, self.img_size, 1)
-
         backend.clear_session()
         print('Clear Session & Setup Model ...')
 
-        self.model = Sequential()
-        self.model.add(Conv2D(filters=8, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Flatten())
-        self.model.add(Dense(224))
-        # self.model.add(Dropout(0.8))
+        if use_original_cnn:
+            self.model = Sequential()
+            self.model.add(Conv2D(filters=8, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Flatten())
+            self.model.add(Dense(224))
+        else:
+            self.model = Sequential()
+            self.model.add(Conv2D(filters=8, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(BatchNormalization())
+            self.model.add(Conv2D(filters=16, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(BatchNormalization())
+            self.model.add(Conv2D(filters=32, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(BatchNormalization())
+            self.model.add(Conv2D(filters=64, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(BatchNormalization())
+            self.model.add(Conv2D(filters=128, kernel_size=(3,3),input_shape=image_shape, activation='relu', padding='same'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Flatten())
+            self.model.add(Dense(256))
+            self.model.add(Dropout(0.5))
+            self.model.add(Dense(128))
+            self.model.add(Dropout(0.5))
+            self.model.add(BatchNormalization())
+
         self.model.add(Activation('relu'))
         self.model.add(Dense(len(self.labelencoder.classes_)))
         self.model.add(Activation('softmax'))
