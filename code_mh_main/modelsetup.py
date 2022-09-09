@@ -80,34 +80,32 @@ class ModelSetup():
         self.predictions = None
         # for multiclass
         self.labelencoder = None
+        # for imbalanced data
+        self.correct_for_imbalanced_data = True
 
-    def _preprocess_img_gen(self, rgb=False):
+    def _preprocess_img_gen(self):
         """Based on the given dataset, the ImageDataGenerator for the models are created.
         """
 
         # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
         if BINARY:  # difference to not BINARY is only that we use ground_truth_label instead of y (folder index vs str)
-            if rgb:  # convert image to rgb, no array expansion needed
-                self.mode_rgb = True
+            if self.mode_rgb:  # convert image to rgb, no array expansion needed
                 train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
                               for x in self.dataset.data]
                 test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
                              for x in self.dataset.data_t]
             else:  # convert image to grayscale, need to expand array by 1 dimension
-                self.mode_rgb = False
                 train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
                               for x in self.dataset.data]
                 test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
                              for x in self.dataset.data_t]
         else:
-            if rgb:  # convert image to rgb, no array expansion needed
-                self.mode_rgb = True
+            if self.mode_rgb:  # convert image to rgb, no array expansion needed
                 train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                               for x in self.dataset.data]
                 test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                              for x in self.dataset.data_t]
             else:  # convert image to grayscale, need to expand array by 1 dimension
-                self.mode_rgb = False
                 train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
                               for x in self.dataset.data]
                 test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
@@ -199,7 +197,6 @@ class ModelSetup():
         self.model.add(Activation('relu'))
         self.model.add(Dense(len(self.labelencoder.classes_)))
         self.model.add(Activation('softmax'))
-
         self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         print(self.model.summary())
@@ -275,24 +272,24 @@ class ModelSetup():
 
         model_save_path = os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.hdf5')
 
-        early_stop = EarlyStopping(monitor='val_loss', patience=patience)
+        early_stop = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
         checkpoint = ModelCheckpoint(filepath=model_save_path, verbose=1, save_best_only=save_model, monitor='val_loss')
         class_weights = None
 
         tic = time.time()
 
         # if data set is imbalanced calculate class weights for the loss function; else this is None
-        if IMBALANCED:
+        if self.correct_for_imbalanced_data:
             y_train = [x.y for x in self.dataset.data]
             class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
             class_weights = {i: class_weights[i] for i in np.unique(y_train)}
             print("Class weights for imbalanced data: ", class_weights)
 
-        results = self.model.fit_generator(self.train_set,
-                                           epochs=n_epochs,
-                                           validation_data=self.test_set,
-                                           callbacks=[early_stop, checkpoint],
-                                           class_weight=class_weights)
+        results = self.model.fit(self.train_set,
+                                 epochs=n_epochs,
+                                 validation_data=self.test_set,
+                                 callbacks=[early_stop, checkpoint],
+                                 class_weight=class_weights)
         toc = time.time()
         print("Training needed: ",
               "{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
@@ -620,14 +617,16 @@ def train_eval_model(dataset_to_use, fit = True, type = 'vgg', suffix_path = '_t
     dataset_used = DataSet(name=dataset_to_use, fe=FeatureExtractor(loaded_model=model_for_feature_embedding,
                                                                     model_name=str.upper(type), options_cnn=options_cnn,
                                                                     feature_model_output_layer=feature_model_output_layer))
-
+    # initialize model
     sel_model = ModelSetup(dataset_used)
+    sel_model.correct_for_imbalanced_data = correct_for_imbalanced_data
+    if type == 'cnn':
+        sel_model.mode_rgb = False
+    else:
+        sel_model.mode_rgb = True
 
     # initialize img generator
-    if type == 'cnn':
-        sel_model._preprocess_img_gen(rgb=False)
-    else:
-        sel_model._preprocess_img_gen(rgb=True)
+    sel_model._preprocess_img_gen()
 
     if fit:
         if BINARY:
