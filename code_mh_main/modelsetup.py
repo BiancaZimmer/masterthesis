@@ -1,3 +1,4 @@
+import sys
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -14,6 +15,7 @@ import random
 import time
 import math
 import gc
+import psutil
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from tensorflow.keras.models import Sequential, load_model
@@ -128,8 +130,46 @@ class ModelSetup():
         y_train = np.array(y_train_temp)
         del X_test_temp, y_test_temp, y_train_temp
         gc.collect()
+        print("size of train temp ", sys.getsizeof(X_train_temp))
+        print("swap_memory: ", psutil.swap_memory())
+        print("Split")
+        idx = np.round(np.linspace(0, len(X_train_temp), 6)).astype(int)  # sequence 1:len(X_train_temp) in 5 portions
+        X_train_temp_1 = X_train_temp[idx[0]:idx[1]]
+        X_train_temp_2 = X_train_temp[idx[1]:idx[2]]
+        X_train_temp_3 = X_train_temp[idx[2]:idx[3]]
+        X_train_temp_4 = X_train_temp[idx[3]:idx[4]]
+        X_train_temp_5 = X_train_temp[idx[4]:idx[5]]
+        print("size of train temp 1", sys.getsizeof(X_train_temp_1))
+        print("swap_memory: ", psutil.swap_memory())
+        del X_train_temp
+        gc.collect()
         print("Convert to arrays 1")
-        X_train = np.array(X_train_temp)
+        print("swap_memory: ", psutil.swap_memory())
+        X_train = np.array(X_train_temp_1)
+        del X_train_temp_1
+        gc.collect()
+        print("Convert to arrays 2")
+        print("swap_memory: ", psutil.swap_memory())
+        X_train = np.concatenate((X_train, np.array(X_train_temp_2)), axis=0)
+        del X_train_temp_2
+        gc.collect()
+        print("Convert to arrays 3")
+        print("swap_memory: ", psutil.swap_memory())
+        X_train = np.concatenate((X_train, np.array(X_train_temp_3)), axis=0)
+        del X_train_temp_3
+        gc.collect()
+        print("Convert to arrays 4")
+        print("swap_memory: ", psutil.swap_memory())
+        X_train = np.concatenate((X_train, np.array(X_train_temp_4)), axis=0)
+        del X_train_temp_4
+        gc.collect()
+        print("Convert to arrays 5")
+        print("swap_memory: ", psutil.swap_memory())
+        X_train = np.concatenate((X_train, np.array(X_train_temp_5)), axis=0)
+        del X_train_temp_5
+        gc.collect()
+        # X_train = np.array(X_train_temp)
+        print("swap_memory: ", psutil.swap_memory())
         print('X_train shape: ', X_train.shape)
 
         if not BINARY:
@@ -165,6 +205,9 @@ class ModelSetup():
         self.train_set = image_gen.flow(X_train, y_train, batch_size=self.batch_size, shuffle=True)
 
         self.test_set = image_gen_test.flow(X_test, y_test, batch_size=self.batch_size, shuffle=False)
+
+        del X_train, X_test, y_train, y_test
+        gc.collect()
 
     def _binary_cnn_model(self):
         """Set up SimpleCNN for binary image classification.
