@@ -51,8 +51,7 @@ class DataEntry:
 
         pre, _ = os.path.splitext(os.path.join(DIR_FEATURE_EMBEDDING_DATASET, ntpath.basename(img_path)))
         #entire path to the feature vector of the images
-        self.feature_file = pre + '.npy' 
-        pass
+        self.feature_file = pre + '.npy'
 
     def initiate_feature_embedding(self):
         """Lazy function for extracting the Feature Vector of a single image for the first time
