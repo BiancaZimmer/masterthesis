@@ -13,6 +13,7 @@ import json
 import random
 import time
 import math
+import gc
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from tensorflow.keras.models import Sequential, load_model
@@ -101,10 +102,8 @@ class ModelSetup():
                              for x in self.dataset.data_t]
         else:
             if self.mode_rgb:  # convert image to rgb, no array expansion needed
-                print("Preprocessing train data ...")
                 train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                               for x in self.dataset.data]
-                print("Preprocessing test data ...")
                 test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                              for x in self.dataset.data_t]
             else:  # convert image to grayscale, need to expand array by 1 dimension
@@ -113,11 +112,16 @@ class ModelSetup():
                 test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
                              for x in self.dataset.data_t]
 
-        print("Write into lists ...")
-        X_train = np.array(list(zip(*train_data))[0])
-        y_train = np.array(list(zip(*train_data))[1])
+        print("Write test into lists ...")
         X_test = np.array(list(zip(*test_data))[0])
         y_test = np.array(list(zip(*test_data))[1])
+        del test_data
+        gc.collect()
+        print("Write train into list ...")
+        X_train = np.array(list(zip(*train_data))[0])
+        y_train = np.array(list(zip(*train_data))[1])
+        del train_data
+        gc.collect()
         print('X_train shape: ', X_train.shape)
 
         if not BINARY:
@@ -139,7 +143,7 @@ class ModelSetup():
                 horizontal_flip=True,
                 vertical_flip=True            
             )
-        elif self.selected_dataset == 'oct':
+        elif self.selected_dataset in ['oct', 'oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
             image_gen = ImageDataGenerator(
                 zoom_range=0.1,
                 horizontal_flip=True,
@@ -708,9 +712,9 @@ if __name__ == "__main__":
               "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
-    train_eval_model(dataset_to_use, fit = False, type_of_model='vgg', suffix_path ='_smallvgg',
+    train_eval_model(dataset_to_use, fit = True, type_of_model='vgg', suffix_path='_test',
                      model_for_feature_embedding = None,
-                     eval = True, loss = False, missclassified = True)
+                     eval = False, loss = False, missclassified = True)
 
     # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
