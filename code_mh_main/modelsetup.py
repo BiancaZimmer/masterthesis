@@ -89,90 +89,57 @@ class ModelSetup():
     def _preprocess_img_gen(self):
         """Based on the given dataset, the ImageDataGenerator for the models are created.
         """
+        small = False
+        if small:
+            # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
+            if BINARY:  # difference to not BINARY is only that we use ground_truth_label instead of y (folder index vs str)
+                if self.mode_rgb:  # convert image to rgb, no array expansion needed
+                    train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
+                                  for x in self.dataset.data]
+                    test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
+                                 for x in self.dataset.data_t]
+                else:  # convert image to grayscale, need to expand array by 1 dimension
+                    train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
+                                  for x in self.dataset.data]
+                    test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
+                                 for x in self.dataset.data_t]
+            else:
+                if self.mode_rgb:  # convert image to rgb, no array expansion needed
+                    train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
+                                  for x in self.dataset.data]
+                    test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
+                                 for x in self.dataset.data_t]
+                else:  # convert image to grayscale, need to expand array by 1 dimension
+                    train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
+                                  for x in self.dataset.data]
+                    test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
+                                 for x in self.dataset.data_t]
 
-        # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
-        if BINARY:  # difference to not BINARY is only that we use ground_truth_label instead of y (folder index vs str)
-            if self.mode_rgb:  # convert image to rgb, no array expansion needed
-                train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
-                              for x in self.dataset.data]
-                test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
-                             for x in self.dataset.data_t]
-            else:  # convert image to grayscale, need to expand array by 1 dimension
-                train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
-                              for x in self.dataset.data]
-                test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
-                             for x in self.dataset.data_t]
-        else:
-            if self.mode_rgb:  # convert image to rgb, no array expansion needed
-                y_train_temp = [x.ground_truth_label for x in self.dataset.data]
-                X_test_temp = [x.image_numpy(img_size=self.img_size, mode='RGB') for x in self.dataset.data_t]
-                y_test_temp = [x.ground_truth_label for x in self.dataset.data_t]
-                X_train_temp = [x.image_numpy(img_size=self.img_size, mode='RGB') for x in self.dataset.data]
-            else:  # convert image to grayscale, need to expand array by 1 dimension
-                train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
-                              for x in self.dataset.data]
-                test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
-                             for x in self.dataset.data_t]
-
-        # print("Write into lists ...")
-        # X_test = np.array(list(zip(*test_data))[0])
-        # y_test = np.array(list(zip(*test_data))[1])
-        # del test_data
-        # gc.collect()
-        # X_train = np.array(list(zip(*train_data))[0])
-        # y_train = np.array(list(zip(*train_data))[1])
-        # del train_data
-        # gc.collect()
-
-        print("Convert to arrays ...")
-        X_test = np.array(X_test_temp)
-        y_test = np.array(y_test_temp)
-        y_train = np.array(y_train_temp)
-        del X_test_temp, y_test_temp, y_train_temp
-        gc.collect()
-        # print("size of train temp ", sys.getsizeof(X_train_temp))
-        # print("swap_memory: ", psutil.swap_memory())
-        print("Split")
-        # SECOND TRY
-        print(len(X_train_temp))
-        stepsize = 500
-        X_train = np.array(X_train_temp[:stepsize])
-        tmp = X_train_temp[stepsize:]
-        del X_train_temp
-        gc.collect()
-        X_train_temp = tmp
-        del tmp
-        gc.collect()
-        while len(X_train_temp) > stepsize:
-            print("Index: ", len(X_train_temp))
-            print("size of X_train", sys.getsizeof(X_train))
-            print("swap_memory: ", psutil.swap_memory())
-            X_train = np.concatenate((X_train, np.array(X_train_temp[: stepsize])), axis=0)
-            tmp = X_train_temp[stepsize:]
-            del X_train_temp
+            print("Write into lists ...")
+            X_test = np.array(list(zip(*test_data))[0])
+            y_test = np.array(list(zip(*test_data))[1])
+            del test_data
             gc.collect()
-            X_train_temp = tmp
-            del tmp
+            X_train = np.array(list(zip(*train_data))[0])
+            y_train = np.array(list(zip(*train_data))[1])
+            del train_data
             gc.collect()
 
-        print("Final length: ", len(X_train_temp))
-        X_train = np.concatenate((X_train, np.array(X_train_temp)), axis=0)
-        del X_train_temp
-        gc.collect()
+            print('X_train shape: ', X_train.shape)
 
-        print("swap_memory: ", psutil.swap_memory())
-        print('X_train shape: ', X_train.shape)
+            # TODO Test function to delete feature embeddings + FE
+            # TODO test flow_from_directory
 
-        if not BINARY:
-            # encode class values as integers
-            self.labelencoder = LabelEncoder()
-            self.labelencoder.fit(y_train)
-            y_train = self.labelencoder.transform(y_train)
-            y_test = self.labelencoder.transform(y_test)
-            # print("LE classes from preprocess img gen: ", self.labelencoder.classes_)
-            # convert integers to one hot encoded variables
-            y_train = to_categorical(y_train)
-            y_test = to_categorical(y_test)
+            if not BINARY:
+                # encode class values as integers
+                self.labelencoder = LabelEncoder()
+                self.labelencoder.fit(y_train)
+                y_train = self.labelencoder.transform(y_train)
+                y_test = self.labelencoder.transform(y_test)
+                # print("LE classes from preprocess img gen: ", self.labelencoder.classes_)
+                # convert integers to one hot encoded variables
+                y_train = to_categorical(y_train)
+                y_test = to_categorical(y_test)
 
         print('Initializing Image Generator ...')
         
@@ -193,12 +160,35 @@ class ModelSetup():
 
         image_gen_test = ImageDataGenerator()
 
-        self.train_set = image_gen.flow(X_train, y_train, batch_size=self.batch_size, shuffle=True)
+        if small:
+            self.train_set = image_gen.flow(X_train, y_train, batch_size=self.batch_size, shuffle=True)
+            self.test_set = image_gen_test.flow(X_test, y_test, batch_size=self.batch_size, shuffle=False)
+            del X_train, X_test, y_train, y_test
+            gc.collect()
+        else:
+            if self.mode_rgb:
+                self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
+                                                               target_size=(self.img_size, self.img_size),
+                                                               color_mode='rgb', class_mode='categorical',
+                                                               batch_size=self.batch_size, shuffle=True)
+                self.test_set = image_gen_test.flow_from_directory(self.dataset.DIR_TEST_DATA,
+                                                              target_size=(self.img_size, self.img_size),
+                                                              color_mode='rgb', class_mode='categorical',
+                                                              batch_size=self.batch_size, shuffle=False)
 
-        self.test_set = image_gen_test.flow(X_test, y_test, batch_size=self.batch_size, shuffle=False)
+            else:
+                self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
+                                                               target_size=(self.img_size, self.img_size),
+                                                               color_mode='grayscale', class_mode='categorical',
+                                                               batch_size=self.batch_size, shuffle=True)
+                self.test_set = image_gen.flow_from_directory(self.dataset.DIR_TEST_DATA,
+                                                              target_size=(self.img_size, self.img_size),
+                                                              color_mode='grayscale', class_mode='categorical',
+                                                              batch_size=self.batch_size, shuffle=False)
 
-        del X_train, X_test, y_train, y_test
-        gc.collect()
+            print(self.train_set.class_indices)
+            print(self.train_set.class_indices.keys())
+            # self.labelencoder = LabelEncoder().set_params(**self.train_set.class_indices)
 
     def _binary_cnn_model(self):
         """Set up SimpleCNN for binary image classification.
@@ -276,7 +266,7 @@ class ModelSetup():
         print(self.model.summary())
 
     def _pretrained_network(self, pretrainedmodel, optimizer):
-        numclasses = len(self.labelencoder.classes_)
+        numclasses = 4 # len(self.labelencoder.classes_)  # TODO hardcoded
         base_model = pretrainedmodel  # Topless
         # Add top layer
         x = base_model.output
