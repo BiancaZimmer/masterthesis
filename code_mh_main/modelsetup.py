@@ -102,10 +102,14 @@ class ModelSetup():
                              for x in self.dataset.data_t]
         else:
             if self.mode_rgb:  # convert image to rgb, no array expansion needed
-                X_train = np.array([x.image_numpy(img_size=self.img_size, mode='RGB') for x in self.dataset.data])
-                y_train = np.array([x.ground_truth_label for x in self.dataset.data])
-                X_test = np.array([x.image_numpy(img_size=self.img_size, mode='RGB') for x in self.dataset.data_t])
-                y_test = np.array([x.ground_truth_label for x in self.dataset.data_t])
+                print("List comprehension 1")
+                y_train = [x.ground_truth_label for x in self.dataset.data]
+                print("List comprehension 2")
+                X_test = [x.image_numpy(img_size=self.img_size, mode='RGB') for x in self.dataset.data_t]
+                print("List comprehension 3")
+                y_test = [x.ground_truth_label for x in self.dataset.data_t]
+                print("List comprehension 4")
+                X_train = [x.image_numpy(img_size=self.img_size, mode='RGB') for x in self.dataset.data]
             else:  # convert image to grayscale, need to expand array by 1 dimension
                 train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
                               for x in self.dataset.data]
@@ -121,6 +125,15 @@ class ModelSetup():
         # y_train = np.array(list(zip(*train_data))[1])
         # del train_data
         # gc.collect()
+
+        print("Convert to arrays 4")
+        X_test = np.array(X_test)
+        print("Convert to arrays 3")
+        y_test = np.array(y_test)
+        print("Convert to arrays 2")
+        y_train = np.array(y_train)
+        print("Convert to arrays 1")
+        X_train = np.array(X_train)
         print('X_train shape: ', X_train.shape)
 
         if not BINARY:
