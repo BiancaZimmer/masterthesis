@@ -134,19 +134,19 @@ class ModelSetup():
         # print("swap_memory: ", psutil.swap_memory())
         print("Split")
         # SECOND TRY
-        idx = 4
-        X_train = np.array(X_train_temp[:2])
+        idx = 4500
+        X_train = np.array(X_train_temp[:4000])
         while idx < len(X_train_temp):
             print("Index: ", idx)
             print("size of X_train", sys.getsizeof(X_train))
             print("swap_memory: ", psutil.swap_memory())
-            X_train = np.concatenate((X_train, np.array(X_train_temp[idx//2 : idx])), axis=0)
-            idx = idx*2
+            X_train = np.concatenate((X_train, np.array(X_train_temp[idx-500 : idx])), axis=0)
+            idx = idx+500
         if idx == len(X_train_temp):
             pass
         else:
             print("Last idx: ", idx)
-            X_train = np.concatenate((X_train, np.array(X_train_temp[idx//2 : ])), axis=0)
+            X_train = np.concatenate((X_train, np.array(X_train_temp[idx-500 : ])), axis=0)
 
         # FIRST TRY
         # idx = np.round(np.linspace(0, len(X_train_temp), 6)).astype(int)  # sequence 1:len(X_train_temp) in 5 portions
