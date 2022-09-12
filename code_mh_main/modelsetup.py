@@ -139,7 +139,7 @@ class ModelSetup():
         while idx < len(X_train_temp):
             print("Index: ", idx)
             print("size of X_train", sys.getsizeof(X_train))
-            print("swap_memory: ", psutil.swap_memory()/(1024*1024))
+            print("swap_memory: ", psutil.swap_memory())
             X_train = np.concatenate((X_train, np.array(X_train_temp[idx//2 : idx])), axis=0)
             idx = idx*2
         if idx == len(X_train_temp):
