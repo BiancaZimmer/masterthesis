@@ -130,47 +130,63 @@ class ModelSetup():
         y_train = np.array(y_train_temp)
         del X_test_temp, y_test_temp, y_train_temp
         gc.collect()
-        print("size of train temp ", sys.getsizeof(X_train_temp))
-        print("swap_memory: ", psutil.swap_memory())
+        # print("size of train temp ", sys.getsizeof(X_train_temp))
+        # print("swap_memory: ", psutil.swap_memory())
         print("Split")
-        idx = np.round(np.linspace(0, len(X_train_temp), 6)).astype(int)  # sequence 1:len(X_train_temp) in 5 portions
-        X_train_temp_1 = X_train_temp[idx[0]:idx[1]]
-        X_train_temp_2 = X_train_temp[idx[1]:idx[2]]
-        X_train_temp_3 = X_train_temp[idx[2]:idx[3]]
-        X_train_temp_4 = X_train_temp[idx[3]:idx[4]]
-        X_train_temp_5 = X_train_temp[idx[4]:idx[5]]
-        print("size of train temp 1", sys.getsizeof(X_train_temp_1))
-        print("swap_memory: ", psutil.swap_memory())
-        del X_train_temp
-        gc.collect()
-        print("Convert to arrays 1")
-        print("swap_memory: ", psutil.swap_memory())
-        X_train = np.array(X_train_temp_1)
-        del X_train_temp_1
-        gc.collect()
-        print("Convert to arrays 2")
-        print("swap_memory: ", psutil.swap_memory())
-        X_train = np.concatenate((X_train, np.array(X_train_temp_2)), axis=0)
-        del X_train_temp_2
-        gc.collect()
-        print("Convert to arrays 3")
-        print("swap_memory: ", psutil.swap_memory())
-        X_train = np.concatenate((X_train, np.array(X_train_temp_3)), axis=0)
-        del X_train_temp_3
-        gc.collect()
-        print("Convert to arrays 4")
-        print("swap_memory: ", psutil.swap_memory())
-        X_train = np.concatenate((X_train, np.array(X_train_temp_4)), axis=0)
-        del X_train_temp_4
-        gc.collect()
-        print("Convert to arrays 5")
-        print("swap_memory: ", psutil.swap_memory())
-        X_train = np.concatenate((X_train, np.array(X_train_temp_5)), axis=0)
-        del X_train_temp_5
-        gc.collect()
+        # SECOND TRY
+        idx = 4
+        X_train = np.array(X_train_temp[:2])
+        while idx < len(X_train_temp):
+            print("Index: ", idx)
+            print("size of X_train", sys.getsizeof(X_train))
+            print("swap_memory: ", psutil.swap_memory()/(1024*1024))
+            X_train = np.concatenate((X_train, np.array(X_train_temp[idx//2 : idx])), axis=0)
+            idx = idx*2
+        if idx == len(X_train_temp):
+            pass
+        else:
+            print("Last idx: ", idx)
+            X_train = np.concatenate((X_train, np.array(X_train_temp[idx//2 : ])), axis=0)
+
+        # FIRST TRY
+        # idx = np.round(np.linspace(0, len(X_train_temp), 6)).astype(int)  # sequence 1:len(X_train_temp) in 5 portions
+        # X_train_temp_1 = X_train_temp[idx[0]:idx[1]]
+        # X_train_temp_2 = X_train_temp[idx[1]:idx[2]]
+        # X_train_temp_3 = X_train_temp[idx[2]:idx[3]]
+        # X_train_temp_4 = X_train_temp[idx[3]:idx[4]]
+        # X_train_temp_5 = X_train_temp[idx[4]:idx[5]]
+        # print("size of train temp 1", sys.getsizeof(X_train_temp_1))
+        # print("swap_memory: ", psutil.swap_memory())
+        # del X_train_temp
+        # gc.collect()
+        # print("Convert to arrays 1")
+        # print("swap_memory: ", psutil.swap_memory())
+        # X_train = np.array(X_train_temp_1)
+        # del X_train_temp_1
+        # gc.collect()
+        # print("Convert to arrays 2")
+        # print("swap_memory: ", psutil.swap_memory())
+        # X_train = np.concatenate((X_train, np.array(X_train_temp_2)), axis=0)
+        # del X_train_temp_2
+        # gc.collect()
+        # print("Convert to arrays 3")
+        # print("swap_memory: ", psutil.swap_memory())
+        # X_train = np.concatenate((X_train, np.array(X_train_temp_3)), axis=0)
+        # del X_train_temp_3
+        # gc.collect()
+        # print("Convert to arrays 4")
+        # print("swap_memory: ", psutil.swap_memory())
+        # X_train = np.concatenate((X_train, np.array(X_train_temp_4)), axis=0)
+        # del X_train_temp_4
+        # gc.collect()
+        # print("Convert to arrays 5")
+        # print("swap_memory: ", psutil.swap_memory())
+        # X_train = np.concatenate((X_train, np.array(X_train_temp_5)), axis=0)
+        # del X_train_temp_5
+        # gc.collect()
         # X_train = np.array(X_train_temp)
         print("swap_memory: ", psutil.swap_memory())
-        print('X_train shape: ', X_train.shape)
+        # print('X_train shape: ', X_train.shape)
 
         if not BINARY:
             # encode class values as integers
