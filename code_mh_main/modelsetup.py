@@ -101,8 +101,10 @@ class ModelSetup():
                              for x in self.dataset.data_t]
         else:
             if self.mode_rgb:  # convert image to rgb, no array expansion needed
+                print("Preprocessing train data ...")
                 train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                               for x in self.dataset.data]
+                print("Preprocessing test data ...")
                 test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
                              for x in self.dataset.data_t]
             else:  # convert image to grayscale, need to expand array by 1 dimension
@@ -111,6 +113,7 @@ class ModelSetup():
                 test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
                              for x in self.dataset.data_t]
 
+        print("Write into lists ...")
         X_train = np.array(list(zip(*train_data))[0])
         y_train = np.array(list(zip(*train_data))[1])
         X_test = np.array(list(zip(*test_data))[0])
@@ -658,6 +661,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
                                                options_cnn=options_cnn,
                                                feature_model_output_layer=feature_model_output_layer))
     # initialize model
+    print("Setting up model ...")
     sel_model = ModelSetup(dataset_used)
     sel_model.correct_for_imbalanced_data = correct_for_imbalanced_data
     if type_of_model == 'cnn':
@@ -666,6 +670,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
         sel_model.mode_rgb = True
 
     # initialize img generator
+    print("Preprocessing images ...")
     sel_model._preprocess_img_gen()
 
     if fit:
@@ -684,6 +689,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
         sel_model.set_model(suffix_path=suffix_path)
 
     if eval:
+        print("Evaluating model ...")
         if loss:
             plot_losses = True
         sel_model.eval(plot_losses=plot_losses)
