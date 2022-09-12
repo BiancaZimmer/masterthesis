@@ -2,6 +2,7 @@ import os
 import tensorflow as tf
 from tensorflow.keras.models import Sequential, load_model
 import numpy as np
+from matplotlib import pyplot as plt
 
 #workaround for innvestigate:
 import tensorflow as tf
@@ -74,10 +75,10 @@ def methods_mnist():
         # Show input
         ("input", {}, scale, "Input"),
         # Function
-        ("gradient", {"postprocess": "abs"}, graymap, "Gradient"),
+        # ("gradient", {"postprocess": "abs"}, graymap, "Gradient"),  # not working with Batch Normalization
         # Signal
-        ("guided_backprop", {}, bk_proj, "Guided Backprop"),
-        # # Interaction
+        # ("guided_backprop", {}, bk_proj, "Guided Backprop"), # not working with Batch Normalization
+        # Interaction
         ("lrp.sequential_preset_a", {"epsilon": 0.1}, heatmap, "LRPSequentialPresetA"),
         ("lrp.sequential_preset_b", {"epsilon": 0.11}, heatmap, "LRPSequentialPresetB"),
         ("lrp.sequential_preset_a_flat", {}, heatmap, "LRPSequentialPresetAFlat"),
@@ -281,6 +282,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
             )
 
             for aidx, analyzer in enumerate(analyzers):
+                print("Using method ", methods[aidx][3])
                 # Analyze.
                 a = analyzer.analyze(x, neuron_selection=output_neuron)
                 # Apply common postprocessing, e.g., re-ordering the channels for plotting.
@@ -317,29 +319,154 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
         )
 
 
+def generate_LRP_heatmap(x, analyzer, output_neuron):
+    """ Generates one heatmap for one input image
+
+    :param x: image as numpy array
+    :param analyzer: innvestigate analyzer
+    :param output_neuron: neuron (label) for which to output the heatmap
+    :return: heatmap as numpy array
+    """
+    # Add batch axis.
+    x = x[None, :, :, :]
+    # Analyze.
+    a = analyzer.analyze(x, neuron_selection=output_neuron)
+    # Apply common postprocessing, e.g., re-ordering the channels for plotting.
+    a = helpers_innvestigate.postprocess(a)
+    # creating a heatmap - other color types:
+    # "bwr" (lighter in color than seismic
+    # "coolwarm" (grey instead of white as neutral value)
+    # "seismic"
+    a = ivis.heatmap(a, cmap_type='seismic')
+
+    return a[0]
+
+
+def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model, method, parameters, save=True):
+    """ Creates (and saves) LRP heatmaps for every image in the test and train set of a given dataset. This is done for every possible output neuron/label
+
+    :param dataset_to_use: name of dataset
+    :type dataset_to_use: str
+    :param suffix_path: suffix of model of this data set for which the heatmaps should be calculated
+    :type suffix_path: str
+    :param type_of_model: one of cnn/vgg/inception; same as for modelsetup.train_eval_model()
+    :param method: analysis method identifier for the LRP analyzer eg "lrp.sequential_preset_a"
+    :type method: str
+    :param parameters: optional parameters for the LRP analyzer. If none put empty dictionary {} else eg {"epsilon": 0.1}
+    :type parameters: dict
+    :param save: if set to True all generated heatmaps will be saved
+    :type save: bool
+    :return: None
+    """
+    # load model to calculate heatmaps on
+    print(
+        os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),
+        " loading ...")
+    model = load_model(
+        os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
+
+    feature_model_output_layer = get_output_layer(model, type_of_model)
+
+    # connect loaded model with data
+    setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
+                                   model_for_feature_embedding=model,
+                                   eval=False, loss=False, missclassified=False,
+                                   feature_model_output_layer=feature_model_output_layer)
+
+    # prepare data for further processing
+    train_data = setup_model.dataset.data
+    x_test = [file.dataentry_to_nparray() for file in setup_model.dataset.data_t]
+    test_images = list(zip([image_ for image_ in x_test],
+                           [file.ground_truth_label for file in setup_model.dataset.data_t],
+                           [os.path.splitext(file.img_name)[0] for file in setup_model.dataset.data_t]))
+    train_images = list(zip([file.dataentry_to_nparray() for file in train_data],
+                            [file.ground_truth_label for file in train_data],
+                            [os.path.splitext(file.img_name)[0] for file in train_data]))
+
+    # Create model without trailing softmax for analyzer
+    model_wo_softmax = innvestigate.model_wo_softmax(model)
+    try:
+        model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
+    except ValueError:
+        pass  # when there is no layer named "activation" you don't need to rename it
+
+    # Set up analyzer
+    analyzer = innvestigate.create_analyzer(
+        method,  # analysis method identifier as str eg "lrp.sequential_preset_a"
+        model_wo_softmax,  # model without softmax output
+        neuron_selection_mode="index",
+        **parameters  # as dictionary eg {"epsilon": 0.1}
+    )  # optional analysis parameters
+    # Some analyzers require training.
+    # analyzer.fit(train_data_numpy, batch_size=256, verbose=1)  # TODO try out what happens if we skip this: works, brighter colors -> why?
+
+    # if LRP heatmaps should be saved, first create paths to store images in
+    # path will look like this: ./static/heatmaps/MultiCNN/dataset_name/label/imagename_heatmap.png
+    if save:
+        heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', train_data[0].fe.fe_model.name, dataset_to_use)
+        # create the folder for heatmaps if it is not created yet
+        if not os.path.exists(heatmap_directory):
+            os.makedirs(heatmap_directory)
+            for output_neuron in range(len(setup_model.labelencoder.classes_)):
+                output_neuron_label = output_neuron
+                if not BINARY:
+                    output_neuron_label = setup_model.labelencoder.inverse_transform([output_neuron])
+                os.makedirs(os.path.join(heatmap_directory, output_neuron_label[0]))
+
+    # for every image calculate heatmap
+    for image_nr, (x, y, img_name) in enumerate(test_images+train_images):
+        if image_nr % 1000 == 0:
+            print(image_nr, " LRP heatmaps created")
+
+        # create heatmap for every label = output_neuron
+        for output_neuron in range(len(setup_model.labelencoder.classes_)):
+            output_neuron_label = output_neuron
+            if not BINARY:
+                output_neuron_label = setup_model.labelencoder.inverse_transform([output_neuron])
+            heatmap_ = generate_LRP_heatmap(x, analyzer, output_neuron)
+            # plt.imshow(heatmap_, interpolation='none')
+            # plt.show()
+            if save:
+                save_path = os.path.join(heatmap_directory, output_neuron_label[0], img_name)
+                plt.imsave(save_path + "_heatmap.png", heatmap_)
+
+
 if __name__ == '__main__':
     from dataset import DataSet
     from feature_extractor import FeatureExtractor
     from modelsetup import ModelSetup
 
+    # EXAMPLE USAGES:
     # generate_method_comparison(dataset_to_use="mnist", suffix_path="_multicnn", type_of_model="cnn",
-    #                            methods=methods_mnist(), number_images = 10)
+    #                            methods=methods_mnist(), number_images=5)
+
+    # generate_method_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn5c2d6bn_balanced", type_of_model="cnn",
+    #                            methods=methods_mnist(), number_images=5)
 
     # generate_method_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
     #                            methods=methods_oct(), number_images=10)
 
-    generate_method_and_neuron_comparison(dataset_to_use="mnist", suffix_path="_multicnn", type_of_model="cnn",
-                                          methods=methods_mnist(), number_images=1)
+    # generate_method_and_neuron_comparison(dataset_to_use="mnist", suffix_path="_multicnn", type_of_model="cnn",
+    #                                       methods=methods_mnist(), number_images=1)  # PresetA
+
+    # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_cnn5c2d6bn_balanced",
+    #                                       type_of_model="cnn",
+    #                                       methods=methods_oct(), number_images=5)  # Preset A flat
 
     # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
-    #                                       methods=methods_oct(), number_images=3)
+    #                                       methods=methods_oct(), number_images=3)  # Preset A flat
 
     # possible inputs for "methods":
     # methods_grayscale()   for grayscale data
     # methods_mnist()       for dataset mnist
     # methods_oct()         for datasets oct
 
-    # TODO: function to calculate + store LRP Heatmaps
+
+    #
+    generate_LRP_heatmaps_for_dataset(dataset_to_use="mnist_1247", suffix_path="_cnn5c2d6bn_balanced",
+                                      type_of_model="cnn",
+                                      method="lrp.sequential_preset_a", parameters={"epsilon": 0.1})
+
     # TODO: function to compare neuron outputs on x-Axis, images on y-Axis
 
 
