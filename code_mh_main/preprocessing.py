@@ -181,8 +181,8 @@ if __name__ == '__main__':
     # dataset_to_use = "mnist"
 
     # centre crop images?
-    crop, centre = questions_cropping()
-    crop_train_test_val(dataset_to_use, crop = crop, centre = centre)
+    # crop, centre = questions_cropping()
+    # crop_train_test_val(dataset_to_use, crop=crop, centre=centre)
 
     # Train or load and evaluate CNN Model
     training = questions_training(dataset_to_use)
