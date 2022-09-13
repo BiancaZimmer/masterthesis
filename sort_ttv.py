@@ -8,9 +8,10 @@
 # If you do not want a test folder simply set the test split to 0.0
 
 # sample usage:
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
+# python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -a <validationsplit>
+# python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
+# python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
+# python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/MNIST_data_jpg/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
 
 
 import argparse
@@ -112,7 +113,7 @@ def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, 
 
     for l in get_labels():
         # get file names per label
-        fnames = [f for f in os.listdir(os.path.join(imagedir, l)) if f.endswith('.jpeg')]
+        fnames = [f for f in os.listdir(os.path.join(imagedir, l)) if f.endswith('.jpg')]
         listoffnames.append(fnames)
         # first put away split off data
         test = random.sample(fnames, round(perc_split * len(fnames)))
@@ -210,14 +211,16 @@ if __name__ == "__main__":
     import time
     tic = time.time()
     makedirs()
-    train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit, splitbypatient=True, maxiter=10, deviation=0.05)
+    train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit, splitbypatient=False, maxiter=10,
+                                                deviation=0.05)
     print("Copying train files ...")
     numtrain = copyfiles(train_fnames, args.imagedir, os.path.join(args.basedir, "train"))
     print("Copying test files ...")
     numtest = copyfiles(test_fnames, args.imagedir, os.path.join(args.basedir, "test"))
 
     if args.validationsplit:
-        train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit, splitbypatient=True, maxiter=10, deviation=0.05)
+        train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit,
+                                                   splitbypatient=False, maxiter=10, deviation=0.05)
         print("Moving validation files ...")
         numval = movefiles(val_fnames, os.path.join(args.basedir, "train"), os.path.join(args.basedir, "val"))
 
