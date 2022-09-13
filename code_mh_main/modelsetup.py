@@ -538,13 +538,14 @@ class ModelSetup():
         :param test_dataentry: DataEntry object which should be taken from the test dataset
         :type test_dataentry: DataEntry
         """
-        #custom_map = sns.light_palette("#13233D", as_cmap=True, reverse=True)
+        # custom_map = sns.light_palette("#13233D", as_cmap=True, reverse=True)
         img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
-
-        layer_outputs = [layer.output for layer in self.model.layers] # Extracts the outputs of the top 12 layers
-        activation_model = models.Model(inputs=self.model.input, outputs=layer_outputs) # Creates a model that will return these outputs, given the model input
-
-        activations = activation_model.predict(img_pred) # Returns a list of five Numpy arrays: one array per layer activation
+        # Extracts the outputs of the top 12 layers
+        layer_outputs = [layer.output for layer in self.model.layers]
+        # Creates a model that will return these outputs, given the model input
+        activation_model = models.Model(inputs=self.model.input, outputs=layer_outputs)
+        # Returns a list of five Numpy arrays: one array per layer activation
+        activations = activation_model.predict(img_pred)
 
         layer_names = []
         for layer in self.model.layers[:12]:
@@ -558,33 +559,33 @@ class ModelSetup():
         num_a_layer = sum([len(a.shape) >= 4 for a in activations])
 
         print(num_a_layer, '<========')
-        for layer_name, layer_activation in zip(layer_names, activations): # Displays the feature maps
+        for layer_name, layer_activation in zip(layer_names, activations):  # Displays the feature maps
             print(layer_name, ': ', layer_activation.shape)
             if len(layer_activation.shape) < 4: 
                 continue
             else:
-                n_features = layer_activation.shape[-1] # Number of features in the feature map
-                size = layer_activation.shape[1] #The feature map has shape (1, size, size, n_features).
+                n_features = layer_activation.shape[-1]  # Number of features in the feature map
+                size = layer_activation.shape[1]  # The feature map has shape (1, size, size, n_features).
                 n_cols = n_features // images_per_row # Tiles the activation channels in this matrix
                 display_grid = np.zeros((size * n_cols, images_per_row * size))
-                for col in range(n_cols): # Tiles each filter into a big horizontal grid
+                for col in range(n_cols):  # Tiles each filter into a big horizontal grid
                     for row in range(images_per_row):
                         channel_image = layer_activation[0,
                                                         :, :,
                                                         col * images_per_row + row]
-                        channel_image -= channel_image.mean() # Post-processes the feature to make it visually palatable
+                        channel_image -= channel_image.mean()  # Post-processes the feature to make it visually palatable
                         channel_image /= channel_image.std()
                         channel_image *= 64
                         channel_image += 128
                         channel_image = np.clip(channel_image, 0, 255).astype('uint8')
-                        display_grid[col * size : (col + 1) * size, # Displays the grid
+                        display_grid[col * size : (col + 1) * size,  # Displays the grid
                                     row * size : (row + 1) * size] = channel_image
 
                 plt.subplot(num_a_layer, 1, l+1)
                 plt.title(layer_name)
                 plt.grid(False)
                 plt.imshow(display_grid, aspect='auto', cmap='viridis')
-                #plt.imshow(display_grid, aspect='auto', cmap=custom_map)
+                # plt.imshow(display_grid, aspect='auto', cmap=custom_map)
                 plt.axis('off')
 
                 l += 1
@@ -686,9 +687,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
             plot_losses = True
         sel_model.eval(plot_losses=plot_losses)
         sel_model.plot_rand10_pred()
-        if missclassified:   # TODO redundant? rename?
-            plotmisclassified = True
-        quality_misclassified = sel_model.get_misclassified(plot=plotmisclassified)
+        quality_misclassified = sel_model.get_misclassified(plot=missclassified)
 
     return sel_model
 
@@ -700,9 +699,9 @@ if __name__ == "__main__":
               "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
-    train_eval_model(dataset_to_use, fit = True, type_of_model='vgg', suffix_path='_test',
+    train_eval_model(dataset_to_use, fit = False, type_of_model='vgg', suffix_path='_vgg2balanced',
                      model_for_feature_embedding = None,
-                     eval = False, loss = False, missclassified = True)
+                     eval = True, loss = True, missclassified = True)
 
     # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
