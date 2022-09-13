@@ -83,9 +83,14 @@ def code_from_prototype_selection(dataset_name):
         protos_img_files = tester.get_prototypes_img_files()
 
         if os.path.exists(protos_file):
-            # TODO ask if we want to overwrite the file
-            print('[!!!] A file already exists! Please delete this file to save again prototypes of these settings.')
+            overwrite = input("[!!!] A file with these settings already exists! Do you want to overwrite it? [y/n] ")
+            if overwrite == "y":
+                overwrite = True
+            else:
+                overwrite = False
         else:
+            overwrite = True
+        if overwrite:
             print(protos_file)
             # np.save(protos_file, protos_img_files)
             print('SAVE ...')
