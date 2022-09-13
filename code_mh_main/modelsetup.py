@@ -90,57 +90,10 @@ class ModelSetup():
     def _preprocess_img_gen(self):
         """Based on the given dataset, the ImageDataGenerator for the models are created.
         """
-        small = False
-        if small:
-            # here x is of the class DataEntry, y would be index of folder, ground_truth_label is label
-            if BINARY:  # difference to not BINARY is only that we use ground_truth_label instead of y (folder index vs str)
-                if self.mode_rgb:  # convert image to rgb, no array expansion needed
-                    train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
-                                  for x in self.dataset.data]
-                    test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.y)
-                                 for x in self.dataset.data_t]
-                else:  # convert image to grayscale, need to expand array by 1 dimension
-                    train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
-                                  for x in self.dataset.data]
-                    test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.y)
-                                 for x in self.dataset.data_t]
-            else:
-                if self.mode_rgb:  # convert image to rgb, no array expansion needed
-                    train_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
-                                  for x in self.dataset.data]
-                    test_data = [(x.image_numpy(img_size=self.img_size, mode='RGB'), x.ground_truth_label)
-                                 for x in self.dataset.data_t]
-                else:  # convert image to grayscale, need to expand array by 1 dimension
-                    train_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
-                                  for x in self.dataset.data]
-                    test_data = [(np.expand_dims(x.image_numpy(img_size=self.img_size), -1), x.ground_truth_label)
-                                 for x in self.dataset.data_t]
-
-            print("Write into lists ...")
-            X_test = np.array(list(zip(*test_data))[0])
-            y_test = np.array(list(zip(*test_data))[1])
-            del test_data
-            gc.collect()
-            X_train = np.array(list(zip(*train_data))[0])
-            y_train = np.array(list(zip(*train_data))[1])
-            del train_data
-            gc.collect()
-
-            print('X_train shape: ', X_train.shape)
-
-            # TODO Test function to delete feature embeddings + FE
-            # TODO test flow_from_directory
-
-            if not BINARY:
-                # encode class values as integers
-                self.labelencoder = LabelEncoder()
-                self.labelencoder.fit(y_train)
-                y_train = self.labelencoder.transform(y_train)
-                y_test = self.labelencoder.transform(y_test)
-                # print("LE classes from preprocess img gen: ", self.labelencoder.classes_)
-                # convert integers to one hot encoded variables
-                y_train = to_categorical(y_train)
-                y_test = to_categorical(y_test)
+        if not BINARY:
+            label_train = [x.ground_truth_label for x in self.dataset.data_t]
+            self.labelencoder = LabelEncoder()
+            self.labelencoder.fit(label_train)  # uses alphabetical order
 
         print('Initializing Image Generator ...')
         
@@ -189,9 +142,9 @@ class ModelSetup():
                                                           color_mode='grayscale', class_mode='categorical',
                                                           batch_size=self.batch_size, shuffle=False)
 
-            print(self.train_set.class_indices)
-            print(self.train_set.class_indices.keys())
-            # self.labelencoder = LabelEncoder().set_params(**self.train_set.class_indices)
+        # print(self.train_set.class_indices)
+        # print(self.train_set.class_indices.keys())
+        # self.labelencoder = LabelEncoder().set_params(**self.train_set.class_indices)
 
     def _binary_cnn_model(self):
         """Set up SimpleCNN for binary image classification.
@@ -269,7 +222,7 @@ class ModelSetup():
         print(self.model.summary())
 
     def _pretrained_network(self, pretrainedmodel, optimizer):
-        numclasses = 4 # len(self.labelencoder.classes_)  # TODO hardcoded
+        numclasses = len(self.labelencoder.classes_)
         base_model = pretrainedmodel  # Topless
         # Add top layer
         x = base_model.output
@@ -391,10 +344,11 @@ class ModelSetup():
         self._set_selfprediction()
 
         if BINARY:
-            groundtruth = self.test_set.y
+            groundtruth = self.test_set.labels
         else:
-            groundtruth = self.labelencoder.inverse_transform(np.argmax(self.test_set.y, axis=1))
+            groundtruth = self.labelencoder.inverse_transform(self.test_set.labels)
             # print("le classes: ", self.labelencoder.classes_)
+            # print("datagen classes: ", self.test_set.class_indices)
 
         custom_map = sns.light_palette("#13233D", as_cmap=True)
 
@@ -540,9 +494,9 @@ class ModelSetup():
 
         # misclassifications done on the test data where y_pred is the predicted values
         if BINARY:
-            groundtruth = self.test_set.y
+            groundtruth = self.test_set.labels
         else:
-            groundtruth = self.labelencoder.inverse_transform(np.argmax(self.test_set.y, axis=1))
+            groundtruth = self.labelencoder.inverse_transform(self.test_set.labels)
 
         idx_misclassified = np.where(self.predictions != groundtruth)[0]
         idx_misclassified = list(idx_misclassified)
