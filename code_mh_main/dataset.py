@@ -39,8 +39,9 @@ class DataSet():
         self.path_datasets = path_datasets
 
         # Image path of the dataset
-        self.DIR_TRAIN_DATA = os.path.join(self.path_datasets, self.name,'train')
-        self.DIR_TEST_DATA = os.path.join(self.path_datasets, self.name,'test')
+        self.DIR_TRAIN_DATA = os.path.join(self.path_datasets, self.name, 'train')
+        self.DIR_VAL_DATA = os.path.join(self.path_datasets, self.name, 'val')
+        self.DIR_TEST_DATA = os.path.join(self.path_datasets, self.name, 'test')
         
         self.data = [DataEntry(self.fe,self.name,os.path.join(path, file)) for path, _, files in os.walk(self.DIR_TRAIN_DATA) for file in files if file.endswith(tuple(image_extensions))]
         self.data_t = [DataEntry(self.fe,self.name,os.path.join(path, file)) for path, _, files in os.walk(self.DIR_TEST_DATA) for file in files if file.endswith(tuple(image_extensions))]

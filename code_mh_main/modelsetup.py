@@ -75,6 +75,7 @@ class ModelSetup():
 
         # Image Generator
         self.train_set = None
+        self.val_set = None
         self.test_set = None
         self.mode_rgb = None
         # Model specific
@@ -160,31 +161,33 @@ class ModelSetup():
 
         image_gen_test = ImageDataGenerator()
 
-        if small:
-            self.train_set = image_gen.flow(X_train, y_train, batch_size=self.batch_size, shuffle=True)
-            self.test_set = image_gen_test.flow(X_test, y_test, batch_size=self.batch_size, shuffle=False)
-            del X_train, X_test, y_train, y_test
-            gc.collect()
-        else:
-            if self.mode_rgb:
-                self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
-                                                               target_size=(self.img_size, self.img_size),
-                                                               color_mode='rgb', class_mode='categorical',
-                                                               batch_size=self.batch_size, shuffle=True)
-                self.test_set = image_gen_test.flow_from_directory(self.dataset.DIR_TEST_DATA,
-                                                              target_size=(self.img_size, self.img_size),
-                                                              color_mode='rgb', class_mode='categorical',
-                                                              batch_size=self.batch_size, shuffle=False)
+        if self.mode_rgb:
+            self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
+                                                           target_size=(self.img_size, self.img_size),
+                                                           color_mode='rgb', class_mode='categorical',
+                                                           batch_size=self.batch_size, shuffle=True)
+            self.val_set = image_gen_test.flow_from_directory(self.dataset.DIR_VAL_DATA,
+                                                          target_size=(self.img_size, self.img_size),
+                                                          color_mode='rgb', class_mode='categorical',
+                                                          batch_size=self.batch_size, shuffle=False)
+            self.test_set = image_gen_test.flow_from_directory(self.dataset.DIR_TEST_DATA,
+                                                          target_size=(self.img_size, self.img_size),
+                                                          color_mode='rgb', class_mode='categorical',
+                                                          batch_size=self.batch_size, shuffle=False)
 
-            else:
-                self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
-                                                               target_size=(self.img_size, self.img_size),
-                                                               color_mode='grayscale', class_mode='categorical',
-                                                               batch_size=self.batch_size, shuffle=True)
-                self.test_set = image_gen.flow_from_directory(self.dataset.DIR_TEST_DATA,
-                                                              target_size=(self.img_size, self.img_size),
-                                                              color_mode='grayscale', class_mode='categorical',
-                                                              batch_size=self.batch_size, shuffle=False)
+        else:
+            self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
+                                                           target_size=(self.img_size, self.img_size),
+                                                           color_mode='grayscale', class_mode='categorical',
+                                                           batch_size=self.batch_size, shuffle=True)
+            self.val_set = image_gen.flow_from_directory(self.dataset.DIR_VAL_DATA,
+                                                          target_size=(self.img_size, self.img_size),
+                                                          color_mode='grayscale', class_mode='categorical',
+                                                          batch_size=self.batch_size, shuffle=False)
+            self.test_set = image_gen.flow_from_directory(self.dataset.DIR_TEST_DATA,
+                                                          target_size=(self.img_size, self.img_size),
+                                                          color_mode='grayscale', class_mode='categorical',
+                                                          batch_size=self.batch_size, shuffle=False)
 
             print(self.train_set.class_indices)
             print(self.train_set.class_indices.keys())
@@ -351,7 +354,7 @@ class ModelSetup():
 
         results = self.model.fit(self.train_set,
                                  epochs=n_epochs,
-                                 validation_data=self.test_set,
+                                 validation_data=self.val_set,
                                  callbacks=[early_stop, checkpoint],
                                  class_weight=class_weights)
         toc = time.time()
