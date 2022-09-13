@@ -96,12 +96,12 @@ class ModelSetup():
             self.labelencoder.fit(label_train)  # uses alphabetical order
 
         print('Initializing Image Generator ...')
-        
+
         if self.selected_dataset == 'quality':
             image_gen = ImageDataGenerator(
                 zoom_range=0.1,
                 horizontal_flip=True,
-                vertical_flip=True            
+                vertical_flip=True
             )
         elif self.selected_dataset in ['oct', 'oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
             image_gen = ImageDataGenerator(
@@ -112,6 +112,7 @@ class ModelSetup():
         else:
             image_gen = ImageDataGenerator()
 
+        image_gen_val = ImageDataGenerator()
         image_gen_test = ImageDataGenerator()
 
         if self.mode_rgb:
@@ -119,7 +120,7 @@ class ModelSetup():
                                                            target_size=(self.img_size, self.img_size),
                                                            color_mode='rgb', class_mode='categorical',
                                                            batch_size=self.batch_size, shuffle=True)
-            self.val_set = image_gen_test.flow_from_directory(self.dataset.DIR_VAL_DATA,
+            self.val_set = image_gen_val.flow_from_directory(self.dataset.DIR_VAL_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='rgb', class_mode='categorical',
                                                           batch_size=self.batch_size, shuffle=False)
@@ -133,11 +134,11 @@ class ModelSetup():
                                                            target_size=(self.img_size, self.img_size),
                                                            color_mode='grayscale', class_mode='categorical',
                                                            batch_size=self.batch_size, shuffle=True)
-            self.val_set = image_gen.flow_from_directory(self.dataset.DIR_VAL_DATA,
+            self.val_set = image_gen_val.flow_from_directory(self.dataset.DIR_VAL_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='grayscale', class_mode='categorical',
                                                           batch_size=self.batch_size, shuffle=False)
-            self.test_set = image_gen.flow_from_directory(self.dataset.DIR_TEST_DATA,
+            self.test_set = image_gen_test.flow_from_directory(self.dataset.DIR_TEST_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='grayscale', class_mode='categorical',
                                                           batch_size=self.batch_size, shuffle=False)
@@ -693,13 +694,14 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
 
 
 if __name__ == "__main__":
-    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    while dataset_to_use == "help":
-        print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be"
-              "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
-        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
+    # dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    # while dataset_to_use == "help":
+    #     print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be"
+    #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+    #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
-    train_eval_model(dataset_to_use, fit = False, type_of_model='vgg', suffix_path='_vgg2balanced',
+    dataset_to_use = "mnist_1247"
+    train_eval_model(dataset_to_use, fit = True, type_of_model='cnn', suffix_path='_test',
                      model_for_feature_embedding = None,
                      eval = True, loss = True, missclassified = True)
 
