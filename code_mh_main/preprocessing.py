@@ -167,19 +167,19 @@ if __name__ == '__main__':
     # if a == "n":
     #     sys.exit("Go and do that or else the file won't run!")
     #
-    # dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    # if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
-    #     print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
-    #     dataset_to_use = "help"
-    # while dataset_to_use == "help":
-    #     print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
-    #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
-    #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
-    #     if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
-    #         print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
-    #         dataset_to_use = "help"
+    dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+    if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+        print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+        dataset_to_use = "help"
+    while dataset_to_use == "help":
+        print("We need the folder name of a data set that is saved in your DATA_DIR. Usually that would be "
+              "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
+        dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
+        if not os.path.exists(os.path.join(DATA_DIR, dataset_to_use)):
+            print("WARNING: Folder does not exist. Please check for spelling mistakes and if it is in the static/data folder.")
+            dataset_to_use = "help"
 
-    dataset_to_use = "mnist_1247"
+    # dataset_to_use = "mnist_1247"
 
     # centre crop images?
     # crop, centre = questions_cropping()
