@@ -342,7 +342,7 @@ def generate_LRP_heatmap(x, analyzer, output_neuron):
     return a[0]
 
 
-def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model, method, parameters, save=True):
+def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model, method, parameters={}, save=True):
     """ Creates (and saves) LRP heatmaps for every image in the test and train set of a given dataset. This is done for every possible output neuron/label
 
     :param dataset_to_use: name of dataset
@@ -375,10 +375,10 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
 
     # prepare data for further processing
     train_data = setup_model.dataset.data
-    x_test = [file.dataentry_to_nparray() for file in setup_model.dataset.data_t]
-    test_images = list(zip([image_ for image_ in x_test],
-                           [file.ground_truth_label for file in setup_model.dataset.data_t],
-                           [os.path.splitext(file.img_name)[0] for file in setup_model.dataset.data_t]))
+    # x_test = [file.dataentry_to_nparray() for file in setup_model.dataset.data_t]
+    # test_images = list(zip([image_ for image_ in x_test],
+    #                        [file.ground_truth_label for file in setup_model.dataset.data_t],
+    #                        [os.path.splitext(file.img_name)[0] for file in setup_model.dataset.data_t]))
     train_images = list(zip([file.dataentry_to_nparray() for file in train_data],
                             [file.ground_truth_label for file in train_data],
                             [os.path.splitext(file.img_name)[0] for file in train_data]))
@@ -398,7 +398,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
         **parameters  # as dictionary eg {"epsilon": 0.1}
     )  # optional analysis parameters
     # Some analyzers require training.
-    # analyzer.fit(train_data_numpy, batch_size=256, verbose=1)  # TODO try out what happens if we skip this: works, brighter colors -> why?
+    # analyzer.fit(train_data_numpy, batch_size=256, verbose=1)  # TODO try out what happens if we skip this: works, brighter colors -> why? --> Fine to skip this
 
     # if LRP heatmaps should be saved, first create paths to store images in
     # path will look like this: ./static/heatmaps/MultiCNN/dataset_name/label/imagename_heatmap.png
@@ -414,9 +414,10 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
                 os.makedirs(os.path.join(heatmap_directory, output_neuron_label[0]))
 
     # for every image calculate heatmap
-    for image_nr, (x, y, img_name) in enumerate(test_images+train_images):
+    tic = time.time()
+    for image_nr, (x, y, img_name) in enumerate(train_images):  # TODO delete test data? should be generated when calculating NHNM
         if image_nr % 1000 == 0:
-            print(image_nr, " LRP heatmaps created")
+            print(image_nr, "*", len(setup_model.labelencoder.classes_), " LRP heatmaps created")
 
         # create heatmap for every label = output_neuron
         for output_neuron in range(len(setup_model.labelencoder.classes_)):
@@ -429,6 +430,11 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
             if save:
                 save_path = os.path.join(heatmap_directory, output_neuron_label[0], img_name)
                 plt.imsave(save_path + "_heatmap.png", heatmap_)
+
+    toc = time.time()
+    print("Heatmaps needed: ",
+          "{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
+                                    ((toc - tic) % 60)))
 
 
 if __name__ == '__main__':
@@ -463,8 +469,8 @@ if __name__ == '__main__':
 
 
     #
-    generate_LRP_heatmaps_for_dataset(dataset_to_use="mnist_1247", suffix_path="_cnn5c2d6bn_balanced",
-                                      type_of_model="cnn",
+    generate_LRP_heatmaps_for_dataset(dataset_to_use="mnist_1247", suffix_path="_vgg_balanced",
+                                      type_of_model="vgg",
                                       method="lrp.sequential_preset_a", parameters={"epsilon": 0.1})
 
     # TODO: function to compare neuron outputs on x-Axis, images on y-Axis
