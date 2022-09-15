@@ -342,7 +342,7 @@ def generate_LRP_heatmap(x, analyzer, output_neuron):
     return a[0]
 
 
-def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model, method, parameters={}, save=True):
+def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model, method, parameters={}, base_vgg=False, save=True):
     """ Creates (and saves) LRP heatmaps for every image in the test and train set of a given dataset. This is done for every possible output neuron/label
 
     :param dataset_to_use: name of dataset
@@ -354,18 +354,24 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     :type method: str
     :param parameters: optional parameters for the LRP analyzer. If none put empty dictionary {} else eg {"epsilon": 0.1}
     :type parameters: dict
+    :param base_vgg: create heatmaps not for any fitted model but for a standard VGG16; default = False
+    :type base_vgg: bool
     :param save: if set to True all generated heatmaps will be saved
     :type save: bool
     :return: None
     """
     # load model to calculate heatmaps on
-    print(
-        os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),
-        " loading ...")
-    model = load_model(
-        os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
+    if base_vgg:
+        model = None
+        feature_model_output_layer = None
+    else:
+        print(
+            os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),
+            " loading ...")
+        model = load_model(
+            os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
 
-    feature_model_output_layer = get_output_layer(model, type_of_model)
+        feature_model_output_layer = get_output_layer(model, type_of_model)
 
     # connect loaded model with data
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
@@ -385,7 +391,11 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
                             [os.path.splitext(file.img_name)[0] for file in train_data]))
 
     # Create model without trailing softmax for analyzer
-    model_wo_softmax = innvestigate.model_wo_softmax(model)
+    if base_vgg:
+        model = VGG16(weights='imagenet', include_top=True)
+        model_wo_softmax = innvestigate.model_wo_softmax(model)
+    else:
+        model_wo_softmax = innvestigate.model_wo_softmax(model)
     try:
         model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
     except ValueError:
@@ -406,6 +416,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     # path will look like this: ./static/heatmaps/MultiCNN/dataset_name/label/imagename_heatmap.png
     if save:
         heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', train_data[0].fe.fe_model.name, dataset_to_use)
+        print("Heatmaps will be saved to:\n", heatmap_directory)
         # create the folder for heatmaps if it is not created yet
         if not os.path.exists(heatmap_directory):
             os.makedirs(heatmap_directory)
@@ -417,7 +428,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
 
     # for every image calculate heatmap
     tic = time.time()
-    for image_nr, (x, y, img_name) in enumerate(train_images):  # TODO delete test data? should be generated when calculating NHNM
+    for image_nr, (x, y, img_name) in enumerate(train_images):
         if image_nr % 1000 == 0:
             print(image_nr, "*", len(setup_model.labelencoder.classes_), " LRP heatmaps created")
 
@@ -473,7 +484,7 @@ if __name__ == '__main__':
     #
     generate_LRP_heatmaps_for_dataset(dataset_to_use="mnist_1247", suffix_path="_vgg_balanced",
                                       type_of_model="vgg",
-                                      method="lrp.sequential_preset_a", parameters={"epsilon": 0.1})
+                                      method="lrp.sequential_preset_a", parameters={"epsilon": 0.1}, base_vgg=True)
 
     # TODO: function to compare neuron outputs on x-Axis, images on y-Axis
 
