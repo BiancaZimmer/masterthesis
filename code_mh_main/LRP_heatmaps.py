@@ -128,7 +128,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
 
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
-                                   eval=False, loss=False, missclassified=False,
+                                   eval=False, loss=False, misclassified=False,
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
@@ -225,7 +225,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
 
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
-                                   eval=False, loss=False, missclassified=False,
+                                   eval=False, loss=False, misclassified=False,
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
@@ -370,10 +370,11 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     # connect loaded model with data
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
-                                   eval=False, loss=False, missclassified=False,
+                                   eval=False, loss=False, misclassified=False,
                                    feature_model_output_layer=feature_model_output_layer)
 
     # prepare data for further processing
+    print("Preparing data ...")
     train_data = setup_model.dataset.data
     # x_test = [file.dataentry_to_nparray() for file in setup_model.dataset.data_t]
     # test_images = list(zip([image_ for image_ in x_test],
@@ -391,6 +392,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
         pass  # when there is no layer named "activation" you don't need to rename it
 
     # Set up analyzer
+    print("Preparing analyzer ...")
     analyzer = innvestigate.create_analyzer(
         method,  # analysis method identifier as str eg "lrp.sequential_preset_a"
         model_wo_softmax,  # model without softmax output

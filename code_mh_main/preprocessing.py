@@ -191,7 +191,7 @@ if __name__ == '__main__':
     # training = [False, 'cnn', '_cnn5c2d6bn_balanced', None, False, False, False]
     setup_model = train_eval_model(dataset_to_use, fit=training[0], type_of_model=training[1], suffix_path=training[2],
                                    model_for_feature_embedding=training[3],
-                                   eval=training[4], loss=training[5], missclassified=training[6],
+                                   eval=training[4], loss=training[5], misclassified=training[6],
                                    correct_for_imbalanced_data=training[7])
     suffix_path = training[2]
 

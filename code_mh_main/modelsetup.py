@@ -46,7 +46,24 @@ from utils import *
 
 
 class ModelSetup():
-    """ TODO
+    """ Contains a model with its respective data set and other important attributes
+    self.selected_dataset
+    self.dataset
+    self.img_size
+    self.image_shape
+    # Image Generator
+    self.train_set = None
+    self.val_set = None
+    self.test_set = None
+    self.mode_rgb = None
+    # Model specific
+    self.model = None
+    self.model_history = None
+    self.predictions = None
+    # for multiclass
+    self.labelencoder = None
+    # for imbalanced data
+    self.correct_for_imbalanced_data = True
     """
     def __init__(self, selected_dataset, sel_size:int =128, batch_size:int =32):
         """Initiliaze the data-specific attributes for training the model.
@@ -609,6 +626,12 @@ def load_model_from_folder(sel_dataset: str, suffix_path: str = ''):
 
 
 def get_output_layer(model, type_of_model):
+    """ Returns output layer used for the FeatureExtractor depending on the type of the model (vgg or cnn)
+
+    :param model: model
+    :param type_of_model: str, vgg or cnn
+    :return: output layer which then can be used for the FeatureExtractor
+    """
     if type_of_model == "vgg":
         return model.get_layer('flatten').output
     elif type_of_model == "cnn":
@@ -621,27 +644,27 @@ def get_output_layer(model, type_of_model):
 
 def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_path ='_testincep',
                      model_for_feature_embedding = None,
-                     eval = False, loss = False, missclassified = False,
+                     eval = False, loss = False, misclassified = False,
                      feature_model_output_layer = None, correct_for_imbalanced_data = True):
-    """ Essentially this is the code to run for fitting/loading/evaluating a cnn model
+    """ Essentially this is the code to run for fitting/loading/evaluating a  model
     :param dataset_to_use: A string of the folder name of the data set you want to use
-
-    :return: suffix_path which was given as user input
+    :param fit: bool, if set to True a model is fitted otherwise an existing one is loaded
+    :param type_of_model: str, one of cnn or vgg results in taking speical options for these two models. if anything else an InceptionNet will be fitted
+    :param suffix_path: str, suffix which will be appended to the saved model name
+    :param model_for_feature_embedding: model which shall be used for the FeatureExtractor and thus the embeddings
+    :param eval: bool, should the evaluation of the model be run or not
+    :param loss: bool, should the loss and accuracy be plotted
+    :param misclassified: bool, should the misclassified images be plotted
+    :param feature_model_output_layer: output layer which shall be used for the FeatureExtractor and thus the embeddings
+    :param correct_for_imbalanced_data: bool, should the loss function of the model be weighted and thus correct for imbalanced data
+    :return: obj of class ModelSetup which contains the model
     """
-    from dataset import DataSet
+    from dataset import DataSet, get_dict_datasets
     from feature_extractor import FeatureExtractor
-    # fit = input("Do you want to fit (f) a model or load (l) an exciting one? [f/l]")
-    # options[1] = input("What should the suffix of your cnn_model be? Type a string. e.g. '_testcnn'")
-    # options[2] = input("Do you want to run the evaluation of your CNN model? [y/n]")
-    # options[3] = input("Do you want to plot the loss and accuracy of your CNN model? [y/n]")
-    # options[4] = input("Do you want to plot the evaluation of the miss-classified data of your CNN model? [y/n]")
 
     # CODE FROM CNN_MODEL.PY
     print("----- TRAINING OF MODEL -----")
-    from dataset import get_dict_datasets
-
     plot_losses = False
-    plotmisclassified = False
     suffix_path = suffix_path
     options_cnn = False
     if type_of_model == "cnn":
@@ -688,7 +711,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
             plot_losses = True
         sel_model.eval(plot_losses=plot_losses)
         sel_model.plot_rand10_pred()
-        quality_misclassified = sel_model.get_misclassified(plot=missclassified)
+        quality_misclassified = sel_model.get_misclassified(plot=misclassified)
 
     return sel_model
 
@@ -703,7 +726,7 @@ if __name__ == "__main__":
     dataset_to_use = "mnist_1247"
     train_eval_model(dataset_to_use, fit = True, type_of_model='cnn', suffix_path='_test',
                      model_for_feature_embedding = None,
-                     eval = True, loss = True, missclassified = True)
+                     eval = True, loss = True, misclassified= True)
 
     # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
