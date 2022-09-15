@@ -32,7 +32,6 @@ class DataSet():
             self.fe = FeatureExtractor(loaded_model=fe)
         else:
             self.fe = fe
-        #self.fe = fe
 
         self.name = name
 
@@ -42,17 +41,23 @@ class DataSet():
         self.DIR_TRAIN_DATA = os.path.join(self.path_datasets, self.name, 'train')
         self.DIR_VAL_DATA = os.path.join(self.path_datasets, self.name, 'val')
         self.DIR_TEST_DATA = os.path.join(self.path_datasets, self.name, 'test')
-        
-        self.data = [DataEntry(self.fe,self.name,os.path.join(path, file)) for path, _, files in os.walk(self.DIR_TRAIN_DATA) for file in files if file.endswith(tuple(image_extensions))]
-        self.data_t = [DataEntry(self.fe,self.name,os.path.join(path, file)) for path, _, files in os.walk(self.DIR_TEST_DATA) for file in files if file.endswith(tuple(image_extensions))]
 
-        self.available_classes = [item for item in os.listdir(self.DIR_TRAIN_DATA) if os.path.isdir(os.path.join(self.DIR_TRAIN_DATA,item))]
+        self.data = [DataEntry(self.fe, self.name, os.path.join(path, file)) for path, _, files in
+                     os.walk(self.DIR_TRAIN_DATA) for file in files if file.endswith(tuple(image_extensions))]
+        self.data_t = [DataEntry(self.fe, self.name, os.path.join(path, file)) for path, _, files in
+                       os.walk(self.DIR_TEST_DATA) for file in files if file.endswith(tuple(image_extensions))]
+
+        self.available_classes = [item for item in os.listdir(self.DIR_TRAIN_DATA) if
+                                  os.path.isdir(os.path.join(self.DIR_TRAIN_DATA, item))]
 
         print('\n==============')
         print(f'Current Dataset: {self.name}')
         print(f'Available Classes: {self.available_classes}')
 
         print(f'Length of Train Data: {len(self.data)}')
+        num_val_data = len([path for path, _, files in os.walk(self.DIR_VAL_DATA)
+                   for file in files if file.endswith(tuple(image_extensions))])
+        print(f'Length of Validation Data: {num_val_data}')
         print(f'Length of Test Data: {len(self.data_t)}')
         print('==============\n')
 
