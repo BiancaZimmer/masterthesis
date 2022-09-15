@@ -6,6 +6,7 @@ from dataentry import *
 from prototype_selection import *
 from helpers import crop_to_square, walk_directory_return_img_path
 from modelsetup import *
+from LRP_heatmaps import *
 
 
 def code_from_prototype_selection(dataset_name):
@@ -212,6 +213,21 @@ if __name__ == '__main__':
         code_from_prototype_selection(dataset_to_use)
 
     # Create LRP Heatmaps
+    a = input("Do you want to create LRP heatmaps for your current data set now? [y/n] ")
+    if a == "y":
+        method = input("Which method would you ike to use? We propose: \n"
+                       "lrp.sequential_preset_a for the mnist data\n"
+                       "lrp.sequential_preset_a_flat for the oct data\n")
+        if method == "lrp.sequential_preset_a":
+            epsilon = input("Which epsilon value would you like to use? We propose 0.1 ")
+            parameters = {"epsilon": epsilon}
+        else:
+            parameters = {}
+        generate_LRP_heatmaps_for_dataset(dataset_to_use=dataset_to_use, suffix_path=suffix_path,
+                                          type_of_model=training[1],
+                                          method=method, parameters=parameters)
+
+
 
 
 
