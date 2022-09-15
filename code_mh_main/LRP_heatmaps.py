@@ -482,9 +482,9 @@ if __name__ == '__main__':
 
 
     #
-    generate_LRP_heatmaps_for_dataset(dataset_to_use="mnist_1247", suffix_path="_vgg_balanced",
+    generate_LRP_heatmaps_for_dataset(dataset_to_use="oct_cc", suffix_path="_vgg_balanced",
                                       type_of_model="vgg",
-                                      method="lrp.sequential_preset_a", parameters={"epsilon": 0.1}, base_vgg=True)
+                                      method="lrp.sequential_preset_a_flat", parameters={}, base_vgg=True)  # {"epsilon": 0.1}
 
     # TODO: function to compare neuron outputs on x-Axis, images on y-Axis
 
