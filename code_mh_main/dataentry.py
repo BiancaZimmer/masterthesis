@@ -162,11 +162,11 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
               "{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
                                         ((toc - tic) % 60)))
 
-        a = input("Do you want to train another feature embedding? [y/n]")
+        a = input("Do you want to train the feature embeddings for the general VGG16? [y/n]")
         if a == "n":
             new_embedding = False
         else:
-            feature_embeddings_to_initiate = input("Which feature extractor would you like to train next? [VGG16/...]")
+            feature_embeddings_to_initiate = "VGG16"
 
 
 # python code_mh_main/dataentry.py #works as of 20/05/2022
