@@ -19,7 +19,7 @@ import psutil
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Conv2D, MaxPooling2D, BatchNormalization
+from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Conv2D, MaxPooling2D, BatchNormalization, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.utils import plot_model, to_categorical
 from tensorflow.keras import backend
@@ -242,16 +242,20 @@ class ModelSetup():
         print(self.model.summary())
 
     def _pretrained_network(self, pretrainedmodel, optimizer):
+        # pretrained model has to be topless
         numclasses = len(self.labelencoder.classes_)
-        base_model = pretrainedmodel  # Topless
-        # Add top layer
-        x = base_model.output
-        x = Flatten()(x)
-        predictions = Dense(numclasses, activation='softmax')(x)
-        model = Model(inputs=base_model.input, outputs=predictions)
-        # Train top layer
-        for layer in base_model.layers:
+        # set layers of pretained model to not be trainable
+        for layer in pretrainedmodel.layers:
             layer.trainable = False
+        # Add top layer
+        x = pretrainedmodel.output
+        # x = Flatten()(x)
+        x = GlobalAveragePooling2D()(x)
+        # x = Dense(128, activation='relu')(x)
+        # x = Dropout(0.5)(x)
+        # x = BatchNormalization()(x)
+        predictions = Dense(numclasses, activation='softmax')(x)
+        model = Model(inputs=pretrainedmodel.input, outputs=predictions)
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
         return model
