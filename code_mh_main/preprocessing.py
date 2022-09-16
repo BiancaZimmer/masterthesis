@@ -202,14 +202,12 @@ if __name__ == '__main__':
               "trained a brand new model. ")
         a = input("Do you want to create the feature embeddings for this model? [y/n/help] ")
     if a == "n":
-        new_embedding = False
-        print("No feature embeddings created. ")
+        if input("Do you want to create the feature embeddings for the general VGG16? [y/n]") == "y":
+            code_from_dataentry(dataset_to_use, suffix_path, feature_embeddings_to_initiate="VGG16", type_of_model=training[1])
+        else:
+            print("No feature embeddings created. ")
     else:
         code_from_dataentry(dataset_to_use, suffix_path, type_of_model=training[1])
-
-    # Create prototypes
-    if input("Do you want to create the prototypes for your current data set now? [y/n] ") == "y":
-        code_from_prototype_selection(dataset_to_use)
 
     # Create LRP Heatmaps
     a = input("Do you want to create LRP heatmaps for your current data set and trained model now? [y/n] ")
@@ -230,8 +228,7 @@ if __name__ == '__main__':
                                               type_of_model=training[1],
                                               method=method, parameters=parameters, base_vgg=True)
 
-
-
-
-
+    # Create prototypes
+    if input("Do you want to create the prototypes for your current data set now? [y/n] ") == "y":
+        code_from_prototype_selection(dataset_to_use)
 

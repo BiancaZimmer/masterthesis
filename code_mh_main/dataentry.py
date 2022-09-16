@@ -162,7 +162,7 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
               "{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
                                         ((toc - tic) % 60)))
 
-        a = input("Do you want to train the feature embeddings for the general VGG16? [y/n]")
+        a = input("Do you want to create the feature embeddings for the general VGG16? [y/n]")
         if a == "n":
             new_embedding = False
         else:
