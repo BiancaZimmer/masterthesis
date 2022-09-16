@@ -115,11 +115,8 @@ class DataEntry:
         # print(np.shape(x))
         return x
 
-    def dataentry_to_nparray(self, use_fe: bool = False):
+    def dataentry_to_nparray(self):
         _, x = self.fe.load_preprocess_img(self.img_path)
-        if use_fe:
-            feature_vector = self.fe.extract_features(x)
-            return feature_vector  # TODO: returns wrong dimensions for nparray
         return np.squeeze(x, axis=0)
        
 
