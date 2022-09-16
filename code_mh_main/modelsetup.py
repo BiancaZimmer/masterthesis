@@ -251,9 +251,9 @@ class ModelSetup():
         x = pretrainedmodel.output
         # x = Flatten()(x)
         x = GlobalAveragePooling2D()(x)
-        # x = Dense(128, activation='relu')(x)
-        # x = Dropout(0.5)(x)
-        # x = BatchNormalization()(x)
+        x = Dense(128, activation='relu')(x)
+        x = Dropout(0.5)(x)
+        x = BatchNormalization()(x)
         predictions = Dense(numclasses, activation='softmax')(x)
         model = Model(inputs=pretrainedmodel.input, outputs=predictions)
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
@@ -639,7 +639,7 @@ def get_output_layer(model, type_of_model):
     :return: output layer which then can be used for the FeatureExtractor
     """
     if type_of_model == "vgg":
-        return model.get_layer('flatten').output
+        return model.get_layer('global_average_pooling2d').output  # flatten
     elif type_of_model == "cnn":
         return model.layers[-3].output
     else:
