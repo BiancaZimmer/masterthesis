@@ -16,7 +16,7 @@ def postprocess(X):
     return X
 
 
-def create_analyzers(data, methods, model_wo_softmax, neuron_selection_mode):
+def create_analyzers(methods, model_wo_softmax, neuron_selection_mode):
     """ Creates analyzers for all methods
 
     :param data: x_train data
@@ -33,8 +33,6 @@ def create_analyzers(data, methods, model_wo_softmax, neuron_selection_mode):
             **method[1]
         )  # optional analysis parameters
 
-        # Some analyzers require training.
-        analyzer.fit(data, batch_size=256, verbose=1)
         analyzers.append(analyzer)
     return analyzers
 

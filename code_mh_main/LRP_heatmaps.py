@@ -151,7 +151,6 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
 
     # Create analyzers
     analyzers = helpers_innvestigate.create_analyzers(
-        [file.dataentry_to_nparray(use_fe=False) for file in train_data],
         methods,
         model_wo_softmax,
         "max_activation"
@@ -249,7 +248,6 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
 
     # Create analyzers
     analyzers = helpers_innvestigate.create_analyzers(
-        [file.dataentry_to_nparray(use_fe=False) for file in train_data],
         methods,
         model_wo_softmax,
         "index"
