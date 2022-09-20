@@ -132,7 +132,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
-    x_test = [file.dataentry_to_nparray(use_fe=False) for file in setup_model.dataset.data_t]
+    x_test = [setup_model.img_preprocess_for_prediction(file) for file in setup_model.dataset.data_t]
     y_test = [file.ground_truth_label for file in setup_model.dataset.data_t]
 
     rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
@@ -229,7 +229,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
-    x_test = [file.dataentry_to_nparray(use_fe=False) for file in setup_model.dataset.data_t]
+    x_test = [setup_model.img_preprocess_for_prediction(file) for file in setup_model.dataset.data_t]
     y_test = [file.ground_truth_label for file in setup_model.dataset.data_t]
 
     rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
@@ -386,7 +386,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     # test_images = list(zip([image_ for image_ in x_test],
     #                        [file.ground_truth_label for file in setup_model.dataset.data_t],
     #                        [os.path.splitext(file.img_name)[0] for file in setup_model.dataset.data_t]))
-    train_images = list(zip([file.dataentry_to_nparray() for file in train_data],
+    train_images = list(zip([setup_model.img_preprocess_for_prediction(file) for file in train_data],
                             [file.ground_truth_label for file in train_data],
                             [os.path.splitext(file.img_name)[0] for file in train_data]))
 
@@ -475,16 +475,17 @@ if __name__ == '__main__':
     # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
     #                                       methods=methods_oct(), number_images=3)  # Preset A flat
 
+    generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg1balanced", type_of_model="vgg",
+                                          methods=methods_oct(), number_images=3)  # alphabeta10
+
     # possible inputs for "methods":
     # methods_grayscale()   for grayscale data
     # methods_mnist()       for dataset mnist
     # methods_oct()         for datasets oct
 
-
-    #
-    generate_LRP_heatmaps_for_dataset(dataset_to_use="oct_cc", suffix_path="_vgg_balanced",
-                                      type_of_model="vgg",
-                                      method="lrp.sequential_preset_a_flat", parameters={}, base_vgg=True)  # {"epsilon": 0.1}
+    # generate_LRP_heatmaps_for_dataset(dataset_to_use="oct_cc", suffix_path="_vgg4balanced",
+    #                                   type_of_model="vgg",
+    #                                   method="lrp.sequential_preset_a_flat", parameters={}, base_vgg=True)  # {"epsilon": 0.1}
 
     # TODO: function to compare neuron outputs on x-Axis, images on y-Axis
 
