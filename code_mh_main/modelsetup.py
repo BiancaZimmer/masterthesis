@@ -1,6 +1,6 @@
 import sys
 import warnings
-warnings.filterwarnings('ignore')
+# warnings.filterwarnings('ignore')
 
 import os
 import pandas as pd
@@ -378,6 +378,7 @@ class ModelSetup():
 
         self._set_selfprediction()
 
+        self.test_set.reset()
         if BINARY:
             groundtruth = self.test_set.labels
         else:
@@ -405,7 +406,16 @@ class ModelSetup():
 
         print(classification_report(groundtruth, self.predictions, digits=3))
 
-    def pred_test_img(self, test_dataentry, plot:bool =False):
+    def img_preprocess_for_prediction(self, dataentry):
+        if self.mode_rgb:
+            img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='rgb'))
+            img_pred = np.expand_dims(img_pred, 0)
+        else:
+            img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='grayscale'))
+            img_pred = np.expand_dims(img_pred, 0)
+        return img_pred
+
+    def pred_test_img(self, test_dataentry, plot: bool = False):
         """Classify the given test image.
 
         :param test_dataentry: DataEntry object which should be taken from the test dataset
@@ -417,14 +427,8 @@ class ModelSetup():
             - **prob** (`float`) - Probability score for the predicted label
         """
 
-        if self.mode_rgb:
-            img_pred = np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size, mode='RGB'), 0)
-            pass
-        else:
-            img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
-        
+        img_pred = self.img_preprocess_for_prediction(test_dataentry)
         prediction = self.model.predict(img_pred, verbose=0)
-        # print(prediction)
         
         img = cv2.imread(test_dataentry.img_path)
         label = test_dataentry.ground_truth_label
@@ -453,7 +457,7 @@ class ModelSetup():
                 
             plt.tight_layout()
             plt.show()
-        
+
         return predicted_label, prob
 
     def plot_rand10_pred(self):
@@ -486,6 +490,8 @@ class ModelSetup():
         """ Sets the attribute prediction according to the model and the test_set
         """
 
+        self.test_set.reset()
+
         if BINARY:
             pred_probability = self.model.predict(self.test_set)
             self.predictions = pred_probability > 0.5
@@ -516,7 +522,7 @@ class ModelSetup():
 
         return [predicted_label, prob]
 
-    def get_misclassified(self, plot:bool =False):
+    def get_misclassified(self, plot: bool = False):
         """Identifiy misclassifcation by the Simple CNN
 
         :param plot: Set to `True` to plot the misclassified images and the classification results, defaults to False
@@ -528,40 +534,38 @@ class ModelSetup():
             self._set_selfprediction()
 
         # misclassifications done on the test data where y_pred is the predicted values
+        self.test_set.reset()
         if BINARY:
             groundtruth = self.test_set.labels
         else:
             groundtruth = self.labelencoder.inverse_transform(self.test_set.labels)
 
+        # get misclassified images -> prediction does not match ground truth
+        # misclassified dataentries can be retrieved from imagedatagenerator via filenames and index
         idx_misclassified = np.where(self.predictions != groundtruth)[0]
         idx_misclassified = list(idx_misclassified)
-        misclassified_names = [self.dataset.data_t[idx].img_name for idx in idx_misclassified]
-
-        misclassified = []
-        
+        misclassified_names = [str.split(self.test_set.filenames[idx], "/")[1] for idx in idx_misclassified]
         print(f'[=>] {len(idx_misclassified)} misclassified images with names: {misclassified_names}')
 
-        plt.figure(figsize=(20, 8))
-        for i, idx in enumerate(idx_misclassified):
+        misclassified = [entry for entry in self.dataset.data_t if entry.img_name in misclassified_names]
 
-            misclassified.append(self.dataset.data_t[idx])
-            
-            if plot:
-                img = cv2.imread(self.dataset.data_t[idx].img_path)
-                label = self.dataset.data_t[idx].ground_truth_label
-                predicted_label, prob = self.pred_test_img(self.dataset.data_t[idx], plot=False)
+        if plot:
+            plt.figure(figsize=(20, 8))
+            for i, misentry in enumerate(misclassified):
+                img = cv2.imread(misentry.img_path)
+                label = misentry.ground_truth_label
+                predicted_label, prob = self.pred_test_img(misentry, plot=False)
 
                 plt.subplot(int(np.ceil(len(idx_misclassified)/5)), 5, i+1)
                 
-                plt.title(f"{self.dataset.data_t[idx].img_name}\n\
+                plt.title(f"{misentry.img_name}\n\
                 Actual Label : {label}\n\
                 Predicted Label : {predicted_label}\n\
                 Probability : {'{:.3f}'.format(prob)}%", weight='bold', size=12)    
 
-                plt.imshow(img,cmap='gray')
+                plt.imshow(img, cmap='gray')
                 plt.axis('off')
-                
-        if plot:
+
             plt.tight_layout()
             plt.show()
         
@@ -574,7 +578,7 @@ class ModelSetup():
         :type test_dataentry: DataEntry
         """
         # custom_map = sns.light_palette("#13233D", as_cmap=True, reverse=True)
-        img_pred = np.expand_dims(np.expand_dims(test_dataentry.image_numpy(img_size=self.img_size), 0), -1)
+        img_pred = self.img_preprocess_for_prediction(test_dataentry)
         # Extracts the outputs of the top 12 layers
         layer_outputs = [layer.output for layer in self.model.layers]
         # Creates a model that will return these outputs, given the model input
@@ -584,7 +588,7 @@ class ModelSetup():
 
         layer_names = []
         for layer in self.model.layers[:12]:
-            layer_names.append(layer.name) # Names of the layers, so you can have them as part of your plot
+            layer_names.append(layer.name)  # Names of the layers, so you can have them as part of your plot
             
         images_per_row = activations[0].shape[-1]
 
