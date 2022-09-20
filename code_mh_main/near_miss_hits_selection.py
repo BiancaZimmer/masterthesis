@@ -305,7 +305,7 @@ def plot_nmnh(dataentries, similarity_scores: float, title: str = "Near Miss/Nea
         plt.subplot(int(np.ceil(len(similarity_scores) / 5)), 5, i + 1)
         plt.title(f"{dataentry.img_name}\n\
         Actual Label : {dataentry.ground_truth_label}\n\
-        Similarity : {'{:.3f}'.format(sim)}", weight='bold', size=12)
+        Distance : {'{:.3f}'.format(sim)}", weight='bold', size=12)
 
         plt.imshow(pic, cmap='gray')
         plt.axis('off')
@@ -314,13 +314,12 @@ def plot_nmnh(dataentries, similarity_scores: float, title: str = "Near Miss/Nea
     plt.show()
 
 
-def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine',
+def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
                       top_n=TOP_N_NMNH, use_prediction=True):
     # top_n = TOP_N_NMNH   # number of near hits/misses to show
     # use_prediction = True  # if set to true a prediction of the image is used for the near hits/misses
     # suffix_path = "_multicnn"   # if use_prediction=True then you have to specify which model of the dataset to use
     # distance_measure = 'cosine'  # distance measure for near miss/near hit
-    # TODO rgb option
 
     from dataset import DataSet
     from modelsetup import ModelSetup, load_model_from_folder
@@ -361,10 +360,17 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", distance_measure='cosine
     feature_vector = fe.extract_features(x)
 
     pred_label = rnd_img.ground_truth_label
+
+    sel_model = ModelSetup(selected_dataset=data)
+    sel_model._preprocess_img_gen()
+    sel_model.set_model(suffix_path=suffix_path)
+
+    if type_of_model == 'cnn':
+        sel_model.mode_rgb = False
+    else:
+        sel_model.mode_rgb = True
+
     if use_prediction:
-        sel_model = ModelSetup(selected_dataset=data)
-        sel_model._preprocess_img_gen(rgb=False)  # TODO atm only cnn model
-        sel_model.set_model(suffix_path=suffix_path)
         pred_label, pred_prob = sel_model.pred_test_img(rnd_img)
         print("Ground Truth: ", rnd_img.ground_truth_label)
         print("Prediction: ", pred_label)
