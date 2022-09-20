@@ -8,10 +8,11 @@
 # If you do not want a test folder simply set the test split to 0.0
 
 # sample usage:
-# python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -a <validationsplit>
+# python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>
 # python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
 # python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
 # python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/MNIST_data_jpg/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
+# python3 sort_ttv.py /Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/data/oct_cc/test /Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/data/oct_small_cc2 0.05
 
 
 import argparse
@@ -113,7 +114,7 @@ def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, 
 
     for l in get_labels():
         # get file names per label
-        fnames = [f for f in os.listdir(os.path.join(imagedir, l)) if f.endswith('.jpg')]
+        fnames = [f for f in os.listdir(os.path.join(imagedir, l)) if (f.endswith('.jpg') or f.endswith('.jpeg'))]
         listoffnames.append(fnames)
         # first put away split off data
         test = random.sample(fnames, round(perc_split * len(fnames)))
