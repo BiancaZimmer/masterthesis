@@ -40,10 +40,21 @@ from keras.applications.inception_v3 import InceptionV3
 # from imblearn.under_sampling import RandomUnderSampler
 
 
-#from dataentry import *
+# from dataentry import *
 from dataset import *
 from utils import *
 
+# Set seed
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(RANDOMSEED)
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(RANDOMSEED)
+# 4. Set `tensorflow` pseudo-random generator at a fixed value
+from tensorflow.random import set_seed
+set_seed(RANDOMSEED)
 
 class ModelSetup():
     """ Contains a model with its respective data set and other important attributes
@@ -229,9 +240,9 @@ class ModelSetup():
             self.model.add(MaxPooling2D(pool_size=(2, 2)))
             self.model.add(Flatten())
             self.model.add(Dense(256))
-            self.model.add(Dropout(0.5))
+            self.model.add(Dropout(0.5, seed=RANDOMSEED))
             self.model.add(Dense(128))
-            self.model.add(Dropout(0.5))
+            self.model.add(Dropout(0.5, seed=RANDOMSEED))
             self.model.add(BatchNormalization())
 
         self.model.add(Activation('relu'))
@@ -252,7 +263,7 @@ class ModelSetup():
         # x = Flatten()(x)
         x = GlobalAveragePooling2D()(x)
         x = Dense(128, activation='relu')(x)
-        x = Dropout(0.5)(x)
+        x = Dropout(0.5, seed=RANDOMSEED)(x)
         x = BatchNormalization()(x)
         predictions = Dense(numclasses, activation='softmax')(x)
         model = Model(inputs=pretrainedmodel.input, outputs=predictions)

@@ -8,6 +8,18 @@ from helpers import crop_to_square, walk_directory_return_img_path
 from modelsetup import *
 from LRP_heatmaps import *
 
+# Set seed
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(RANDOMSEED)
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(RANDOMSEED)
+# 4. Set `tensorflow` pseudo-random generator at a fixed value
+from tensorflow.random import set_seed
+set_seed(RANDOMSEED)
+
 
 def code_from_prototype_selection(dataset_name):
     # CODE FROM PROTOTYPE_SELECTION.PY

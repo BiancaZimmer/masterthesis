@@ -13,6 +13,18 @@ from PIL import Image, ImageOps
 from numpy.core.records import array
 from utils import *
 
+# Set seed
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(RANDOMSEED)
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(RANDOMSEED)
+# 4. Set `tensorflow` pseudo-random generator at a fixed value
+from tensorflow.random import set_seed
+set_seed(RANDOMSEED)
+
 
 class FeatureExtractor:
     """Feature Extractor model

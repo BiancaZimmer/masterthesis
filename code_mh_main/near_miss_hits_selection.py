@@ -2,6 +2,7 @@ import os
 import time
 import random
 import numpy as np
+import pandas as pd
 from PIL import Image
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
@@ -12,6 +13,19 @@ from skimage.metrics import structural_similarity as ssim
 from feature_extractor import FeatureExtractor
 from dataentry import DataEntry
 from utils import *
+from LRP_heatmaps import generate_LRP_heatmap, create_special_analyzer
+
+# Set seed
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(RANDOMSEED)
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(RANDOMSEED)
+# 4. Set `tensorflow` pseudo-random generator at a fixed value
+from tensorflow.random import set_seed
+set_seed(RANDOMSEED)
 
 
 def calc_distances_scores(class_data_entry_list, feature_vector, top_n: int = 5, dist: str = 'cosine',

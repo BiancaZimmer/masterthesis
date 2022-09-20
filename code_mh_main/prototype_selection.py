@@ -27,6 +27,18 @@ from dataentry import *
 
 import json
 
+# Set seed
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(RANDOMSEED)
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(RANDOMSEED)
+# 4. Set `tensorflow` pseudo-random generator at a fixed value
+from tensorflow.random import set_seed
+set_seed(RANDOMSEED)
+
 
 class PrototypesSelector():
     """Main prototype selector class from which the respective methods inherit
