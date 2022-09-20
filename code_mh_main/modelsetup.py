@@ -409,7 +409,6 @@ class ModelSetup():
     def img_preprocess_for_prediction(self, dataentry):
         if self.mode_rgb:
             img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='rgb'))
-            img_pred = np.expand_dims(img_pred, 0)
         else:
             img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='grayscale'))
             img_pred = np.expand_dims(img_pred, 0)
@@ -744,10 +743,10 @@ if __name__ == "__main__":
     #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
     #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
-    dataset_to_use = "oct_small_cc"
-    train_eval_model(dataset_to_use, fit = True, type_of_model='cnn', suffix_path='_test',
+    dataset_to_use = "mnist_1247"
+    train_eval_model(dataset_to_use, fit = False, type_of_model='cnn', suffix_path='_cnn_balanced',
                      model_for_feature_embedding = None,
-                     eval = True, loss = True, misclassified= True)
+                     eval = True, loss = False, misclassified= True)
 
     # predicts one test image
     # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
