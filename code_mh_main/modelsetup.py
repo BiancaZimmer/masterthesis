@@ -149,29 +149,29 @@ class ModelSetup():
             self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
                                                            target_size=(self.img_size, self.img_size),
                                                            color_mode='rgb', class_mode='categorical',
-                                                           batch_size=self.batch_size, shuffle=True)
+                                                           batch_size=self.batch_size, shuffle=True, seed=RANDOMSEED)
             self.val_set = image_gen_val.flow_from_directory(self.dataset.DIR_VAL_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='rgb', class_mode='categorical',
-                                                          batch_size=self.batch_size, shuffle=False)
+                                                          batch_size=self.batch_size, shuffle=False, seed=RANDOMSEED)
             self.test_set = image_gen_test.flow_from_directory(self.dataset.DIR_TEST_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='rgb', class_mode='categorical',
-                                                          batch_size=self.batch_size, shuffle=False)
+                                                          batch_size=self.batch_size, shuffle=False, seed=RANDOMSEED)
 
         else:
             self.train_set = image_gen.flow_from_directory(self.dataset.DIR_TRAIN_DATA,
                                                            target_size=(self.img_size, self.img_size),
                                                            color_mode='grayscale', class_mode='categorical',
-                                                           batch_size=self.batch_size, shuffle=True)
+                                                           batch_size=self.batch_size, shuffle=True, seed=RANDOMSEED)
             self.val_set = image_gen_val.flow_from_directory(self.dataset.DIR_VAL_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='grayscale', class_mode='categorical',
-                                                          batch_size=self.batch_size, shuffle=False)
+                                                          batch_size=self.batch_size, shuffle=False, seed=RANDOMSEED)
             self.test_set = image_gen_test.flow_from_directory(self.dataset.DIR_TEST_DATA,
                                                           target_size=(self.img_size, self.img_size),
                                                           color_mode='grayscale', class_mode='categorical',
-                                                          batch_size=self.batch_size, shuffle=False)
+                                                          batch_size=self.batch_size, shuffle=False, seed=RANDOMSEED)
 
         # print(self.train_set.class_indices)
         # print(self.train_set.class_indices.keys())
