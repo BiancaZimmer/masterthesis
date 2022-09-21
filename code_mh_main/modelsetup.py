@@ -91,13 +91,13 @@ class ModelSetup():
         self.img_size = sel_size
         self.image_shape = None
 
-        if self.selected_dataset == 'mnist':
-            self.img_size = 28
-            # self.image_shape = (28,28,1)
-        elif self.selected_dataset in ['oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
-            self.img_size = 299
-        # else:
-            # self.image_shape = (sel_size, sel_size, 1)
+        if self.img_size < 1:  # default value used
+            if self.selected_dataset in ['mnist', 'mnist_1247']:
+                self.img_size = 28
+            elif self.selected_dataset in ['oct_small_cc2', 'oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
+                self.img_size = 299
+            else:
+                self.img_size = 128
 
         self.batch_size = batch_size
 
@@ -700,7 +700,10 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
                                                options_cnn=options_cnn,
                                                feature_model_output_layer=feature_model_output_layer))
     # initialize model
-    sel_model = ModelSetup(dataset_used)
+    if model_for_feature_embedding is None:  # VGG16 will be used -> needs correct input shape # or type_of_model == "vgg"
+        sel_model = ModelSetup(dataset_used, sel_size=224)
+    else:
+        sel_model = ModelSetup(dataset_used)
     sel_model.correct_for_imbalanced_data = correct_for_imbalanced_data
     if type_of_model == 'cnn':
         sel_model.mode_rgb = False

@@ -363,6 +363,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     if base_vgg:
         model = None
         feature_model_output_layer = None
+        type_of_model = 'vgg'
     else:
         print(
             os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),

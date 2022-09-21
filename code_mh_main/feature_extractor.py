@@ -41,9 +41,8 @@ class FeatureExtractor:
 
         self.rgb = None
 
-        if (not options_cnn) and feature_model_output_layer is None:
+        if (not options_cnn) and feature_model_output_layer is None and loaded_model is not None:
             options_cnn = True
-            print("CARFEUL!")
             warnings.warn("No output layer for feature model specified. Standards for CNN will be used."
                           "Possible values would be for example: \n"
                           "loaded_model.get_layer('flatten').output for VGG16 \n"
