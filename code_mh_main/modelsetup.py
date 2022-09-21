@@ -76,7 +76,7 @@ class ModelSetup():
     # for imbalanced data
     self.correct_for_imbalanced_data = True
     """
-    def __init__(self, selected_dataset, sel_size:int =128, batch_size:int =32):
+    def __init__(self, selected_dataset, sel_size: int = -1, batch_size: int = 32):
         """Initiliaze the data-specific attributes for training the model.
 
         :param selected_dataset: Dataset on which the classifier is to be trained
@@ -700,7 +700,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
                                                options_cnn=options_cnn,
                                                feature_model_output_layer=feature_model_output_layer))
     # initialize model
-    if model_for_feature_embedding is None:  # VGG16 will be used -> needs correct input shape # or type_of_model == "vgg"
+    if model_for_feature_embedding is None or type_of_model != "cnn":  # VGG16 will be used -> needs correct input shape
         sel_model = ModelSetup(dataset_used, sel_size=224)
     else:
         sel_model = ModelSetup(dataset_used)
