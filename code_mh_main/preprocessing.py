@@ -214,7 +214,7 @@ if __name__ == '__main__':
               "trained a brand new model. ")
         a = input("Do you want to create the feature embeddings for this model? [y/n/help] ")
     if a == "n":
-        if input("Do you want to create the feature embeddings for the general VGG16? [y/n]") == "y":
+        if input("Do you want to create the feature embeddings for the general VGG16? [y/n] ") == "y":
             code_from_dataentry(dataset_to_use, suffix_path, feature_embeddings_to_initiate="VGG16", type_of_model=training[1])
         else:
             print("No feature embeddings created. ")
@@ -235,10 +235,18 @@ if __name__ == '__main__':
         generate_LRP_heatmaps_for_dataset(dataset_to_use=dataset_to_use, suffix_path=suffix_path,
                                           type_of_model=training[1],
                                           method=method, parameters=parameters)
-        if input("Do you also want to create LRP heatmaps for a general (untrained) VGG16? [y/n] ") == "y":
-            generate_LRP_heatmaps_for_dataset(dataset_to_use=dataset_to_use, suffix_path=suffix_path,
-                                              type_of_model=training[1],
-                                              method=method, parameters=parameters, base_vgg=True)
+    if input("Do you want to create LRP heatmaps for a general (untrained) VGG16? [y/n] ") == "y":
+        method = input("Which method would you ike to use? We propose: \n"
+                       "lrp.sequential_preset_a for the mnist data\n"
+                       "lrp.sequential_preset_a_flat for the oct data\n")
+        if method == "lrp.sequential_preset_a":
+            epsilon = input("Which epsilon value would you like to use? We propose 0.1 ")
+            parameters = {"epsilon": float(epsilon)}
+        else:
+            parameters = {}
+        generate_LRP_heatmaps_for_dataset(dataset_to_use=dataset_to_use, suffix_path=suffix_path,
+                                          type_of_model='vgg',
+                                          method=method, parameters=parameters, base_vgg=True)
 
     # Create prototypes
     if input("Do you want to create the prototypes for your current data set now? [y/n] ") == "y":
