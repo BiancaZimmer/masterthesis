@@ -409,6 +409,7 @@ class ModelSetup():
     def img_preprocess_for_prediction(self, dataentry):
         if self.mode_rgb:
             img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='rgb'))
+            img_pred = np.expand_dims(img_pred, 0)
         else:
             img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='grayscale'))
             img_pred = np.expand_dims(img_pred, 0)

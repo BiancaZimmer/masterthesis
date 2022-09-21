@@ -394,7 +394,11 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
         model = VGG16(weights='imagenet', include_top=True)
         model_wo_softmax = innvestigate.model_wo_softmax(model)
     else:
-        model_wo_softmax = innvestigate.model_wo_softmax(model)
+        try:
+            model_wo_softmax = innvestigate.model_wo_softmax(model)
+        except ValueError:
+            model.get_layer(name='dense')._name = 'dense_ori'
+            model_wo_softmax = innvestigate.model_wo_softmax(model)
     try:
         model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
     except ValueError:
