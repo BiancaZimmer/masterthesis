@@ -93,7 +93,7 @@ class ModelSetup():
 
         if self.img_size < 1:  # default value used
             if self.selected_dataset in ['mnist', 'mnist_1247']:
-                self.img_size = 28
+                self.img_size = 84
             elif self.selected_dataset in ['oct_small_cc2', 'oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
                 self.img_size = 299
             else:
@@ -684,7 +684,6 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
     from feature_extractor import FeatureExtractor
 
     # CODE FROM CNN_MODEL.PY
-    print("----- TRAINING OF MODEL -----")
     plot_losses = False
     suffix_path = suffix_path
     options_cnn = False
@@ -700,7 +699,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
                                                options_cnn=options_cnn,
                                                feature_model_output_layer=feature_model_output_layer))
     # initialize model
-    if model_for_feature_embedding is None or type_of_model != "cnn":  # VGG16 will be used -> needs correct input shape
+    if model_for_feature_embedding is None and type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape
         sel_model = ModelSetup(dataset_used, sel_size=224)
     else:
         sel_model = ModelSetup(dataset_used)
@@ -715,6 +714,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
     sel_model._preprocess_img_gen()
 
     if fit:
+        print("----- TRAINING OF MODEL -----")
         if BINARY:
             sel_model._binary_cnn_model()
         else:
