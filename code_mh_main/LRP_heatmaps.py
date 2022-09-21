@@ -335,7 +335,8 @@ def generate_LRP_heatmap(x, analyzer, output_neuron):
     # "bwr" (lighter in color than seismic
     # "coolwarm" (grey instead of white as neutral value)
     # "seismic"
-    a = ivis.heatmap(a, cmap_type='seismic')
+    # binary or greymap or gray are white to black or black to white
+    a = ivis.heatmap(a, cmap_type='binary')
 
     return a[0]
 
