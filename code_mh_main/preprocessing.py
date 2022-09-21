@@ -229,7 +229,7 @@ if __name__ == '__main__':
                        "lrp.sequential_preset_a_flat for the oct data\n")
         if method == "lrp.sequential_preset_a":
             epsilon = input("Which epsilon value would you like to use? We propose 0.1 ")
-            parameters = {"epsilon": epsilon}
+            parameters = {"epsilon": float(epsilon)}
         else:
             parameters = {}
         generate_LRP_heatmaps_for_dataset(dataset_to_use=dataset_to_use, suffix_path=suffix_path,
