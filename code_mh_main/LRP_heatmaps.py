@@ -160,7 +160,7 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
 
     for i, (x, y) in enumerate(test_images):
         # Add batch axis.
-        x = x[None, :, :, :]
+        # x = x[None, :, :, :]
         print("Computing LRP Heatmaps for image #", i, " ...")
         # print(np.shape(x))
 
@@ -255,7 +255,7 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
 
     for image_nr, (x, y) in enumerate(test_images):
         # Add batch axis.
-        x = x[None, :, :, :]
+        # x = x[None, :, :, :]
         print("Computing LRP Heatmaps for image #", image_nr, " ...")
 
         analysis = np.zeros([num_classes, len(analyzers), setup_model.img_size, setup_model.img_size, 3])
@@ -326,7 +326,7 @@ def generate_LRP_heatmap(x, analyzer, output_neuron):
     :return: heatmap as numpy array
     """
     # Add batch axis.
-    x = x[None, :, :, :]
+    # x = x[None, :, :, :]
     # Analyze.
     a = analyzer.analyze(x, neuron_selection=output_neuron)
     # Apply common postprocessing, e.g., re-ordering the channels for plotting.
@@ -458,14 +458,14 @@ if __name__ == '__main__':
     # generate_method_comparison(dataset_to_use="mnist", suffix_path="_multicnn", type_of_model="cnn",
     #                            methods=methods_mnist(), number_images=5)
 
-    # generate_method_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn5c2d6bn_balanced", type_of_model="cnn",
+    # generate_method_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn_balanced", type_of_model="cnn",
     #                            methods=methods_mnist(), number_images=5)
 
     # generate_method_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
     #                            methods=methods_oct(), number_images=10)
 
-    # generate_method_and_neuron_comparison(dataset_to_use="mnist", suffix_path="_multicnn", type_of_model="cnn",
-    #                                       methods=methods_mnist(), number_images=1)  # PresetA
+    generate_method_and_neuron_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn_balanced", type_of_model="cnn",
+                                          methods=methods_mnist(), number_images=2)  # PresetA
 
     # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_cnn5c2d6bn_balanced",
     #                                       type_of_model="cnn",
@@ -474,8 +474,8 @@ if __name__ == '__main__':
     # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
     #                                       methods=methods_oct(), number_images=3)  # Preset A flat
 
-    generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg1balanced", type_of_model="vgg",
-                                          methods=methods_oct(), number_images=3)  # alphabeta10
+    # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg1balanced", type_of_model="vgg",
+    #                                       methods=methods_oct(), number_images=3)  # alphabeta10
 
     # possible inputs for "methods":
     # methods_grayscale()   for grayscale data
