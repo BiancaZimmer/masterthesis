@@ -150,7 +150,7 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
         # create feature embeddings for all data entries
         for count, d in enumerate(data):
             d.initiate_feature_embedding()
-            if count % 100 == 0:
+            if count % 1000 == 0:
                 print(count, " feature embeddings created")
         print("")
 
