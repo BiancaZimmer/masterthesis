@@ -71,6 +71,44 @@ def walk_directory_return_img_path(folder_to_walk):
             file.endswith(tuple(image_extensions))]
 
 
+def normalize_to_onesize(test_image, images_to_normalize):
+    from numpy import max
+    baseshape = max([img.shape[0] for img in images_to_normalize])
+    baseshape = max([baseshape, test_image.shape[0]])
+
+    normalized_images = [border_to_size(img, baseshape) for img in images_to_normalize]
+    normalized_img_test = border_to_size(test_image, baseshape)
+
+    return normalized_images, normalized_img_test
+
+
+def border_to_size(img, target_size: int, color_of_border=128):
+    """
+
+    :param img: cv2 image
+    :param target_size: final size of the ouput image
+    :param color_of_border: solid color with which the border should be filled
+    :return: image with border in chosen color
+    """
+    from cv2 import copyMakeBorder, BORDER_CONSTANT
+
+    if img.shape[0] > target_size:
+        raise ValueError('Target size has to be greater than shape of the input image')
+    if img.shape[0] == target_size:
+        # no border necessary
+        return img
+    else:  # calculate width of border
+        missing = (target_size - img.shape[0])
+        if missing % 2 == 0:  # padding on all sides the same height
+            padding1 = padding2 = missing // 2
+        else:  # padding not the same since not devidable by 2
+            padding1 = missing // 2
+            padding2 = (missing // 2) + 1
+        image_with_border = copyMakeBorder(img, padding1, padding2, padding1, padding2, BORDER_CONSTANT,
+                                           value=color_of_border)
+        return image_with_border
+
+
 if __name__ == "__main__":
     # Test the crop to square function
     # img_path = "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/test/DRUSEN/DRUSEN-224974-14.jpeg"

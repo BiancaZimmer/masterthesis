@@ -17,6 +17,7 @@ from dataentry import DataEntry
 from utils import *
 from LRP_heatmaps import generate_LRP_heatmap, create_special_analyzer
 from modelsetup import get_output_layer
+from helpers import normalize_to_onesize
 
 # Set seed
 # 1. Set `PYTHONHASHSEED` environment variable at a fixed value
@@ -140,7 +141,7 @@ def calc_image_distance(class_data_entry_list, test_data_entry, model, outputlab
         images = [cv2.imread(img, cv2.IMREAD_GRAYSCALE) for img in image_paths_list]
         image_path_test = test_data_entry.img_path
         img_test = cv2.imread(image_path_test, cv2.IMREAD_GRAYSCALE)
-        # TODO normalize images to one size
+        images, img_test = normalize_to_onesize(img_test, images)
 
     if dist == 'CW-SSIM':
         # FOR EXPERIMENTS ONLY!
