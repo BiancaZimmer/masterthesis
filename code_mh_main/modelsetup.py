@@ -92,9 +92,9 @@ class ModelSetup():
         self.image_shape = None
 
         if self.img_size < 1:  # default value used
-            if self.selected_dataset in ['mnist', 'mnist_1247']:
+            if 'mnist' in self.selected_dataset:
                 self.img_size = 84
-            elif self.selected_dataset in ['oct_small_cc2', 'oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
+            elif 'oct' in self.selected_dataset:
                 self.img_size = 299
             else:
                 self.img_size = 128
@@ -131,7 +131,7 @@ class ModelSetup():
                 horizontal_flip=True,
                 vertical_flip=True
             )
-        elif self.selected_dataset in ['oct', 'oct_small_cc', 'oct_small_rc', 'oct_cc', 'oct_rc']:
+        elif 'oct' in self.selected_dataset:
             image_gen = ImageDataGenerator(
                 zoom_range=0.1,
                 horizontal_flip=True,
