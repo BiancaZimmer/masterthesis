@@ -747,51 +747,7 @@ if __name__ == "__main__":
     #           "one of the names you specified in the DATA_DIR_FOLDERS list. e.g. 'mnist'")
     #     dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information.")
 
-    dataset_to_use = "mnist_1247"
-    train_eval_model(dataset_to_use, fit = False, type_of_model='cnn', suffix_path='_cnn_balanced',
+    dataset_to_use = "oct_small_cc2"
+    train_eval_model(dataset_to_use, fit = False, type_of_model='vgg', suffix_path='_vgg',
                      model_for_feature_embedding = None,
                      eval = True, loss = False, misclassified= True)
-
-    # predicts one test image
-    # label, prob = sel_model.pred_test_img(dict_datasets[sel_model.selected_dataset].data_t[0], plot=True)
-
-    # plots activation maps of one image
-    # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[42])
-    # sel_model.plot_activation_map(dict_datasets[sel_model.selected_dataset].data_t[55])
-
-    ## Test model on different data set
-    # type_of_model = 'vgg'
-    # from dataset import DataSet
-    # from feature_extractor import FeatureExtractor
-    #
-    # # CODE FROM CNN_MODEL.PY
-    # print("----- TRAINING OF MODEL -----")
-    # plot_losses = False
-    # suffix_path = "_vgg2balanced"
-    # options_cnn = False
-    #
-    # # dictionary of data sets to use
-    # dataset_used = DataSet(name=dataset_to_use,
-    #                        fe=FeatureExtractor(loaded_model=None,
-    #                                            model_name=str.upper(type_of_model),
-    #                                            options_cnn=options_cnn))
-    # # initialize model
-    # sel_model = ModelSetup(dataset_used)
-    # sel_model.mode_rgb = True
-    #
-    # # initialize img generator
-    # print("Preprocessing images ...")
-    # sel_model._preprocess_img_gen()
-    # # sel_model.set_model(suffix_path=suffix_path)
-    # sel_model.model = load_model(
-    #     os.path.join(STATIC_DIR, 'models', 'model_history_' + "oct_small_cc" + str(suffix_path) + '.hdf5'))
-    # sel_model.model_history = json.load(open(
-    #     os.path.join(STATIC_DIR, 'models', 'model_history_' + "oct_small_cc" + str(suffix_path) + '.json'),
-    #     'r'))
-    # print(sel_model.model.summary())
-    # print("Model input shape: ", sel_model.model.input_shape)
-    #
-    # print("Evaluating model ...")
-    # sel_model.eval(plot_losses=True)
-    # sel_model.plot_rand10_pred()
-    # quality_misclassified = sel_model.get_misclassified(plot=True)
