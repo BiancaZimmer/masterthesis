@@ -258,8 +258,8 @@ class ExamplebasedXAIDemo(FlaskApp):
 
             top_n = TOP_N_NMNH
 
-            scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure, rgb=self.rgb)
-            scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry, self.pred_label, self.data, self.fe, top_n, self.distance_measure,  rgb=self.rgb)
+            scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label, self.data, self.fe, self.cnn_model, top_n, self.distance_measure)
+            scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry, self.pred_label, self.data, self.fe, self.cnn_model, top_n, self.distance_measure)
 
             g.nearest_hits = zip([x.img_path for x in ranked_nearest_hit_data_entry], scores_nearest_hit, ['nh_'+str(i+1) for i in range(top_n)])
             g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss, ['nm_'+str(i+1) for i in range(top_n)])

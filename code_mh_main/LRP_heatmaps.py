@@ -317,6 +317,49 @@ def generate_method_and_neuron_comparison(dataset_to_use, suffix_path, type_of_m
         )
 
 
+def create_special_analyzer(model, dataset_to_use):
+    """
+    Creates analyzers for special data sets
+    :param model: A trained CNN model, if None an untrained VGG16 is used
+    :param dataset_to_use: str, name of the data set
+    :return: analyzer according to the innvestigate analyzer class
+    """
+    if 'mnist' in dataset_to_use:
+        method = 'lrp.sequential_preset_a'
+        parameters = {'epsilon': 0.1}
+    elif 'oct' in dataset_to_use:
+        method = 'lrp.sequential_preset_a_flat'
+        parameters = {}
+    else:
+        print("CAREFUL! No best practice analyzer defined for this dataset")
+        method = 'lrp.sequential_preset_a'
+        parameters = {}
+
+    # Create model without trailing softmax for analyzer
+    if model is None:
+        model = VGG16(weights='imagenet', include_top=True)
+        model_wo_softmax = innvestigate.model_wo_softmax(model)
+    else:
+        try:
+            model.get_layer(name='dense')._name = 'dense_ori'
+        except ValueError:
+            pass  # when there is no layer named "dense" you don't need to rename it
+        model_wo_softmax = innvestigate.model_wo_softmax(model)
+    try:
+        model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
+    except ValueError:
+        pass  # when there is no layer named "activation" you don't need to rename it
+
+    # Set up analyzer
+    analyzer = innvestigate.create_analyzer(
+        method,  # analysis method identifier as str eg "lrp.sequential_preset_a"
+        model_wo_softmax,  # model without softmax output
+        neuron_selection_mode="index",
+        **parameters  # as dictionary eg {"epsilon": 0.1}
+    )
+    return analyzer
+
+
 def generate_LRP_heatmap(x, analyzer, output_neuron):
     """ Generates one heatmap for one input image
 
@@ -396,10 +439,10 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
         model_wo_softmax = innvestigate.model_wo_softmax(model)
     else:
         try:
-            model_wo_softmax = innvestigate.model_wo_softmax(model)
-        except ValueError:
             model.get_layer(name='dense')._name = 'dense_ori'
-            model_wo_softmax = innvestigate.model_wo_softmax(model)
+        except ValueError:
+            pass  # when there is no layer named "dense" you don't need to rename it
+        model_wo_softmax = innvestigate.model_wo_softmax(model)
     try:
         model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
     except ValueError:
@@ -413,8 +456,6 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
         neuron_selection_mode="index",
         **parameters  # as dictionary eg {"epsilon": 0.1}
     )  # optional analysis parameters
-    # Some analyzers require training.
-    # analyzer.fit(train_data_numpy, batch_size=256, verbose=1)  # TODO try out what happens if we skip this: works, brighter colors -> why? --> Fine to skip this
 
     # if LRP heatmaps should be saved, first create paths to store images in
     # path will look like this: ./static/heatmaps/MultiCNN/dataset_name/label/imagename_heatmap.png
