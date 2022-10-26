@@ -328,7 +328,7 @@ def get_nearest_miss_multi(test_dataentry, classes, pred_label, data, fe, model=
 
 def plot_nmnh(dataentries, distance_scores: float, title: str = "Near Miss/Near Hit Plot"):
 
-    plt.figure(figsize=(20, 8))
+    figure = plt.figure(figsize=(20, 8))
     plt.suptitle(title)
     for dataentry, sim, i in zip([x for x in dataentries], distance_scores, range(len(distance_scores))):
         pic = cv2.imread(dataentry.img_path)
@@ -341,30 +341,32 @@ def plot_nmnh(dataentries, distance_scores: float, title: str = "Near Miss/Near 
         plt.axis('off')
 
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    return figure
 
 
 def plot_nmnh_heatmaps(dataentries, distance_scores: float, outputlabel: str, title: str = "Near Miss/Near Hit Plot"):
 
-    plt.figure(figsize=(20, 8))
+    figure = plt.figure(figsize=(20, 8))
     plt.suptitle(title)
 
     heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', dataentries[0].fe.fe_model.name, dataset_to_use)
 
-    for dataentry, sim, i in zip([x for x in dataentries], distance_scores, range(len(distance_scores))):
+    for dataentry, dist, i in zip([x for x in dataentries], distance_scores, range(len(distance_scores))):
         name = str.split(dataentry.img_name, ".")[0]
         image_path = os.path.join(heatmap_directory, outputlabel, name + "_heatmap.png")
         pic = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         plt.subplot(int(np.ceil(len(distance_scores) / 5)), 5, i + 1)
         plt.title(f"{dataentry.img_name}\n\
         Actual Label : {dataentry.ground_truth_label}\n\
-        Distance : {'{:.3f}'.format(sim)}", weight='bold', size=12)
+        Distance : {'{:.3f}'.format(dist)}", weight='bold', size=12)
 
         plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
         plt.axis('off')
 
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    return figure
 
 
 def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
@@ -406,23 +408,6 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
 
         print("... newly loaded feature embeddings, which were not considered yet : ", i)
 
-    ###### ==== Select a Random Image as an input image ==== ######
-    # CAREFUL: As long as randomness is controlled by the seed you will always get the same image here
-    rnd_class = random.choice(data.available_classes)
-    rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', rnd_class)
-    rnd_img_file = random.choice(os.listdir(rnd_img_path))
-    # rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', '6')     # 7 -6576 wrong prediction; 7-1260
-    # rnd_img_file = '5481.jpg'
-    print("Random image:", rnd_img_file, " in folder:")
-    print(rnd_img_path)
-
-    rnd_img = DataEntry(fe, dataset, os.path.join(rnd_img_path, rnd_img_file))
-
-    img, x = fe.load_preprocess_img(rnd_img.img_path)
-    feature_vector = fe.extract_features(x)
-
-    pred_label = rnd_img.ground_truth_label
-
     # initialize model
     if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape # model_for_feature_embedding is None and
         sel_model = ModelSetup(data, sel_size=224)
@@ -436,76 +421,153 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
     else:
         sel_model.mode_rgb = True
 
-    if use_prediction:
-        pred_label, pred_prob = sel_model.pred_test_img(rnd_img)
-        print("Ground Truth: ", rnd_img.ground_truth_label)
-        print("Prediction: ", pred_label)
-        print("Probability: ", pred_prob)
+    another_image = "y"
+    while another_image == "y":  # possibility to get another overview of a random image until user input decides otherwise
+        ###### ==== Select a Random Image as an input image ==== ######
+        # CAREFUL: As long as randomness is controlled by the seed you will always get the same image here
+        rnd_class = random.choice(data.available_classes)
+        rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', rnd_class)
+        rnd_img_file = random.choice(os.listdir(rnd_img_path))
+        # Use for fixed image:
+        # rnd_img_path = os.path.join(DATA_DIR, dataset, 'test', '6')
+        # rnd_img_file = '5481.jpg'
+        print("Random image:", rnd_img_file, " in folder:")
+        print(rnd_img_path)
 
-    hit_class_idx = []
-    miss_class_idx = []
+        rnd_img = DataEntry(fe, dataset, os.path.join(rnd_img_path, rnd_img_file))
 
-    for f in data.data:
-        if f.ground_truth_label == rnd_img.ground_truth_label:
-            hit_class_idx.append(f)
-        else:
-            miss_class_idx.append(f)
+        img, x = fe.load_preprocess_img(rnd_img.img_path)
+        feature_vector = fe.extract_features(x)
 
-    print("Number of hits: ", np.size(hit_class_idx))
-    print("Number of misses: ", np.size(miss_class_idx))
+        pred_label = rnd_img.ground_truth_label
 
-    # NEW CODE
-    print("Calculating Near Hits ...")
-    scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(rnd_img, pred_label, data.data, fe,
-                                                                         sel_model, top_n, distance_measure, raw)
-    if BINARY:
-        print("Calculating Near Misses ...")
-        scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(rnd_img, pred_label, data.data, fe,
-                                                                               sel_model, top_n, distance_measure, raw)
-    # gets top_n near misses per class instead of over all
-    else:
-        print("Calculating Near Misses multi ...")
-        scores_nearest_miss_multi, ranked_nearest_miss_multi_data_entry = \
-            get_nearest_miss_multi(rnd_img, data.available_classes, pred_label, data.data, fe, sel_model, top_n, distance_measure, raw)
+        if use_prediction:
+            pred_label, pred_prob = sel_model.pred_test_img(rnd_img)
+            print("Ground Truth: ", rnd_img.ground_truth_label)
+            print("Prediction: ", pred_label)
+            print("Probability: ", pred_prob)
 
-    toc = time.time()
-    print("{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
-                                    ((toc - tic) % 60)))
+        hit_class_idx = []
+        miss_class_idx = []
 
-    # Show random image and its near misses and hits
-    # pic = cv2.imread(rnd_img.img_path)
-    plt.title(f"{rnd_img.img_name}\n\
-                Actual Label : {rnd_img.ground_truth_label}\n\
-                Predicted Label : {pred_label}", weight='bold', size=12)
-    plt.imshow(img, cmap='gray')
-    plt.axis('off')
+        for f in data.data:
+            if f.ground_truth_label == rnd_img.ground_truth_label:
+                hit_class_idx.append(f)
+            else:
+                miss_class_idx.append(f)
 
-    if top_n < 1:
-        print("SCORES NEAREST HITS")
-        print(pd.Series(scores_nearest_hit).describe())
-    else:
-        plot_nmnh(ranked_nearest_hit_data_entry, scores_nearest_hit, title="Near Hits")
-        plot_nmnh_heatmaps(ranked_nearest_hit_data_entry, scores_nearest_hit, pred_label[0], title="Near Hits Heatmaps")
+        print("Number of hits: ", np.size(hit_class_idx))
+        print("Number of misses: ", np.size(miss_class_idx))
+
+        # NEW CODE
+        print("Calculating Near Hits ...")
+        scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(rnd_img, pred_label, data.data, fe,
+                                                                             sel_model, top_n, distance_measure, raw)
         if BINARY:
-            plot_nmnh(ranked_nearest_miss_data_entry, scores_nearest_miss, title="Near Misses")
+            print("Calculating Near Misses ...")
+            scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(rnd_img, pred_label, data.data, fe,
+                                                                                   sel_model, top_n, distance_measure, raw)
+        # gets top_n near misses per class instead of over all
         else:
-            plot_nmnh(np.concatenate(ranked_nearest_miss_multi_data_entry),
-                      np.concatenate(scores_nearest_miss_multi),
-                      title="Near Misses per Class")
-            plot_nmnh_heatmaps(np.concatenate(ranked_nearest_miss_multi_data_entry),
-                               np.concatenate(scores_nearest_miss_multi), pred_label[0],
-                               title="Near Misses Heatmaps per Class")
+            print("Calculating Near Misses multi ...")
+            scores_nearest_miss_multi, ranked_nearest_miss_multi_data_entry = \
+                get_nearest_miss_multi(rnd_img, data.available_classes, pred_label, data.data, fe, sel_model, top_n, distance_measure, raw)
+
+        toc = time.time()
+        print("{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+                                        ((toc - tic) % 60)))
+
+        # plot near hits and near misses
+        plt.ioff()
+        if top_n < 1:
+            print("SCORES NEAREST HITS")
+            print(pd.Series(scores_nearest_hit).describe())
+        else:
+            # Plot random image + heatmap
+            fig1 = plt.figure()
+            plt.subplot(2, 1, 1)
+            plt.title(f"{rnd_img.img_name}\n\
+                        Actual Label : {rnd_img.ground_truth_label}\n\
+                        Predicted Label : {pred_label}", weight='bold', size=12)
+            plt.imshow(img, cmap='gray')
+            if distance_measure in ["SSIM", "CW-SSIM"] and not raw:
+                plt.subplot(2, 1, 2)
+                plt.title("Heatmap", weight='bold', size=12)
+                pic = cv2.imread(rnd_img.img_name + "_heatmap.png", cv2.IMREAD_GRAYSCALE)
+                plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
+            plt.tight_layout()
+            plt.axis('off')
+            fig1.savefig("fig1.png")
+            plt.close(fig1)
+            # fig1.show()
+            # plt.show()
+
+            fig2 = plot_nmnh(ranked_nearest_hit_data_entry, scores_nearest_hit, title="Near Hits")
+            fig2.savefig("fig2.png")
+            plt.close()
+            if distance_measure in ["SSIM", "CW-SSIM"] and not raw:
+                fig3 = plot_nmnh_heatmaps(ranked_nearest_hit_data_entry, scores_nearest_hit, pred_label[0], title="Near Hits Heatmaps")
+                fig3.savefig("fig3.png")
+                plt.close()
+
+            if BINARY:
+                fig4 = plot_nmnh(ranked_nearest_miss_data_entry, scores_nearest_miss, title="Near Misses")
+                fig4.savefig("fig4.png")
+                plt.close()
+            else:
+                fig4 = plot_nmnh(np.concatenate(ranked_nearest_miss_multi_data_entry),
+                          np.concatenate(scores_nearest_miss_multi),
+                          title="Near Misses per Class")
+                fig4.savefig("fig4.png")
+                plt.close()
+                if distance_measure in ["SSIM", "CW-SSIM"] and not raw:
+                    fig5 = plot_nmnh_heatmaps(np.concatenate(ranked_nearest_miss_multi_data_entry),
+                                       np.concatenate(scores_nearest_miss_multi), pred_label[0],
+                                       title="Near Misses Heatmaps per Class")
+                    fig5.savefig("fig5.png")
+                    plt.close()
+
+            plt.subplot(2, 3, (1, 4))
+            pic1 = cv2.imread("fig1.png", cv2.IMREAD_GRAYSCALE)
+            plt.imshow(pic1, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 3, 2)
+            pic2 = cv2.imread("fig2.png", cv2.IMREAD_GRAYSCALE)
+            plt.imshow(pic2, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 3, 3)
+            try:
+                pic3 = cv2.imread("fig3.png", cv2.IMREAD_GRAYSCALE)
+                plt.imshow(pic3, cmap='gray', vmin=0, vmax=255)
+            except TypeError:  # FileNotFoundError
+                pass
+            plt.axis('off')
+            plt.subplot(2, 3, 5)
+            pic = cv2.imread("fig4.png", cv2.IMREAD_GRAYSCALE)
+            plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 3, 6)
+            try:
+                pic = cv2.imread("fig5.png", cv2.IMREAD_GRAYSCALE)
+                plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
+            except TypeError:  # FileNotFoundError
+                pass
+            plt.axis('off')
+            plt.show()
+            plt.close()
+
+        another_image = input("Do you want to get another overview of a random image? [y/n] ")
 
 
 if __name__ == '__main__':
-    # dataset_to_use = "mnist_1247"
-    #
-    # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn",  # TOP_N_NMNH
-    #                   type_of_model="cnn", distance_measure='SSIM')
+    dataset_to_use = "mnist_1247"
 
-    dataset_to_use = "oct_small_cc2"
-    get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_vgg",  # TOP_N_NMNH
-                      type_of_model="vgg", distance_measure='SSIM', raw=True)
+    get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn",  # TOP_N_NMNH
+                      type_of_model="cnn", distance_measure='SSIM', raw=False)
+
+    # dataset_to_use = "oct_small_cc2"
+    # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_vgg",  # TOP_N_NMNH
+    #                   type_of_model="vgg", distance_measure='SSIM', raw=False)
 
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
     # dist == SSIM # Default SSIM implementation of Scikit-Image # quick but negative similarities?
