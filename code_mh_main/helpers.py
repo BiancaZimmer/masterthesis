@@ -109,6 +109,28 @@ def border_to_size(img, target_size: int, color_of_border=128):
         return image_with_border
 
 
+def jaccard(list1, list2, method="intersection"):
+    """
+    Returns the Jaccard Index for list1 and list2 which is defined as intersection/union
+    If the method is set differently it returns the proportion of list1 or list2 of the union
+    :param list1: first list
+    :param list2: second list
+    :param method: one of intersection/list1/list2 else Nan is returned
+    :return: Jaccard index; between 0=no intersection to 1=lists are the same
+    """
+    lst1 = set(list1)
+    lst2 = set(list2)
+    if method == "intersection":
+        return len(lst1.intersection(lst2))/len(lst1.union(lst2))
+    elif method == "list1":
+        return len(list1)/len(lst1.union(lst2))
+    elif method == "list2":
+        return len(list2)/len(lst1.union(lst2))
+    else:
+        import numpy as np
+        return np.NaN
+
+
 if __name__ == "__main__":
     # Test the crop to square function
     # img_path = "/Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/test/DRUSEN/DRUSEN-224974-14.jpeg"
