@@ -702,10 +702,8 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
         test_names.append(test_dataentry.img_path)
         near_hits.append([dataentry.img_path for dataentry in ranked_nearest_hit_data_entry])
         all_scores_nearest_hits.append(scores_nearest_hit)
-        # todo
-        print("----------------", len(test_names), "------------------")
-        if len(test_names) >= 3:
-            break
+        if len(test_names) % 1000 == 0:
+            print(len(test_names))
 
     df = pd.DataFrame({"image_name": test_names,
                        "near_hits": near_hits,
