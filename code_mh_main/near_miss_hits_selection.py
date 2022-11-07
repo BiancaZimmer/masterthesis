@@ -380,7 +380,7 @@ def plot_nmnh_heatmaps(dataentries, distance_scores: float, outputlabel: str, ti
 
 
 def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
-                      top_n=TOP_N_NMNH, use_prediction=True, raw=False):
+                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False):
     # top_n = TOP_N_NMNH   # number of near hits/misses to show
     # use_prediction = True  # if set to true a prediction of the image is used for the near hits/misses
     # suffix_path = "_multicnn"   # if use_prediction=True then you have to specify which model of the dataset to use
@@ -401,7 +401,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
     data = DataSet(dataset, fe)
 
     # if distance measure requires feature embedding check whether all are created and if not -> create them
-    if distance_measure in ["cosine", "manhatten", "euclidean"]:
+    if not distance_on_image:
         i = 0   # Counter for newly loaded feature embeddings
         for d in data.data:
             if os.path.exists(d.feature_file):
@@ -497,45 +497,46 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
             # Plot random image + heatmap
             fig1 = plt.figure()
             plt.subplot(2, 1, 1)
+            # TODO change title formatting
             plt.title(f"{rnd_img.img_name}\n\
                         Actual Label : {rnd_img.ground_truth_label}\n\
                         Predicted Label : {pred_label}", weight='bold', size=12)
             plt.imshow(img, cmap='gray')
-            if distance_measure in ["SSIM", "CW-SSIM"] and not raw:
+            if distance_on_image and not raw:
                 plt.subplot(2, 1, 2)
                 plt.title("Heatmap", weight='bold', size=12)
                 pic = cv2.imread(rnd_img.img_name + "_heatmap.png", cv2.IMREAD_GRAYSCALE)
                 plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
             plt.tight_layout()
             plt.axis('off')
-            fig1.savefig("fig1.png")
+            fig1.savefig("fig1.png", bbox_inches='tight')
             plt.close(fig1)
             # fig1.show()
             # plt.show()
 
             fig2 = plot_nmnh(ranked_nearest_hit_data_entry, scores_nearest_hit, title="Near Hits")
-            fig2.savefig("fig2.png")
+            fig2.savefig("fig2.png", bbox_inches='tight')
             plt.close()
-            if distance_measure in ["SSIM", "CW-SSIM"] and not raw:
+            if distance_on_image and not raw:
                 fig3 = plot_nmnh_heatmaps(ranked_nearest_hit_data_entry, scores_nearest_hit, pred_label[0], title="Near Hits Heatmaps")
-                fig3.savefig("fig3.png")
+                fig3.savefig("fig3.png", bbox_inches='tight')
                 plt.close()
 
             if BINARY:
                 fig4 = plot_nmnh(ranked_nearest_miss_data_entry, scores_nearest_miss, title="Near Misses")
-                fig4.savefig("fig4.png")
+                fig4.savefig("fig4.png", bbox_inches='tight')
                 plt.close()
             else:
                 fig4 = plot_nmnh(np.concatenate(ranked_nearest_miss_multi_data_entry),
                           np.concatenate(scores_nearest_miss_multi),
                           title="Near Misses per Class")
-                fig4.savefig("fig4.png")
+                fig4.savefig("fig4.png", bbox_inches='tight')
                 plt.close()
-                if distance_measure in ["SSIM", "CW-SSIM"] and not raw:
+                if distance_on_image and not raw:
                     fig5 = plot_nmnh_heatmaps(np.concatenate(ranked_nearest_miss_multi_data_entry),
                                        np.concatenate(scores_nearest_miss_multi), pred_label[0],
                                        title="Near Misses Heatmaps per Class")
-                    fig5.savefig("fig5.png")
+                    fig5.savefig("fig5.png", bbox_inches='tight')
                     plt.close()
 
             plt.subplot(2, 3, (1, 4))
@@ -564,6 +565,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
             except TypeError:  # FileNotFoundError
                 pass
             plt.axis('off')
+            plt.tight_layout()
             plt.show()
             plt.close()
 
