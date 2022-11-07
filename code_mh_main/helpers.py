@@ -1,19 +1,5 @@
 # Some helper functions
 
-# def removesuffix(path: str, suffix: str, /) -> str:
-#     if path.endswith(suffix):
-#         return path[:-len(suffix)]
-#     else:
-#         return path[:]
-#
-#
-# def removeprefix(self: str, prefix: str, /) -> str:
-#     if self.startswith(prefix):
-#         return self[len(prefix):]
-#     else:
-#         return self[:]
-
-
 def crop_to_square(img_path, centre=True, save=False, new_path=''):
     """Function to crop an image to a square. The smallest side is automatically used as a reference size.
 
