@@ -613,6 +613,118 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
         another_image = input("Do you want to get another overview of a random image? [y/n] ")
 
 
+def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
+                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False):
+
+    from dataset import DataSet
+    from modelsetup import ModelSetup, load_model_from_folder
+
+    tic = time.time()
+
+    # Load the first model
+    # Initialize Feature Extractor Instance
+    options_cnn = True if type_of_model == "cnn" else False
+    tmp_model = load_model_from_folder(dataset, suffix_path=suffix_path)
+    fe = FeatureExtractor(loaded_model=tmp_model,
+                          model_name=str.upper(type_of_model),
+                          options_cnn=options_cnn,
+                          feature_model_output_layer=get_output_layer(tmp_model, type_of_model))
+    data = DataSet(dataset, fe)
+
+    # if distance measure requires feature embedding check whether all are created and if not -> create them
+    if not distance_on_image:
+        i = 0   # Counter for newly loaded feature embeddings
+        for d in data.data:
+            if os.path.exists(d.feature_file):
+                np.load(d.feature_file, allow_pickle=True)
+                pass
+            else:  # if feature embedding doesn't exist yet, it is extracted now and saved
+                _, x = d.fe.load_preprocess_img(d.img_file)
+                feat = d.fe.extract_features(x)
+                np.save(d.feature_file, feat)
+                print("SAVE...")
+                i += 1
+
+        print("... newly loaded feature embeddings, which were not considered yet : ", i)
+
+    # initialize model
+    if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape # model_for_feature_embedding is None and
+        sel_model = ModelSetup(data, sel_size=224)
+    else:
+        sel_model = ModelSetup(data)
+    sel_model._preprocess_img_gen()
+    sel_model.set_model(suffix_path=suffix_path)
+
+    if type_of_model == 'cnn':
+        sel_model.mode_rgb = False
+    else:
+        sel_model.mode_rgb = True
+
+    # for every test image calc NH and NM
+    test_names = []
+    near_hits = []
+    all_scores_nearest_hits = []
+    near_misses = []
+    all_scores_nearest_miss = []
+    for test_dataentry in data.data_t:
+        img, x = fe.load_preprocess_img(test_dataentry.img_path)
+        feature_vector = fe.extract_features(x)
+
+        pred_label = test_dataentry.ground_truth_label
+        if use_prediction:
+            pred_label, pred_prob = sel_model.pred_test_img(test_dataentry)
+
+        # print("Calculating Near Hits ...")
+        scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(test_dataentry, pred_label,
+                                                                               data.data, fe,
+                                                                               sel_model, top_n,
+                                                                               distance_measure,
+                                                                               raw, distance_on_image)
+        if BINARY:
+            # print("Calculating Near Misses ...")
+            scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(test_dataentry,
+                                                                                     pred_label, data.data,
+                                                                                     fe, sel_model, top_n,
+                                                                                     distance_measure,
+                                                                                     raw, distance_on_image)
+            near_misses.append([dataentry.img_path for dataentry in ranked_nearest_miss_data_entry])
+            all_scores_nearest_miss.append(scores_nearest_miss)
+        # gets top_n near misses per class instead of over all
+        else:
+            # print("Calculating Near Misses multi ...")
+            scores_nearest_miss, ranked_nearest_miss_multi_data_entry = \
+                get_nearest_miss_multi(test_dataentry, data.available_classes, pred_label, data.data, fe,
+                                       sel_model, top_n,
+                                       distance_measure, raw, distance_on_image)
+            near_misses.append([[dataentry.img_path for dataentry in lst] for lst in ranked_nearest_miss_multi_data_entry])
+            all_scores_nearest_miss.append(scores_nearest_miss)
+
+        test_names.append(test_dataentry.img_path)
+        near_hits.append([dataentry.img_path for dataentry in ranked_nearest_hit_data_entry])
+        all_scores_nearest_hits.append(scores_nearest_hit)
+        # todo
+        print("----------------", len(test_names), "------------------")
+        if len(test_names) >= 3:
+            break
+
+    df = pd.DataFrame({"image_name": test_names,
+                       "near_hits": near_hits,
+                       "scores_hits": all_scores_nearest_hits,
+                       "near_misses": near_misses,
+                       "scores_misses": all_scores_nearest_miss})
+
+    toc = time.time()
+    print("{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+                                    ((toc - tic) % 60)))
+
+    # safe dataframe as pickle
+    picklename = dataset+suffix_path+"_"+distance_measure+"_usepred"+str(use_prediction)+"_raw"+str(raw)+"_distonimg"+str(distance_on_image)
+    picklepath = os.path.join(STATIC_DIR, picklename)
+    df.to_pickle(picklepath+".pickle")
+
+    return df
+
+
 if __name__ == '__main__':
     # dataset_to_use = "mnist_1247"
 
@@ -626,4 +738,13 @@ if __name__ == '__main__':
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
     # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
+    dataset_to_use = "mnist_1247"
+    df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                      suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure='SSIM',
+                                      use_prediction=True, raw=False, distance_on_image=True)
+    # print(df.describe())
+    print(df.head())
 
+
+###
+# pd.read_pickle("path")
