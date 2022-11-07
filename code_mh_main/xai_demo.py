@@ -16,7 +16,7 @@ from modelsetup import *
 from dataset import *
 from feature_extractor import FeatureExtractor
 from dataentry import DataEntry
-from near_miss_hits_selection import calc_distances_scores, get_nearest_hits, get_nearest_miss
+from near_miss_hits_selection import calc_distances_scores_on_fe, get_nearest_hits, get_nearest_miss
 
 
 def get_prototypes_by_img_files(data, protos_dict:dict):
