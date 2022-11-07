@@ -1,3 +1,4 @@
+import math
 import os
 import time
 import random
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import distance
 import cv2
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import pickle
 
 import ssim.ssimlib as pyssim
 from skimage.metrics import structural_similarity as ssim
@@ -159,7 +161,7 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
             result = 1-result
             return result
         distances = [calc_cw_ssim(img_path) for img_path in image_paths_list]
-    else:  # dist == SSIM
+    elif dist == "SSIM":
         # Default SSIM implementation of Scikit-Image
         # value between -1; 1 ; -1 different, 1 the same
         # -> trafo to structural dissimilarity where value between 0;1 with 0 same and 1 different
@@ -168,7 +170,42 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
             result = (1-ssim_index)/2
             return result
         distances = [dssim(image) for image in images]
+    elif dist == "SSIM-pushed":
+        # Like SSIM but image values pushed to -1 and 1
+        def logtrafo(array):
+            # trafo of [0, 255] into [0,2] - is redundant but better to understand later
+            array = np.divide(array, 127.5)
+            # ensure that you do not take log(0) ina  later step
+            array[array == 0] = np.min(array[array != 0])
+            array[array == 2] = np.max(array[array != 2])
+            # Trafo of [0, 2] into ]-inf, inf[
+            array[array <= 1] = np.log(array[array <= 1])
+            array[array > 1] = -np.log(2-array[array > 1])
+            return array
 
+        def dssim(img):
+            # show some histograms
+            # plt.subplot(2, 2, 1)
+            # plt.hist(img_test.flatten())
+            # plt.subplot(2, 2, 2)
+            # plt.hist(img.flatten())
+            # plt.subplot(2, 2, 3)
+            # plt.hist(logtrafo(img_test).flatten())
+            # plt.subplot(2, 2, 4)
+            # plt.hist(logtrafo(img).flatten())
+            # plt.show()
+            ssim_index = ssim(logtrafo(img), logtrafo(img_test))
+            result = (1-ssim_index)/2
+            return result
+        distances = [dssim(image) for image in images]
+    elif dist == "euclidean":
+        distances = [distance.euclidean(image.flatten(), img_test.flatten()) for image in images]
+    elif dist == 'cosine':  # careful! 0 means close, 1 means far away
+        distances = [distance.cosine(image.flatten(), img_test.flatten()) for image in images]
+    elif dist == 'manhattan':
+        distances = [distance.cityblock(image.flatten(), img_test.flatten()) for image in images]
+
+    distances = np.array(distances)
     # Top distances
     if top_n < 1:
         idx_ranked = np.argsort(distances)
@@ -215,21 +252,22 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, model=None, top_n: in
 
     hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
 
-    if distance_measure in ['cosine', 'manhatten', 'euclidean']:
+    if distance_measure in ['SSIM', 'CW-SSIM'] or distance_on_image:
+        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distance_score_on_image(hit_class_data_entry,
+                                                                                         test_dataentry, model, pred_label,
+                                                                                         top_n=top_n, dist=distance_measure,
+                                                                                         return_data_entry_ranked=True,
+                                                                                         image=not raw)
+    else:
         _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
 
-        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores(hit_class_data_entry, feature_vector,
-                                                                                  top_n=top_n,
-                                                                                  dist=distance_measure,
-                                                                                  return_data_entry_ranked=True)
+        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores_on_fe(hit_class_data_entry, feature_vector,
+                                                                                        top_n=top_n,
+                                                                                        dist=distance_measure,
+                                                                                        return_data_entry_ranked=True)
         # TODO add parameter for raw FE/image comparison
-    else:  # for CW-SSIM, SSIM and anything else
-        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_image_distance(hit_class_data_entry,
-                                                                                test_dataentry, model, pred_label,
-                                                                                top_n=top_n, dist=distance_measure,
-                                                                                return_data_entry_ranked=True,
-                                                                                lrp=not raw)
+
     return scores_nearest_hit, ranked_nearest_hit_data_entry
 
 
@@ -260,22 +298,22 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, model=None, top_n: in
     """
     miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
 
-    if distance_measure in ['cosine', 'manhatten', 'euclidean']:
+    if (distance_measure in ['SSIM', 'CW-SSIM']) or distance_on_image:
+        scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distance_score_on_image(miss_class_data_entry,
+                                                                                            test_dataentry, model, pred_label,
+                                                                                            top_n=top_n,
+                                                                                            dist=distance_measure,
+                                                                                            return_data_entry_ranked=True,
+                                                                                            image=not raw)
+    else:
         _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
 
-        scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distances_scores(miss_class_data_entry,
-                                                                                     feature_vector, top_n=top_n,
-                                                                                     dist=distance_measure,
-                                                                                     return_data_entry_ranked=True)
+        scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distances_scores_on_fe(miss_class_data_entry,
+                                                                                           feature_vector, top_n=top_n,
+                                                                                           dist=distance_measure,
+                                                                                           return_data_entry_ranked=True)
         # TODO add parameter for raw FE/image comparison
-    else:   # for CW-SSIM, SSIM and anything else
-        scores_nearest_miss, ranked_nearest_miss__data_entry = calc_image_distance(miss_class_data_entry,
-                                                                                   test_dataentry, model, pred_label,
-                                                                                   top_n=top_n,
-                                                                                   dist=distance_measure,
-                                                                                   return_data_entry_ranked=True,
-                                                                                   lrp=not raw)
 
     return scores_nearest_miss, ranked_nearest_miss__data_entry
 
@@ -313,7 +351,7 @@ def get_nearest_miss_multi(test_dataentry, classes, pred_label, data, fe, model=
     scores = []
     data_entries = []
     # for distances based on LRP, go through miss classes and find closest heatmaps on pred_label output neuron!
-    if distance_measure in ['SSIM', 'CW-SSIM']:
+    if distance_measure in ['SSIM', 'CW-SSIM'] or distance_on_image:
         # for miss_class in available_classes:
         #     miss_class_data_entry = list(filter(lambda x: x.ground_truth_label == miss_class, data))
         #     scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(test_dataentry, pred_label, miss_class_data_entry, fe,
@@ -321,7 +359,8 @@ def get_nearest_miss_multi(test_dataentry, classes, pred_label, data, fe, model=
         #     scores.append(scores_nearest_miss)
         #     data_entries.append(ranked_nearest_miss_data_entry)
         scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(test_dataentry, pred_label,
-                                                                               data, fe, model, -1, distance_measure, raw=raw)
+                                                                               data, fe, model, -1,
+                                                                               distance_measure, raw, distance_on_image)
         for miss_class in available_classes:
             indices = [i for i, entry in enumerate(ranked_nearest_miss_data_entry) if entry.ground_truth_label == miss_class]
             indices = indices[:top_n]
@@ -329,7 +368,9 @@ def get_nearest_miss_multi(test_dataentry, classes, pred_label, data, fe, model=
             data_entries.append([ranked_nearest_miss_data_entry[i] for i in indices])
     else:  # for distances based on FE, go through miss-classes and find the closest FE
         for miss_class in available_classes:
-            scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_hits(test_dataentry, miss_class, data, fe, model, top_n, distance_measure, raw=raw)
+            scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_hits(test_dataentry, miss_class, data,
+                                                                                   fe, model, top_n,
+                                                                                   distance_measure, raw=raw)
             scores.append(scores_nearest_miss)
             data_entries.append(ranked_nearest_miss_data_entry)
 
@@ -573,16 +614,16 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
 
 
 if __name__ == '__main__':
-    dataset_to_use = "mnist_1247"
+    # dataset_to_use = "mnist_1247"
 
-    get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn",  # TOP_N_NMNH
-                      type_of_model="cnn", distance_measure='SSIM', raw=False)
+    # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn_seed3871",  # TOP_N_NMNH
+    #                  type_of_model="cnn", distance_measure='SSIM-pushed', raw=False, distance_on_image=True)
 
-    # dataset_to_use = "oct_small_cc2"
-    # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_vgg",  # TOP_N_NMNH
-    #                   type_of_model="vgg", distance_measure='SSIM', raw=False)
+    # dataset_to_use = "oct_cc"  # model_history_oct_cc_cnn_seed3871
+    # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn_seed3871",  # TOP_N_NMNH
+    #                   type_of_model="cnn", distance_measure='SSIM-pushed', raw=False, distance_on_image=True)
 
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
-    # dist == SSIM # Default SSIM implementation of Scikit-Image # quick but negative similarities?
+    # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
 
