@@ -660,6 +660,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     else:
         sel_model.mode_rgb = True
 
+    print("------------- START -------------")
     # for every test image calc NH and NM
     test_names = []
     near_hits = []
@@ -702,8 +703,24 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
         test_names.append(test_dataentry.img_path)
         near_hits.append([dataentry.img_path for dataentry in ranked_nearest_hit_data_entry])
         all_scores_nearest_hits.append(scores_nearest_hit)
-        if len(test_names) % 1000 == 0:
+        if len(test_names) % 20 == 0:
             print(len(test_names))
+            # safe in between
+            df = pd.DataFrame({"image_name": test_names,
+                               "near_hits": near_hits,
+                               "scores_hits": all_scores_nearest_hits,
+                               "near_misses": near_misses,
+                               "scores_misses": all_scores_nearest_miss})
+            toc = time.time()
+            print(
+                "{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+                                          ((toc - tic) % 60)))
+
+            # safe dataframe as pickle
+            picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
+                use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image)
+            picklepath = os.path.join(STATIC_DIR, picklename)
+            df.to_pickle(picklepath + ".pickle")
 
     df = pd.DataFrame({"image_name": test_names,
                        "near_hits": near_hits,
@@ -719,6 +736,8 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     picklename = dataset+suffix_path+"_"+distance_measure+"_usepred"+str(use_prediction)+"_raw"+str(raw)+"_distonimg"+str(distance_on_image)
     picklepath = os.path.join(STATIC_DIR, picklename)
     df.to_pickle(picklepath+".pickle")
+
+    print("------------- FINISHED -------------")
 
     return df
 
@@ -736,9 +755,10 @@ if __name__ == '__main__':
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
     # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
-    dataset_to_use = "mnist_1247"
+    dataset_to_use = input("Which data set? [mnist_1247/oct_cc] ")  # "mnist_1247"
+    distance_measure = input("Distance Measure [SSIM/SSIM-pushed/CW-SSIM/euclidean/cosine/manhatten] ")
     df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                      suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure='SSIM',
+                                      suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance_measure,
                                       use_prediction=True, raw=False, distance_on_image=True)
     # print(df.describe())
     print(df.head())
