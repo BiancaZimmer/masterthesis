@@ -127,18 +127,28 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         # images = [np.squeeze(img_to_array(load_img(img, color_mode='grayscale'))) for img in image_paths_list]
         # print(images[0].shape)
 
-        # calculate heatmap for testimage
-        analyzer = create_special_analyzer(model.model, dataset_to_use)
-        # outputlabel needs to be a string
-        try:
-            outputneuron = model.labelencoder.transform(outputlabel[0])
-        except ValueError:
-            outputneuron = model.labelencoder.transform(outputlabel)
-        img_test_heatmap = generate_LRP_heatmap(model.img_preprocess_for_prediction(test_data_entry), analyzer, outputneuron)
-        plt.imsave(test_data_entry.img_name + "_heatmap.png", img_test_heatmap)
+        test_image_name = str.split(test_data_entry.img_name, ".")[0]
+        test_image_path = os.path.join(heatmap_directory, "test", outputlabel[0], test_image_name + "_heatmap.png")
+
+        if not os.path.exists(test_image_path):  # heatmap not yet created -> create heatmap
+            if not os.path.exists(os.path.join(heatmap_directory, "test", outputlabel[0])):
+                os.makedirs(os.path.join(heatmap_directory, "test", outputlabel[0]))
+            # calculate heatmap for testimage
+            analyzer = create_special_analyzer(model.model, dataset_to_use)
+            # outputlabel needs to be a string
+            try:
+                outputneuron = model.labelencoder.transform(outputlabel[0])
+                img_test_heatmap = generate_LRP_heatmap(model.img_preprocess_for_prediction(test_data_entry), analyzer,
+                                                        outputneuron)
+            except ValueError:
+                outputneuron = model.labelencoder.transform(outputlabel)
+                img_test_heatmap = generate_LRP_heatmap(model.img_preprocess_for_prediction(test_data_entry), analyzer,
+                                                        outputneuron)
+            plt.imsave(test_image_path, img_test_heatmap)
         # print("saved ", outputneuron, "  label ", outputlabel)
-        img_test = cv2.imread(test_data_entry.img_name + "_heatmap.png", cv2.IMREAD_GRAYSCALE)
-    else:  # if lrp==False we evaluate on the raw images
+        img_test = cv2.imread(test_image_path, cv2.IMREAD_GRAYSCALE)
+
+    else:  # if image==False we evaluate on the raw images
         raw_image_paths_list = [img.img_path for img in class_data_entry_list]
         image_paths_list = raw_image_paths_list
         images = [cv2.imread(img, cv2.IMREAD_GRAYSCALE) for img in image_paths_list]
@@ -546,7 +556,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
             if distance_on_image and not raw:
                 plt.subplot(2, 1, 2)
                 plt.title("Heatmap", weight='bold', size=12)
-                pic = cv2.imread(rnd_img.img_name + "_heatmap.png", cv2.IMREAD_GRAYSCALE)
+                pic = cv2.imread(rnd_img.img_name + "_heatmap.png", cv2.IMREAD_GRAYSCALE)  # TODO different path
                 plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
             plt.tight_layout()
             plt.axis('off')
@@ -703,7 +713,9 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
         test_names.append(test_dataentry.img_path)
         near_hits.append([dataentry.img_path for dataentry in ranked_nearest_hit_data_entry])
         all_scores_nearest_hits.append(scores_nearest_hit)
-        if len(test_names) % 20 == 0:
+        # if len(test_names) == 3:
+        #     break
+        if len(test_names) <= 3 or len(test_names) % 20 == 0:
             print(len(test_names))
             # safe in between
             df = pd.DataFrame({"image_name": test_names,
