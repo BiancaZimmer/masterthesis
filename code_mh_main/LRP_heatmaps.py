@@ -425,7 +425,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     # prepare data for further processing
     print("Preparing data ...")
     train_data = setup_model.dataset.data
-    x_test = dataset.data_t
+    x_test = setup_model.dataset.data_t
     test_images = list(zip([setup_model.img_preprocess_for_prediction(file) for file in x_test],
                             [file.ground_truth_label for file in x_test],
                             [os.path.splitext(file.img_name)[0] for file in x_test]))
