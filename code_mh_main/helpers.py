@@ -101,7 +101,7 @@ def jaccard(list1, list2, method="intersection"):
     If the method is set differently it returns the proportion of list1 or list2 of the union
     :param list1: first list
     :param list2: second list
-    :param method: one of intersection/list1/list2 else Nan is returned
+    :param method: one of intersection/list1/list2/absolute else Nane is returned
     :return: Jaccard index; between 0=no intersection to 1=lists are the same
     """
     lst1 = set(list1)
@@ -112,6 +112,8 @@ def jaccard(list1, list2, method="intersection"):
         return len(list1)/len(lst1.union(lst2))
     elif method == "list2":
         return len(list2)/len(lst1.union(lst2))
+    elif method == "absolute":
+        return len(lst1.intersection(lst2))
     else:
         import numpy as np
         return np.NaN
