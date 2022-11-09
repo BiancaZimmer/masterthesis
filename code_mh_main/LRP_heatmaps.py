@@ -425,13 +425,14 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     # prepare data for further processing
     print("Preparing data ...")
     train_data = setup_model.dataset.data
-    # x_test = [file.dataentry_to_nparray() for file in setup_model.dataset.data_t]
-    # test_images = list(zip([image_ for image_ in x_test],
-    #                        [file.ground_truth_label for file in setup_model.dataset.data_t],
-    #                        [os.path.splitext(file.img_name)[0] for file in setup_model.dataset.data_t]))
-    train_images = list(zip([setup_model.img_preprocess_for_prediction(file) for file in train_data],
-                            [file.ground_truth_label for file in train_data],
-                            [os.path.splitext(file.img_name)[0] for file in train_data]))
+    x_test = dataset.data_t
+    test_images = list(zip([setup_model.img_preprocess_for_prediction(file) for file in x_test],
+                            [file.ground_truth_label for file in x_test],
+                            [os.path.splitext(file.img_name)[0] for file in x_test]))
+    train_images = test_images
+    # train_images = list(zip([setup_model.img_preprocess_for_prediction(file) for file in train_data],
+    #                         [file.ground_truth_label for file in train_data],
+    #                         [os.path.splitext(file.img_name)[0] for file in train_data]))
 
     # Create model without trailing softmax for analyzer
     if base_vgg:
@@ -460,7 +461,7 @@ def generate_LRP_heatmaps_for_dataset(dataset_to_use, suffix_path, type_of_model
     # if LRP heatmaps should be saved, first create paths to store images in
     # path will look like this: ./static/heatmaps/MultiCNN/dataset_name/label/imagename_heatmap.png
     if save:
-        heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', train_data[0].fe.fe_model.name, dataset_to_use)
+        heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', train_data[0].fe.fe_model.name, dataset_to_use, "test")  # TODO delete test
         print("Heatmaps will be saved to:\n", heatmap_directory)
         # create the folder for heatmaps if it is not created yet
         if not os.path.exists(heatmap_directory):
