@@ -677,7 +677,21 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     all_scores_nearest_hits = []
     near_misses = []
     all_scores_nearest_miss = []
-    for test_dataentry in data.data_t:
+    counter = 0
+    for test_dataentry in random.sample(data.data_t, len(data.data_t)):
+        # check if data is already present -> we can jump ahead (only possible with seed set)
+        picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
+            use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter+1)
+        picklepath = os.path.join(STATIC_DIR, picklename+".pickle")
+        if os.path.exists(picklepath):
+            test_names.append(test_dataentry.img_path)
+            if len(test_names) == 5:
+                print(counter)
+                counter = counter + 1
+                test_names = []
+            continue
+
+        # start with new image
         img, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
 
@@ -713,10 +727,11 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
         test_names.append(test_dataentry.img_path)
         near_hits.append([dataentry.img_path for dataentry in ranked_nearest_hit_data_entry])
         all_scores_nearest_hits.append(scores_nearest_hit)
-        # if len(test_names) == 3:
+        # if counter == 3:
         #     break
-        if len(test_names) <= 3 or len(test_names) % 20 == 0:
-            print(len(test_names))
+        if len(test_names) == 5:
+            counter = counter + 1
+            print(counter*5)
             # safe in between
             df = pd.DataFrame({"image_name": test_names,
                                "near_hits": near_hits,
@@ -730,9 +745,15 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
 
             # safe dataframe as pickle
             picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
-                use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image)
+                use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter)
             picklepath = os.path.join(STATIC_DIR, picklename)
             df.to_pickle(picklepath + ".pickle")
+            # clean workspace
+            test_names = []
+            near_hits = []
+            all_scores_nearest_hits = []
+            near_misses = []
+            all_scores_nearest_miss = []
 
     df = pd.DataFrame({"image_name": test_names,
                        "near_hits": near_hits,
@@ -745,7 +766,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
                                     ((toc - tic) % 60)))
 
     # safe dataframe as pickle
-    picklename = dataset+suffix_path+"_"+distance_measure+"_usepred"+str(use_prediction)+"_raw"+str(raw)+"_distonimg"+str(distance_on_image)
+    picklename = dataset+suffix_path+"_"+distance_measure+"_usepred"+str(use_prediction)+"_raw"+str(raw)+"_distonimg"+str(distance_on_image)+"_"+str(counter)
     picklepath = os.path.join(STATIC_DIR, picklename)
     df.to_pickle(picklepath+".pickle")
 
