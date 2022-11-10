@@ -152,8 +152,8 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         raw_image_paths_list = [img.img_path for img in class_data_entry_list]
         image_paths_list = raw_image_paths_list
         images = [cv2.imread(img, cv2.IMREAD_GRAYSCALE) for img in image_paths_list]
-        image_path_test = test_data_entry.img_path
-        img_test = cv2.imread(image_path_test, cv2.IMREAD_GRAYSCALE)
+        test_image_path = test_data_entry.img_path
+        img_test = cv2.imread(test_image_path, cv2.IMREAD_GRAYSCALE)
         images, img_test = normalize_to_onesize(img_test, images)
 
     if dist == 'CW-SSIM':
@@ -162,7 +162,7 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         # Optimization using CUDA or Cython code should be explored in the future.
         # value between 0;1 with 0 different and 1 same
         # -> trafo to 0;1 with 0 same and 1 different
-        pil_test_image = Image.open(image_path_test)
+        pil_test_image = Image.open(test_image_path)
 
         def calc_cw_ssim(image_path):
             pil = Image.open(image_path)
