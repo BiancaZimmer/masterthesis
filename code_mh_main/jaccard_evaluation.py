@@ -45,6 +45,24 @@ def combine_pickle(path, number_range):
     return df
 
 
+# +
+def humanfriendly_trafo(path):
+    if type(path) is str:
+        return path.split("/")[-1]
+    elif type(path[0]) is str:
+        return [entry.split("/")[-1] for entry in path]
+    else:
+        return [[entry.split("/")[-1] for entry in lst] for lst in path]
+    
+def show_humanfriendly(df, columns=["image_name", "near_hits", "near_misses", "top_misses"]):
+    dfh = df.copy()
+    for c in columns:
+        dfh[c] = [humanfriendly_trafo(row) for row in df[c]]
+    return dfh
+
+
+# -
+
 def top_misses(lst, score):
     """
     Calculates the top overall misses from the lists of the multidimensional misses
@@ -85,20 +103,28 @@ mnist_eucl = pd.read_pickle("/Users/biancazimmer/Documents/PycharmProjects/maste
 temp = mnist_eucl.apply(lambda row : top_misses(row["near_misses"], row["scores_misses"]), axis = 1)
 mnist_eucl["top_misses"] = [t[0] for t in temp]
 mnist_eucl["scores_top_misses"] = [t[1] for t in temp]
-mnist_eucl
+show_humanfriendly(mnist_eucl)
 
 mnist_SSIM = pd.read_pickle("/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
 temp = mnist_SSIM.apply(lambda row : top_misses(row["near_misses"], row["scores_misses"]), axis = 1)
 mnist_SSIM["top_misses"] = [t[0] for t in temp]
 mnist_SSIM["scores_top_misses"] = [t[1] for t in temp]
-mnist_SSIM
+show_humanfriendly(mnist_SSIM)
 
 # ## Overview over scores
 
-# +
+df_scores = pd.DataFrame()
+df_scores["scores_hit_eucl"] = list(chain.from_iterable(mnist_eucl.scores_hits))
+df_scores["scores_hit_SSIM"] = list(chain.from_iterable(mnist_SSIM.scores_hits))
+df_scores["scores_top_misses_eucl"] = list(chain.from_iterable(mnist_eucl.scores_top_misses))
+df_scores["scores_top_misses_SSIM"] = list(chain.from_iterable(mnist_SSIM.scores_top_misses))
+df_scores
 
-# lst = list(chain.from_iterable(lst))
-# -
+df_scores.describe()
+
+df_scores.boxplot(column=["scores_hit_eucl", "scores_top_misses_eucl"])
+
+df_scores.boxplot(column=["scores_hit_SSIM", "scores_top_misses_SSIM"])
 
 # ## Calculate Jaccard indices
 
