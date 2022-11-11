@@ -114,17 +114,38 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
     """
 
     def logtrafo(array):
-        # # trafo of [0, 255] into [0,2] - is redundant but better to understand later
-        # array = np.divide(array, 128)
-        # # ensure that you do not take log(0) in a later step
-        # array[array == 0] = np.min(array[array != 0])
-        # array[array == 2] = np.max(array[array != 2])
-        # # Trafo of [0, 2] into ]-inf, inf[
-        # array[array <= 1] = np.log(array[array <= 1])
-        # array[array > 1] = -np.log(2 - array[array > 1])
-        array[array < 128] = 0
-        array[array > 128] = 255
-        return array
+        # trafo of [0, 255] into [0,2] - is redundant but better to understand later
+        array = np.divide(array, 128)
+        # ensure that you do not take log(0) in a later step
+        array[array == 0] = np.min(array[array != 0])
+        array[array == 2] = np.max(array[array != 2])
+        # Trafo of [0, 2] into ]-inf, inf[
+        arrt = np.full_like(array, 1)
+        arrt[array <= 1] = np.log(array[array <= 1])
+        arrt[array > 1] = -np.log(2 - array[array > 1])
+        # trafo back to [0, 255]; values between -inf and 0 get transformed to 0;128 in the same measurement like 0;inf to 128;255
+        # cv2.normalize(array[array <= 0], None, alpha=0, beta=128, norm_type=cv2.NORM_MINMAX)
+        result = np.full_like(array, -1)
+        result[arrt == 0] = 128
+        try:
+            min_ = np.min(arrt[arrt < 0])
+        except ValueError:
+            min_ = 0
+        try:
+            max_ = np.max(arrt[arrt > 0])
+        except ValueError:
+            max_ = 0
+
+        factor = np.max([-min_, max_])
+        try:
+            result[arrt < 0] = ((arrt[arrt < 0]/factor)+1)*128
+        except ValueError:
+            pass  # no number below 0
+        try:
+            result[arrt > 0] = ((arrt[arrt > 0]/factor)*128)+127
+        except ValueError:
+            pass  # no number below 0
+        return result
 
     def minmaxtrafo(array):
         array[array < 128] = 0
@@ -203,17 +224,6 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         distances = [dssim(image) for image in images]
     elif dist == "SSIM-pushed":
         # Like SSIM but image values pushed to -1 and 1
-        def logtrafo(array):
-            # trafo of [0, 255] into [0,2] - is redundant but better to understand later
-            array = np.divide(array, 127.5)
-            # ensure that you do not take log(0) ina  later step
-            array[array == 0] = np.min(array[array != 0])
-            array[array == 2] = np.max(array[array != 2])
-            # Trafo of [0, 2] into ]-inf, inf[
-            array[array <= 1] = np.log(array[array <= 1])
-            array[array > 1] = -np.log(2-array[array > 1])
-            return array
-
         def dssim(img):
             # show some histograms
             # plt.subplot(2, 2, 1)
@@ -242,20 +252,20 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         # Like SSIM but image blurred
         def dssim(img):
             sigma = 3
-            # show some histograms
-            plt.subplot(2, 2, 1)
-            plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 2, 2)
-            plt.imshow(img_test, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 2, 3)
-            plt.imshow(logtrafo(blurtrafo(img, sigma)), cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 2, 4)
-            plt.imshow(logtrafo(blurtrafo(img_test, sigma)), cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.show()
+            # show pictures
+            # plt.subplot(2, 2, 1)
+            # plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.subplot(2, 2, 2)
+            # plt.imshow(img_test, cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.subplot(2, 2, 3)
+            # plt.imshow(logtrafo(blurtrafo(img, sigma)), cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.subplot(2, 2, 4)
+            # plt.imshow(logtrafo(blurtrafo(img_test, sigma)), cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.show()
 
             ssim_index = ssim(blurtrafo(img, sigma), blurtrafo(img_test, sigma))
             result = (1-ssim_index)/2
@@ -841,8 +851,8 @@ if __name__ == '__main__':
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
     # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
-    dataset_to_use = input("Which data set? [mnist_1247/oct_cc] ")  # "mnist_1247"
-    distance_measure = input("Distance Measure [SSIM/SSIM-pushed/CW-SSIM/euclidean/cosine/manhatten] ")
+    dataset_to_use = input("Which data set? [mnist_1247/oct_cc] ")
+    distance_measure = input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/CW-SSIM/euclidean/cosine/manhatten] ")
     df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
                                       suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance_measure,
                                       use_prediction=True, raw=False, distance_on_image=True)
