@@ -113,6 +113,27 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         - **ranked_dataentry** (`list`) - If 'return_data_entry_ranked' set to True, a list of the DataEntries of the nearest samples
     """
 
+    def logtrafo(array):
+        # # trafo of [0, 255] into [0,2] - is redundant but better to understand later
+        # array = np.divide(array, 128)
+        # # ensure that you do not take log(0) in a later step
+        # array[array == 0] = np.min(array[array != 0])
+        # array[array == 2] = np.max(array[array != 2])
+        # # Trafo of [0, 2] into ]-inf, inf[
+        # array[array <= 1] = np.log(array[array <= 1])
+        # array[array > 1] = -np.log(2 - array[array > 1])
+        array[array < 128] = 0
+        array[array > 128] = 255
+        return array
+
+    def minmaxtrafo(array):
+        array[array < 128] = 0
+        array[array > 128] = 255
+        return array
+
+    def blurtrafo(array, sigma):
+        return cv2.GaussianBlur(array, ksize=(0, 0), sigmaX=sigma, sigmaY=sigma)
+
     if image:
         dataset_to_use = str.split(class_data_entry_list[0].img_path, "/")[-4]
         heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', class_data_entry_list[0].fe.fe_model.name, dataset_to_use)
@@ -205,6 +226,54 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
             # plt.hist(logtrafo(img).flatten())
             # plt.show()
             ssim_index = ssim(logtrafo(img), logtrafo(img_test))
+            result = (1-ssim_index)/2
+            return result
+        distances = [dssim(image) for image in images]
+
+    elif dist == "SSIM-mm":
+        # Like SSIM but image blurred
+        def dssim(img):
+            sigma = 3
+            # show some histograms
+            plt.subplot(2, 2, 1)
+            plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 2, 2)
+            plt.imshow(img_test, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 2, 3)
+            plt.imshow(minmaxtrafo(img), cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 2, 4)
+            plt.imshow(minmaxtrafo(img_test), cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.show()
+
+            ssim_index = ssim(minmaxtrafo(img), minmaxtrafo(img_test))
+            result = (1-ssim_index)/2
+            return result
+        distances = [dssim(image) for image in images]
+
+    elif dist == "SSIM-blur":
+        # Like SSIM but image blurred
+        def dssim(img):
+            sigma = 3
+            # show some histograms
+            plt.subplot(2, 2, 1)
+            plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 2, 2)
+            plt.imshow(img_test, cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 2, 3)
+            plt.imshow(logtrafo(blurtrafo(img, sigma)), cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.subplot(2, 2, 4)
+            plt.imshow(logtrafo(blurtrafo(img_test, sigma)), cmap='gray', vmin=0, vmax=255)
+            plt.axis('off')
+            plt.show()
+
+            ssim_index = ssim(blurtrafo(img, sigma), blurtrafo(img_test, sigma))
             result = (1-ssim_index)/2
             return result
         distances = [dssim(image) for image in images]
