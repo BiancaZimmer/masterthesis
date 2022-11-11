@@ -231,24 +231,8 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
         distances = [dssim(image) for image in images]
 
     elif dist == "SSIM-mm":
-        # Like SSIM but image blurred
+        # Like SSIM but image only contains 3 values: 0, 128, 255
         def dssim(img):
-            sigma = 3
-            # show some histograms
-            plt.subplot(2, 2, 1)
-            plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 2, 2)
-            plt.imshow(img_test, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 2, 3)
-            plt.imshow(minmaxtrafo(img), cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 2, 4)
-            plt.imshow(minmaxtrafo(img_test), cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.show()
-
             ssim_index = ssim(minmaxtrafo(img), minmaxtrafo(img_test))
             result = (1-ssim_index)/2
             return result
