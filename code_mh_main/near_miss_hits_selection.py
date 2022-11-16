@@ -155,6 +155,21 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
     def blurtrafo(array, sigma):
         return cv2.GaussianBlur(array, ksize=(0, 0), sigmaX=sigma, sigmaY=sigma)
 
+    def thresholdtrafo(array_ori):
+        array = array_ori.copy()
+        try:
+            median_high = np.quantile(array[array > 128], 0.95)
+            array[np.logical_and(array > 128, array <= median_high)] = 128
+        except IndexError:
+            pass
+        try:
+            median_low = np.quantile(array[array < 128], 0.05)
+            array[np.logical_and(array < 128, array >= median_low)] = 128
+        except IndexError:
+            pass
+
+        return array
+
     if image:
         dataset_to_use = str.split(class_data_entry_list[0].img_path, "/")[-4]
         heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', class_data_entry_list[0].fe.fe_model.name, dataset_to_use)
@@ -268,6 +283,28 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
             # plt.show()
 
             ssim_index = ssim(blurtrafo(img, sigma), blurtrafo(img_test, sigma))
+            result = (1-ssim_index)/2
+            return result
+        distances = [dssim(image) for image in images]
+    elif dist == "SSIM-threshold":
+        # Like SSIM but image blurred
+        def dssim(img):
+            # show pictures
+            # plt.subplot(2, 2, 1)
+            # plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.subplot(2, 2, 2)
+            # plt.imshow(img_test, cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.subplot(2, 2, 3)
+            # plt.imshow(thresholdtrafo(img), cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.subplot(2, 2, 4)
+            # plt.imshow(thresholdtrafo(img_test), cmap='gray', vmin=0, vmax=255)
+            # plt.axis('off')
+            # plt.show()
+
+            ssim_index = ssim(thresholdtrafo(img), thresholdtrafo(img_test))
             result = (1-ssim_index)/2
             return result
         distances = [dssim(image) for image in images]
@@ -846,18 +883,18 @@ if __name__ == '__main__':
 
     # dataset_to_use = "oct_cc"  # model_history_oct_cc_cnn_seed3871
     # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn_seed3871",  # TOP_N_NMNH
-    #                   type_of_model="cnn", distance_measure='SSIM-pushed', raw=False, distance_on_image=True)
+    #                   type_of_model="cnn", distance_measure='SSIM-threshold', raw=False, distance_on_image=True)
 
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
     # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
-    dataset_to_use = input("Which data set? [mnist_1247/oct_cc] ")
-    distance_measure = input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/CW-SSIM/euclidean/cosine/manhatten] ")
+    dataset_to_use = "mnist_1247"  # input("Which data set? [mnist_1247/oct_cc] ")
+    distance_measure = "SSIM-threshold"  # input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/SSIM-threshold/CW-SSIM/euclidean/cosine/manhatten] ")
     df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
                                       suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance_measure,
                                       use_prediction=True, raw=False, distance_on_image=True)
     # print(df.describe())
-    print(df.head())
+    # print(df.head())
 
 
 ###
