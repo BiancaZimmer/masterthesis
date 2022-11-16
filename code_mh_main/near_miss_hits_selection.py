@@ -511,7 +511,8 @@ def plot_nmnh_heatmaps(dataentries, distance_scores: float, outputlabel: str, ti
     figure = plt.figure(figsize=(20, 8))
     plt.suptitle(title)
 
-    heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', dataentries[0].fe.fe_model.name, dataset_to_use)
+    dataset = str.split(dataentries[0].img_path, "/")[-4]
+    heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', dataentries[0].fe.fe_model.name, dataset)
 
     for dataentry, dist, i in zip([x for x in dataentries], distance_scores, range(len(distance_scores))):
         name = str.split(dataentry.img_name, ".")[0]
@@ -646,6 +647,8 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
             print(pd.Series(scores_nearest_hit).describe())
         else:
             # Plot random image + heatmap
+            heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', rnd_img.fe.fe_model.name, dataset)
+
             fig1 = plt.figure()
             plt.subplot(2, 1, 1)
             # TODO change title formatting
@@ -654,9 +657,13 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
                         Predicted Label : {pred_label}", weight='bold', size=12)
             plt.imshow(img, cmap='gray')
             if distance_on_image and not raw:
+                # get correct path to heatmap
+                test_image_name = str.split(rnd_img.img_name, ".")[0]
+                test_image_heatmap_path = os.path.join(heatmap_directory, "test", pred_label[0],
+                                                       test_image_name + "_heatmap.png")
                 plt.subplot(2, 1, 2)
                 plt.title("Heatmap", weight='bold', size=12)
-                pic = cv2.imread(rnd_img.img_name + "_heatmap.png", cv2.IMREAD_GRAYSCALE)  # TODO different path
+                pic = cv2.imread(test_image_heatmap_path, cv2.IMREAD_GRAYSCALE)
                 plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
             plt.tight_layout()
             plt.axis('off')
