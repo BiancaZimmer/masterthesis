@@ -1,0 +1,223 @@
+# -*- coding: utf-8 -*-
+# This file was used to preprocess pickles generated with near_miss_hits_selection.py
+
+# ## Imports
+
+import math
+import os
+import time
+import random
+import numpy as np
+import pandas as pd
+from itertools import chain
+
+# from feature_extractor import FeatureExtractor
+from helpers import jaccard, change_imgpath_back
+from utils import *
+
+# Set seed
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+
+random.seed(RANDOMSEED)
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(RANDOMSEED)
+# 4. Set `tensorflow` pseudo-random generator at a fixed value
+from tensorflow.random import set_seed
+
+set_seed(RANDOMSEED)
+
+
+# ## Functions
+
+def combine_pickle(path, number_range):
+    """
+    Combines pickles
+    :param path: path to pickle without number at the end
+    :param number_range: number range which will be appended to the path with "_number"
+    :return: combined pickle as pandas DataFrame
+    """
+    df = pd.DataFrame()
+    for i in number_range:
+        tmp = pd.read_pickle(path + "_" + str(i) + ".pickle")
+        df = pd.concat([df, tmp], ignore_index=True)
+    return df
+
+
+# +
+def humanfriendly_trafo(path):
+    """
+    Splits a path and only returns last entry which usually is the name of a file
+    Also accepts lists and list of lists as input
+    :param path: path to a file or list of paths or list of lists of paths
+    :return: same data structure as input with truncated paths
+    """
+    if type(path) is str:
+        return path.split("/")[-1]
+    elif type(path[0]) is str:
+        return [entry.split("/")[-1] for entry in path]
+    else:
+        return [[entry.split("/")[-1] for entry in lst] for lst in path]
+
+
+def show_humanfriendly(df, columns=["image_name", "near_hits", "near_misses", "top_misses"]):
+    """
+    Returns a whole DataFrame without the longish paths in front. Uses pickle_preprocessing.humanfriendly_trafo() for this
+    :param df: pandas DataFrame
+    :param columns: name of columns to transform - should be paths
+    :return: copy of pandas DataFrame
+    """
+    dfh = df.copy()
+    for c in columns:
+        dfh[c] = [humanfriendly_trafo(row) for row in df[c]]
+    return dfh
+
+
+# -
+
+def top_misses(lst, score):
+    """
+    Calculates the top overall misses from the lists of the multidimensional misses
+    :param lst: list of list with paths to the misses
+    :param score: list of list with scores of the misses
+    :return: tuple with TOP_N_NMNH entries for the misses
+    """
+    lst = list(chain.from_iterable(lst))
+    score = list(chain.from_iterable(score))
+    paths = [p for (p, s) in sorted(zip(lst, score))]
+    scores = [s for (p, s) in sorted(zip(lst, score))]
+    return paths[:TOP_N_NMNH], scores[:TOP_N_NMNH]
+
+
+def add_top_misses(df):
+    """
+    Uses top_misses on a whole pandas DataFrame
+    :param df: pandas Dataframe with one column named 'near_misses' and one named 'scores_misses' to be transformed
+    :return: pandas DataFrame
+    """
+    temp = df.apply(lambda row: top_misses(row["near_misses"], row["scores_misses"]), axis=1)
+    df["top_misses"] = [t[0] for t in temp]
+    df["scores_top_misses"] = [t[1] for t in temp]
+    return df
+
+
+def jaccard_df(df1, df2, method="intersection"):
+    """
+    Calculates the Jaccard Index for two columns of a pandas DataFrame according to helpers.jaccard
+    :param df1: first column of pandas DataFrame
+    :param df2: second column of pandas DataFrame
+    :param method: method according to helpers.jaccard()
+    :return: list with jaccard indices
+    """
+    if type(df1[0][0]) is list:
+        result = [jaccard(list(chain.from_iterable(l1)), list(chain.from_iterable(l2)), method) for
+                  l1, l2 in zip(df1, df2)]
+        return result
+    else:
+        result = [jaccard(l1, l2, method) for l1, l2 in zip(df1, df2)]
+        return result
+
+
+# ## Datasets for testing
+
+mnist_eucl = pd.read_pickle(
+    "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
+add_top_misses(mnist_eucl)
+show_humanfriendly(mnist_eucl)
+
+mnist_SSIM = pd.read_pickle(
+    "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
+add_top_misses(mnist_SSIM)
+show_humanfriendly(mnist_SSIM)
+
+# ## Combine pickles
+
+# +
+# dataset_to_use = "mnist_1247"
+
+path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
+
+# mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue
+# mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue
+# mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue
+# mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue
+# mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue
+# mnist_1247_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue
+
+# oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue
+# oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue
+# oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue
+# oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue
+# oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue
+
+mnist_eucl = combine_pickle(path_base + "mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue",
+                            range(1, 21))
+mnist_SSIM = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+mnist_SSIM_mm = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue",
+                               range(1, 21))
+mnist_SSIM_pushed = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue",
+                                   range(1, 21))
+mnist_SSIM_blur = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue",
+                                 range(1, 21))
+mnist_CW_SSIM = combine_pickle(path_base + "mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue",
+                               range(1, 21))
+mnist_SSIM_threshold = combine_pickle(
+    path_base + "mnist_1247_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+
+oct_eucl = combine_pickle(path_base + "oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+oct_SSIM = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+oct_SSIM_mm = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+oct_SSIM_pushed = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue",
+                                 range(1, 21))
+oct_SSIM_blur = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue",
+                               range(1, 21))
+oct_SSIM_threshold = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue",
+                                    range(1, 21))
+
+# +
+# OCT-threshold was run on a different computer -> different paths
+# paths will be transformed
+
+path_columns = ['image_name', 'near_hits', 'near_misses']
+
+
+oct_SSIM_threshold["image_name"] = [change_imgpath_back(path) for path in oct_SSIM_threshold["image_name"]]
+oct_SSIM_threshold["near_hits"] = [[change_imgpath_back(path) for path in lst] for lst in
+                                   oct_SSIM_threshold["near_hits"]]
+oct_SSIM_threshold["near_misses"] = [[[change_imgpath_back(path) for path in lst2] for lst2 in lst] for lst in
+                                     oct_SSIM_threshold["near_misses"]]
+
+oct_SSIM_threshold
+# -
+
+all_df = [mnist_eucl, mnist_SSIM, mnist_SSIM_mm, mnist_SSIM_pushed, mnist_SSIM_blur, mnist_SSIM_threshold,
+          mnist_CW_SSIM,
+          oct_eucl, oct_SSIM, oct_SSIM_mm, oct_SSIM_pushed, oct_SSIM_blur, oct_SSIM_threshold]
+mnist_df = {"euclidean": mnist_eucl, "SSIM": mnist_SSIM, "SSIM-mm": mnist_SSIM_mm,
+            "SSIM-pushed": mnist_SSIM_pushed, "SSIM-blur": mnist_SSIM_blur, "SSIM-threshold": mnist_SSIM_threshold,
+            "CW-SSIM": mnist_CW_SSIM}
+oct_df = {"euclidean": oct_eucl, "SSIM": oct_SSIM, "SSIM-mm": oct_SSIM_mm,
+          "SSIM-pushed": oct_SSIM_pushed, "SSIM-blur": oct_SSIM_blur, "SSIM-threshold": oct_SSIM_threshold}
+
+# ## Add top Misses for all df
+
+for df in all_df:
+    add_top_misses(df)
+
+# ## Save new pickles
+
+# +
+for df in mnist_df:
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/mnist_1247_cnn_seed3871_" + \
+                 df + "_usepredTrue_rawFalse_distonimgTrue_FINAL100"
+    print(picklepath)
+    mnist_df[df].to_pickle(picklepath + ".pickle")
+
+for df in oct_df:
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/oct_cc_cnn_seed3871_" + \
+                 df + "_usepredTrue_rawFalse_distonimgTrue_FINAL100"
+    print(picklepath)
+    oct_df[df].to_pickle(picklepath + ".pickle")
+# -
