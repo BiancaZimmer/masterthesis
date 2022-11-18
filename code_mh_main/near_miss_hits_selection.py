@@ -494,9 +494,8 @@ def plot_nmnh(dataentries, distance_scores: float, title: str = "Near Miss/Near 
     for dataentry, sim, i in zip([x for x in dataentries], distance_scores, range(len(distance_scores))):
         pic = cv2.imread(dataentry.img_path)
         plt.subplot(int(np.ceil(len(distance_scores) / 5)), 5, i + 1)
-        plt.title(f"{dataentry.img_name}\n\
-        Actual Label : {dataentry.ground_truth_label}\n\
-        Distance : {'{:.3f}'.format(sim)}", weight='bold', size=12)
+        plt.title(f"{dataentry.img_name}\nActual Label : {dataentry.ground_truth_label}\nDistance : {'{:.3f}'.format(sim)}",
+                  weight='bold', size=10, loc="left")
 
         plt.imshow(pic, cmap='gray')
         plt.axis('off')
@@ -519,9 +518,8 @@ def plot_nmnh_heatmaps(dataentries, distance_scores: float, outputlabel: str, ti
         image_path = os.path.join(heatmap_directory, outputlabel, name + "_heatmap.png")
         pic = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         plt.subplot(int(np.ceil(len(distance_scores) / 5)), 5, i + 1)
-        plt.title(f"{dataentry.img_name}\n\
-        Actual Label : {dataentry.ground_truth_label}\n\
-        Distance : {'{:.3f}'.format(dist)}", weight='bold', size=12)
+        plt.title(f"{dataentry.img_name}\nActual Label : {dataentry.ground_truth_label}\nDistance : {'{:.3f}'.format(dist)}",
+                  weight='bold', size=10, loc="left")
 
         plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
         plt.axis('off')
@@ -651,10 +649,8 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
 
             fig1 = plt.figure()
             plt.subplot(2, 1, 1)
-            # TODO change title formatting
-            plt.title(f"{rnd_img.img_name}\n\
-                        Actual Label : {rnd_img.ground_truth_label}\n\
-                        Predicted Label : {pred_label}", weight='bold', size=12)
+            plt.title(f"{rnd_img.img_name}\nActual Label : {rnd_img.ground_truth_label}\nPredicted Label : {pred_label}",
+                      weight='bold', size=10, loc="left")
             plt.imshow(img, cmap='gray')
             if distance_on_image and not raw:
                 # get correct path to heatmap
@@ -662,7 +658,7 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
                 test_image_heatmap_path = os.path.join(heatmap_directory, "test", pred_label[0],
                                                        test_image_name + "_heatmap.png")
                 plt.subplot(2, 1, 2)
-                plt.title("Heatmap", weight='bold', size=12)
+                plt.title("Heatmap", weight='bold', size=10)
                 pic = cv2.imread(test_image_heatmap_path, cv2.IMREAD_GRAYSCALE)
                 plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
             plt.tight_layout()
@@ -895,7 +891,7 @@ if __name__ == '__main__':
     # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
     # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
-    dataset_to_use = "mnist_1247"  # input("Which data set? [mnist_1247/oct_cc] ")
+    dataset_to_use = "oct_cc"  # input("Which data set? [mnist_1247/oct_cc] ")
     distance_measure = "SSIM-threshold"  # input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/SSIM-threshold/CW-SSIM/euclidean/cosine/manhatten] ")
     df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
                                       suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance_measure,

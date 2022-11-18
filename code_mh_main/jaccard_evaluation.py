@@ -402,10 +402,8 @@ def plot_nhnm_overview_from_input(lst,
 
         fig1 = plt.figure()
         plt.subplot(2, 1, 1)
-        # TODO change title formatting
-        plt.title(f"{test_img.img_name}\n\
-                    Actual Label : {test_img.ground_truth_label}\n\
-                    Predicted Label : {pred_label}", weight='bold', size=12)
+        plt.title(f"{test_img.img_name}\nActual Label : {test_img.ground_truth_label}\nPredicted Label : {pred_label}",
+                  weight='bold', size=10, loc="left")
         plt.imshow(img, cmap='gray')
         if distance_on_image and not raw:
             # get correct path to heatmap
