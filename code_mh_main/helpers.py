@@ -4,6 +4,10 @@ def change_imgpath(path):
     return "/Users/biancazimmer/Documents/PycharmProjects/"+path.split("/",maxsplit=3)[3]
 
 
+def change_imgpath_back(path):
+    return "/home/zimmer/" + path.split("/", maxsplit=5)[5]
+
+
 def crop_to_square(img_path, centre=True, save=False, new_path=''):
     """Function to crop an image to a square. The smallest side is automatically used as a reference size.
 
