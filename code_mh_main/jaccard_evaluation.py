@@ -31,20 +31,6 @@ set_seed(RANDOMSEED)
 
 # ## Functions
 
-def combine_pickle(path, number_range):
-    """
-    Combines pickles
-    :param path: path to pickle without number at the end
-    :param number_range: number range which will be appended to the path with "_number"
-    :return: combined pickle as pandas DataFrame
-    """
-    df = pd.DataFrame()
-    for i in number_range:
-        tmp = pd.read_pickle(path+"_"+str(i)+".pickle")
-        df = pd.concat([df, tmp], ignore_index=True)
-    return df
-
-
 # +
 def humanfriendly_trafo(path):
     if type(path) is str:
@@ -64,20 +50,6 @@ def show_humanfriendly(df, columns=["image_name", "near_hits", "near_misses", "t
 
 # -
 
-def top_misses(lst, score):
-    """
-    Calculates the top overall misses from the lists of the multidimensional misses
-    :param lst: list of list with paths to the misses
-    :param score: list of list with scores of the misses
-    :return: tuple with TOP_N_NMNH entries for the misses
-    """
-    lst = list(chain.from_iterable(lst))
-    score = list(chain.from_iterable(score))
-    paths = [p for (p,s) in sorted(zip(lst, score))]
-    scores = [s for (p,s) in sorted(zip(lst, score))]
-    return paths[:TOP_N_NMNH], scores[:TOP_N_NMNH]
-
-
 def jaccard_df(df1, df2, method="intersection"):
     if type(df1[0][0]) is list:
         result = [jaccard(list(chain.from_iterable(l1)), list(chain.from_iterable(l2)), method) for
@@ -88,74 +60,41 @@ def jaccard_df(df1, df2, method="intersection"):
         return result
 
 
-def add_top_misses(df):
-    temp = df.apply(lambda row : top_misses(row["near_misses"], row["scores_misses"]), axis = 1)
-    df["top_misses"] = [t[0] for t in temp]
-    df["scores_top_misses"] = [t[1] for t in temp]
-    return df
-
-
-# ## Datasets for testing
-
-mnist_eucl = pd.read_pickle("/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
-add_top_misses(mnist_eucl)
-show_humanfriendly(mnist_eucl)
-
-mnist_SSIM = pd.read_pickle("/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
-add_top_misses(mnist_SSIM)
-show_humanfriendly(mnist_SSIM)
-
-# ## Combine pickles
+# ## Load pickles
 
 # +
-# dataset_to_use = "mnist_1247"
-
 path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
 
-# mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue
-# mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue
-# mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue
-# mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue
-# mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue
-# mnist_1247_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue
+mnist_eucl = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+mnist_SSIM = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+mnist_SSIM_mm = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+mnist_SSIM_pushed = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+mnist_SSIM_blur = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+mnist_CW_SSIM = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+mnist_SSIM_threshold = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
 
-# oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue
-# oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue
-# oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue
-# oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue
-# oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue
 
-mnist_eucl = combine_pickle(path_base+"mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-mnist_SSIM = combine_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-mnist_SSIM_mm = combine_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-mnist_SSIM_pushed = combine_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-mnist_SSIM_blur = combine_pickle(path_base+"mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-mnist_CW_SSIM = combine_pickle(path_base+"mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-
-oct_eucl = combine_pickle(path_base+"oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM = combine_pickle(path_base+"oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM_mm = combine_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM_pushed = combine_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM_blur = combine_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+oct_eucl = pd.read_pickle(path_base+"oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+oct_SSIM = pd.read_pickle(path_base+"oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+oct_SSIM_mm = pd.read_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+oct_SSIM_pushed = pd.read_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+oct_SSIM_blur = pd.read_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
+oct_SSIM_threshold = pd.read_pickle(path_base+"oct_cc_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
 # -
 
-all_df = [mnist_eucl, mnist_SSIM, mnist_SSIM_mm, mnist_SSIM_pushed, mnist_SSIM_blur, mnist_CW_SSIM,
-          oct_eucl, oct_SSIM, oct_SSIM_mm, oct_SSIM_pushed, oct_SSIM_blur]
+all_df = [mnist_eucl, mnist_SSIM, mnist_SSIM_mm, mnist_SSIM_pushed, mnist_SSIM_blur, mnist_SSIM_threshold, mnist_CW_SSIM,
+          oct_eucl, oct_SSIM, oct_SSIM_mm, oct_SSIM_pushed, oct_SSIM_blur, oct_SSIM_threshold]
 mnist_df = {"euclidean": mnist_eucl, "SSIM": mnist_SSIM, "SSIM-mm": mnist_SSIM_mm,
-            "SSIM-pushed": mnist_SSIM_pushed, "SSIM-blur": mnist_SSIM_blur, "CW-SSIM": mnist_CW_SSIM}
+            "SSIM-pushed": mnist_SSIM_pushed, "SSIM-blur": mnist_SSIM_blur, "SSIM-threshold": mnist_SSIM_threshold,
+            "CW-SSIM": mnist_CW_SSIM}
 oct_df = {"euclidean": oct_eucl, "SSIM": oct_SSIM, "SSIM-mm": oct_SSIM_mm, 
-          "SSIM-pushed": oct_SSIM_pushed, "SSIM-blur": oct_SSIM_blur}
-
-# ## Add top Misses for all df
-
-for df in all_df:
-    add_top_misses(df)
+          "SSIM-pushed": oct_SSIM_pushed, "SSIM-blur": oct_SSIM_blur, "SSIM-threshold": oct_SSIM_threshold}
 
 # ## Overview over distance scores
 
 # +
 # metrics
-metrics = ["eucl", "SSIM", "SSIM-mm", "SSIM-pushed", "SSIM-blur", "CW-SSIM"]
+metrics = ["eucl", "SSIM", "SSIM-mm", "SSIM-pushed", "SSIM-blur", "SSIM-threshold", "CW-SSIM"]
 
 # column names
 scores_names = []
@@ -193,6 +132,7 @@ mnist_scores.boxplot(column=scores_top_names[1:], rot= 10)
 # * euclidean distance seems to be lower in Misses than in Hits, which is contraintuitive
 # * In all SSIM distances the Misses have higher distance values than the Hits - which is what we expected
 # * SSIM seems to be fairly good compared to the minmax metric, the CW-SSIM and the transformed/pushed metric
+# * SSIM and SSIM-threshold give very similar results
 # * SSIM on the blurred + transformed pictures seems to give the best results since the distances between the pictures are minimal (close to 0)
 
 # ### OCT
@@ -215,7 +155,7 @@ oct_scores.boxplot(column=scores_names[:-1], rot= 10)
 
 oct_scores.boxplot(column=scores_top_names[:-1], rot= 10)
 
-oct_scores.boxplot(column=scores_top_names[1:-1], rot= 10)
+# oct_scores.boxplot(column=scores_top_names[1:-1], rot= 10)
 
 
 # #### Results:
@@ -274,7 +214,8 @@ jaccards.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccar
 # * Since Jaccard index is a measure of similarity 0 means that A nad B are totally different
 # * Euclidean produces very different results from all SSIM metrics
 # * Maybe pushed and minmax are closes to each other
-# * However the metrics are not all totally different from each other
+# * SSIM threshold and SSIM produce similar results, this was to be expected when looking at the boxplots for the SSIM scores
+# * The other metrics produce quite but not totally different results
 
 # ### OCT
 
@@ -305,7 +246,9 @@ jaccards_oct.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "ja
 
 
 # #### Results:
-# Similar to mnist, but more prominent
+# * Similar to mnist, but more prominent
+# * Except for the SSIM-threshold which seems to not give similar results to any of the other metrics. Only for the overall misses there are some overlaps to SSIM
+# * This is different to the mnist dataset
 
 plt.close("all")
 
@@ -322,7 +265,7 @@ def plot_nhnm_overview_from_input(lst,
     2 list with scores of near hits
     3 list of lists with paths to near misses
     4 list of lists with scores of near misses
-    Rest of input params like in near_miss_hits_selection.get_nhnm_overview
+    Rest of input params like in near_miss_hits_selection.get_nhnm_overview()
     """
 
     from dataset import DataSet
@@ -442,43 +385,48 @@ def plot_nhnm_overview_from_input(lst,
             fig5.savefig("fig5.png", bbox_inches='tight')
             plt.close()
 
-        plt.subplot(2, 3, (1, 4))
+        # concatenate all pictures into one with cv2 and save it
+        # load pictures
         pic1 = cv2.imread("fig1.png", cv2.IMREAD_GRAYSCALE)
-        plt.imshow(pic1, cmap='gray', vmin=0, vmax=255)
-        plt.axis('off')
-        plt.subplot(2, 3, 2)
         pic2 = cv2.imread("fig2.png", cv2.IMREAD_GRAYSCALE)
-        plt.imshow(pic2, cmap='gray', vmin=0, vmax=255)
-        plt.axis('off')
-        plt.subplot(2, 3, 3)
         try:
             pic3 = cv2.imread("fig3.png", cv2.IMREAD_GRAYSCALE)
-            plt.imshow(pic3, cmap='gray', vmin=0, vmax=255)
+            pic23 = cv2.hconcat([pic2, pic3])
         except TypeError:  # FileNotFoundError
-            pass
-        plt.axis('off')
-        plt.subplot(2, 3, 5)
-        pic = cv2.imread("fig4.png", cv2.IMREAD_GRAYSCALE)
-        plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
-        plt.axis('off')
-        plt.subplot(2, 3, 6)
+            pic23 = pic2
+        pic4 = cv2.imread("fig4.png", cv2.IMREAD_GRAYSCALE)
         try:
-            pic = cv2.imread("fig5.png", cv2.IMREAD_GRAYSCALE)
-            plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
+            pic5 = cv2.imread("fig5.png", cv2.IMREAD_GRAYSCALE)
+            pic45 = cv2.hconcat([pic4, pic5])
         except TypeError:  # FileNotFoundError
-            pass
-        plt.axis('off')
-        plt.tight_layout()
-        plt.show()
-        plt.close()
+            pic45 = pic4
+
+        # concatenate them
+        def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+            # https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/
+            w_min = min(im.shape[1] for im in im_list)
+            im_list_resize = [
+                cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
+                for im in im_list]
+            return cv2.vconcat(im_list_resize)
+
+        def hconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
+            # https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/
+            h_min = max(im.shape[0] for im in im_list)
+            im_list_resize = [
+                cv2.resize(im, (int(im.shape[1] * h_min / im.shape[0]), h_min), interpolation=interpolation)
+                for im in im_list]
+            return cv2.hconcat(im_list_resize)
+
+        pic_all = hconcat_resize_max( [pic1, vconcat_resize_min([pic23, pic45])] )
+        cv2.imwrite('fig12345.png', pic_all)
 
 
-
-    ###########################
-
-plot_nhnm_overview_from_input(list(oct_df["SSIM-pushed"].iloc[0]),
-                                  "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure='SSIM-blur',
-                                  top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=True)
+if __name__ == '__main__':
+    distance = "SSIM-pushed"
+    plot_nhnm_overview_from_input(list(oct_df[distance].iloc[0]),
+                                      "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance,
+                                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=True)
 
 
 
