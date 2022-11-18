@@ -1,4 +1,6 @@
 # Some helper functions
+import cv2
+
 
 def change_imgpath(path):
     return "/Users/biancazimmer/Documents/PycharmProjects/"+path.split("/",maxsplit=3)[3]
@@ -125,6 +127,24 @@ def jaccard(list1, list2, method="intersection"):
     else:
         import numpy as np
         return np.NaN
+
+
+def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    # https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/
+    w_min = min(im.shape[1] for im in im_list)
+    im_list_resize = [
+        cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
+        for im in im_list]
+    return cv2.vconcat(im_list_resize)
+
+
+def hconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
+    # https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/
+    h_min = max(im.shape[0] for im in im_list)
+    im_list_resize = [
+        cv2.resize(im, (int(im.shape[1] * h_min / im.shape[0]), h_min), interpolation=interpolation)
+        for im in im_list]
+    return cv2.hconcat(im_list_resize)
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ from dataentry import DataEntry
 from utils import *
 from LRP_heatmaps import generate_LRP_heatmap, create_special_analyzer
 from modelsetup import get_output_layer
-from helpers import normalize_to_onesize
+from helpers import normalize_to_onesize, vconcat_resize_min, hconcat_resize_max
 
 # Set seed
 # 1. Set `PYTHONHASHSEED` environment variable at a fixed value
@@ -693,34 +693,25 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
                     fig5.savefig("fig5.png", bbox_inches='tight')
                     plt.close()
 
-            plt.subplot(2, 3, (1, 4))
+            # concatenate all pictures into one with cv2 and save it
+            # load pictures
             pic1 = cv2.imread("fig1.png", cv2.IMREAD_GRAYSCALE)
-            plt.imshow(pic1, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 3, 2)
             pic2 = cv2.imread("fig2.png", cv2.IMREAD_GRAYSCALE)
-            plt.imshow(pic2, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 3, 3)
             try:
                 pic3 = cv2.imread("fig3.png", cv2.IMREAD_GRAYSCALE)
-                plt.imshow(pic3, cmap='gray', vmin=0, vmax=255)
+                pic23 = cv2.hconcat([pic2, pic3])
             except TypeError:  # FileNotFoundError
-                pass
-            plt.axis('off')
-            plt.subplot(2, 3, 5)
-            pic = cv2.imread("fig4.png", cv2.IMREAD_GRAYSCALE)
-            plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
-            plt.axis('off')
-            plt.subplot(2, 3, 6)
+                pic23 = pic2
+            pic4 = cv2.imread("fig4.png", cv2.IMREAD_GRAYSCALE)
             try:
-                pic = cv2.imread("fig5.png", cv2.IMREAD_GRAYSCALE)
-                plt.imshow(pic, cmap='gray', vmin=0, vmax=255)
+                pic5 = cv2.imread("fig5.png", cv2.IMREAD_GRAYSCALE)
+                pic45 = cv2.hconcat([pic4, pic5])
             except TypeError:  # FileNotFoundError
-                pass
-            plt.axis('off')
-            plt.tight_layout()
-            plt.show()
+                pic45 = pic4
+
+            # concatenate them
+            pic_all = hconcat_resize_max([pic1, vconcat_resize_min([pic23, pic45])])
+            cv2.imwrite('fig12345.png', pic_all)
             plt.close()
 
         another_image = input("Do you want to get another overview of a random image? [y/n] ")
