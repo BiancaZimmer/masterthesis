@@ -1,4 +1,6 @@
 # README
+## This repository is currently under construction, please bear in mind that especially the documentation is not yet completed!
+
 ## Folders:
 ### code_kermany
 Is the code downloaded from: XXX of the Paper of Kermany et. al. 2018. It
