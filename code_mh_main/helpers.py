@@ -1,17 +1,13 @@
 # Some helper functions
+import cv2
 
-# def removesuffix(path: str, suffix: str, /) -> str:
-#     if path.endswith(suffix):
-#         return path[:-len(suffix)]
-#     else:
-#         return path[:]
-#
-#
-# def removeprefix(self: str, prefix: str, /) -> str:
-#     if self.startswith(prefix):
-#         return self[len(prefix):]
-#     else:
-#         return self[:]
+
+def change_imgpath(path):
+    return "/Users/biancazimmer/Documents/PycharmProjects/"+path.split("/",maxsplit=3)[3]
+
+
+def change_imgpath_back(path):
+    return "/home/zimmer/" + path.split("/", maxsplit=5)[5]
 
 
 def crop_to_square(img_path, centre=True, save=False, new_path=''):
@@ -107,6 +103,48 @@ def border_to_size(img, target_size: int, color_of_border=128):
         image_with_border = copyMakeBorder(img, padding1, padding2, padding1, padding2, BORDER_CONSTANT,
                                            value=color_of_border)
         return image_with_border
+
+
+def jaccard(list1, list2, method="intersection"):
+    """
+    Returns the Jaccard Index for list1 and list2 which is defined as intersection/union
+    If the method is set differently it returns the proportion of list1 or list2 of the union
+    :param list1: first list
+    :param list2: second list
+    :param method: one of intersection/list1/list2/absolute else Nane is returned
+    :return: Jaccard index; between 0=no intersection to 1=lists are the same
+    """
+    lst1 = set(list1)
+    lst2 = set(list2)
+    if method == "intersection":
+        return len(lst1.intersection(lst2))/len(lst1.union(lst2))
+    elif method == "list1":
+        return len(list1)/len(lst1.union(lst2))
+    elif method == "list2":
+        return len(list2)/len(lst1.union(lst2))
+    elif method == "absolute":
+        return len(lst1.intersection(lst2))
+    else:
+        import numpy as np
+        return np.NaN
+
+
+def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    # https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/
+    w_min = min(im.shape[1] for im in im_list)
+    im_list_resize = [
+        cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
+        for im in im_list]
+    return cv2.vconcat(im_list_resize)
+
+
+def hconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
+    # https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/
+    h_min = max(im.shape[0] for im in im_list)
+    im_list_resize = [
+        cv2.resize(im, (int(im.shape[1] * h_min / im.shape[0]), h_min), interpolation=interpolation)
+        for im in im_list]
+    return cv2.hconcat(im_list_resize)
 
 
 if __name__ == "__main__":

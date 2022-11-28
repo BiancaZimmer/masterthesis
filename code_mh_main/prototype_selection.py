@@ -80,7 +80,6 @@ class PrototypesSelector():
 
         return self.prototypes_per_class
 
-    
     def get_prototypes_img_files(self):
         """Return the image file names of the selected prototypes for each available class. These are used as an indicator for loading the DataEntry object in the online phase (running xai demo).
 
@@ -94,7 +93,6 @@ class PrototypesSelector():
             prototypes_per_class_img_files[proto_class] = [entry.img_name for entry in self.prototypes_per_class[proto_class]]
             
         return prototypes_per_class_img_files
-    
 
     def _calc_mmd2(self, gamma =None, unbiased:bool =False):
         """Calculate maximum mean discrepancy (MMD) based on Gaussian kernel function for keras models (theano or tensorflow backend) based on 'A kernel method for the two-sample-problem.' from 'Gretton, Arthur, et al. (2007)'.
@@ -110,9 +108,8 @@ class PrototypesSelector():
         eval_classes = self.prototypes_per_class.keys()
         mmd2_per_class = {}
 
-
         for available_class in eval_classes:
-            #print("... Calculate MMD for class: ", available_class)
+            # print("... Calculate MMD for class: ", available_class)
 
             if self.use_image_embeddings:
                 X1 = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data)))])
@@ -135,9 +132,9 @@ class PrototypesSelector():
             if unbiased:
                 m = x1x1.shape[0]
                 n = x2x2.shape[0]
-                #assert n > 1, "Not possible to calculate! At least 2 prototypes are needed for the calculation of the unbiased MMD!"
+                # assert n > 1, "Not possible to calculate! At least 2 prototypes are needed for the calculation of the unbiased MMD!"
 
-                ## set mmd2 to 1 for one selected prototype, since no unbiased mmd2 can be against one single data point
+                # set mmd2 to 1 for one selected prototype, since no unbiased mmd2 can be against one single data point
                 if n == 1:
                     mmd2 = None
                 else:
@@ -150,7 +147,6 @@ class PrototypesSelector():
             mmd2_per_class[available_class] = mmd2
 
         return mmd2_per_class
-
 
     def _test_1NN(self, verbose:int =0):
         """Implementation of the 1-NN classifier which is run over the range of the selected number of prototypes and returns a list for each metric.
@@ -195,7 +191,6 @@ class PrototypesSelector():
             list_accuracym.append(accuracym)
             list_recallm.append(recallm)
 
-
             if verbose > 1 and testm == self.num_prototypes: 
                 print('########################## RESULTS for 【 m=%d 】Prototype ############# '% (testm))
                 if verbose > 2:
@@ -206,8 +201,7 @@ class PrototypesSelector():
                 print('####################################################################### ')
 
         return list_errorm, list_accuracym, list_recallm  
- 
-    
+
     def score(self, verbose=None, sel_metric:str ='recall'):
         """Run 1-NN classifier (over the range of the selected number of prototypes) and calculate the metrics, that is also used for optimizing in GridSearchCV.
 
@@ -286,8 +280,6 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
 
         self.dataset = dataset
         self.available_classes = self.dataset.available_classes
-
-
 
     def fit(self, data =None):  
         """Run the prototype selection using the k-Medoids algorithm. The prototypes are stored in a dict **prototypes_per_class**.

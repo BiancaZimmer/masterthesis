@@ -175,6 +175,7 @@ def questions_training(dataset_to_use):
 
 
 if __name__ == '__main__':
+    print("\n---------------------- START ----------------------\n")
     # a = input("Did you change the folders in the utils.py file as describe in the README? [y/n] ")
     # if a == "n":
     #     sys.exit("Go and do that or else the file won't run!")
