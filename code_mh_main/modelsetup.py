@@ -56,12 +56,12 @@ np.random.seed(RANDOMSEED)
 from tensorflow.random import set_seed
 set_seed(RANDOMSEED)
 
+
 class ModelSetup():
     """ Contains a model with its respective data set and other important attributes
     self.selected_dataset
     self.dataset
     self.img_size
-    self.image_shape
     # Image Generator
     self.train_set = None
     self.val_set = None
@@ -89,7 +89,6 @@ class ModelSetup():
         self.selected_dataset = selected_dataset.name
         self.dataset = selected_dataset
         self.img_size = sel_size
-        self.image_shape = None
 
         if self.img_size < 1:  # default value used
             if 'mnist' in self.selected_dataset:
