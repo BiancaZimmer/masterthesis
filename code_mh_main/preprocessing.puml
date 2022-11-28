@@ -1,0 +1,59 @@
+@startuml
+'https://plantuml.com/deployment-diagram
+
+
+
+
+partition preprocessing {
+(*) -left-> crop images to square format
+if "" then
+    --> [train] train model on "train" and "val" data
+    --> evaluate model on "test" data
+else
+    --> [load] load model from folder
+    --> evaluate model on "test" data
+-right-> calculate feature embeddings\nfor all "train" and "val" data\nbased on the model
+-right-> [A] generate LRP heatmaps\nfor all "train" and "val" data\nbased on the model
+-up-> [A] select prototypes
+}
+partition nhnm {
+-up-> generate near hits and near misses
+-up-> evaluate near hits and near misses
+-left-> (*)
+}
+
+
+@enduml
+
+file "trained_model"
+
+folder "OCT images" as "OCT" {
+    folder "train"
+    folder "test"
+    folder "val"
+}
+
+"train" --> "train" : "1) crop images to square format"
+train --> trained_model: "2) train "
+trained_model --> "OCT": "3) initiate_feature_embedding()"
+
+
+skinparam actorStyle Hollow
+:User: --> (Use)
+"Use the application" as (Use)
+
+actor actor
+agent agent
+card card
+collections collections
+component component
+control control
+database database
+file file
+folder folder
+interface interface
+label label
+node node
+package package
+queue queue
+usecase usecase

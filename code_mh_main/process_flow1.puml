@@ -1,0 +1,19 @@
+@startuml
+"OCT_ori" --> [sort_ttv.py]
+[sort_ttv.py] --> "static/OCT"
+"static/OCT" --> [helpers.crop_to_square()]
+[helpers.crop_to_square()] --> "static/OCT"
+
+package "OCT_ori" {
+  folder "CNV"
+  folder "DME"
+  folder "DRUSEN"
+  folder "NORMAL"
+}
+
+package "static/OCT" {
+  folder "test"
+  folder "train"
+  folder "val"
+}
+@enduml
