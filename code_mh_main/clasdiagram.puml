@@ -1,0 +1,95 @@
+@startuml classdiagram.png
+'https://plantuml.com/class-diagram
+
+Dataset *-- "many" DataEntry: > contains
+Modelsetup <|- "1" Dataset: > contains
+DataEntry <|- FeatureExtractor: > contains
+Dataset <|- FeatureExtractor: > contains
+
+class DataEntry{
+.. Init ..
+    fe: FeatureExtractor
+    dataset: str
+    img_path: str
+.. inferred from img_path ..
+    img_name: str
+    ground_truth_label: str
+    y: int
+    feature_file: str
+--
+    initiate_feature_embedding()
+    image_numpy(self, img_size: int = None, mode='L')
+    dataentry_to_nparray()
+.. lazy methods ..
+    feature_embedding()
+    __compute_image()
+}
+
+class Dataset{
+.. Init ..
+    name: str
+    fe: FeatureExtractor
+    path_datasets:str = DATA_DIR
+.. inferred from global variables ..
+    DIR_TRAIN_DATA
+    DIR_VAL_DATA
+    DIR_TEST_DATA
+.. inferred from init ..
+    data: list of DataEntry
+    data_t: list of DataEntry
+.. inferred from DIR_TRAIN_DATA ..
+    available_classes: list of str
+--
+    apply_elbow_method(self, use_image_embeddings:bool =True, sel_size:int = 128, components_PCA: int =None)
+    apply_sil_method(self, use_image_embeddings:bool =True, sel_size:int = 128, components_PCA: int =None)
+}
+
+class Modelsetup{
+.. Init ..
+    selected_dataset: str
+    img_size: int
+    batch_size: int
+.. for Image Generator ..
+    train_set: tensorflow.keras.preprocessing.image.ImageDataGenerator
+    val_set: tensorflow.keras.preprocessing.image.ImageDataGenerator
+    test_set: tensorflow.keras.preprocessing.image.ImageDataGenerator
+    mode_rgb: bool
+.. Model specific ..
+    model: Keras.training.engine.Model
+    model_history: json
+    predictions: numpy.array
+.. for multiclass ..
+    labelencoder: sklearn.preprocessing.LabelEncoder
+.. for imbalanced data ..
+    correct_for_imbalanced_data: bool
+..
+    labelencoder: LabelEncoder
+--
+_preprocess_img_gen()   sets train_set, val_set, test_set
+_binary_cnn_model()     sets model
+_multiclass_cnn_model(use_original_cnn: bool = False)     sets model
+_pretrained_network(pretrainedmodel, optimizer)
+_multiclass_transferlearning_inception_model()
+_multiclass_transferlearning_vgg16_model()
+set_model(suffix_path: str = '')
+fit(n_epochs: int = 50, patience: int = 10, suffix_path: str = '',  save_model: bool = True)
+eval(plot_losses: bool = True)
+img_preprocess_for_prediction(dataentry)
+pred_test_img(test_dataentry, plot: bool = False)
+plot_rand10_pred()
+_set_selfprediction()
+transform_prediction(prediction, threshold = 0.5)
+get_misclassified(plot: bool = False)
+plot_activation_map(test_dataentry)
+}
+
+class FeatureExtractor{
+.. Init ..
+rgb: bool
+fe_model: Keras.training.engine.Model
+--
+load_preprocess_img(path)
+extract_features(x)
+}
+
+@enduml
