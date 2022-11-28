@@ -322,9 +322,6 @@ def plot_nhnm_overview_from_input(lst,
         print("Prediction: ", pred_label)
         print("Probability: ", pred_prob)
 
-    hit_class_idx = []
-    miss_class_idx = []
-
     # near hits
     scores_nearest_hit = lst[2]
     ranked_nearest_hit_data_entry = [DataEntry(fe, dataset, change_imgpath(path)) for path in lst[1]]
@@ -403,17 +400,17 @@ def plot_nhnm_overview_from_input(lst,
 
         # concatenate them
         pic_all = hconcat_resize_max([pic1, vconcat_resize_min([pic23, pic45])])
-        cv2.imwrite('fig12345.png', pic_all)
+        save_path = STATIC_DIR+"/"+test_img.img_name+"_"+distance_measure+"_eval.png"
+        cv2.imwrite(save_path, pic_all)
 
 
 if __name__ == '__main__':
-    distance = "SSIM-pushed"
-    plot_nhnm_overview_from_input(list(oct_df[distance].iloc[0]),
-                                      "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance,
-                                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=True)
+    distance = "SSIM-blur"
 
-
-
+    for i in range(0, 21):
+        plot_nhnm_overview_from_input(list(oct_df[distance].iloc[i]),
+                                          "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance,
+                                          top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=True)
 
 
 
