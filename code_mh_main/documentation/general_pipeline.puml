@@ -1,0 +1,14 @@
+@startuml
+'https://plantuml.com/deployment-diagram
+
+(*) -right-> preprocess raw images
+-right-> train model on images
+-right-> calculate feature embeddings
+-right-> generate LRP heatmaps
+--> [select distance measure] select prototypes
+-left-> generate near hits and near misses
+-left-> evaluate near hits and near misses
+-left-> (*)
+
+
+@enduml
