@@ -3,13 +3,21 @@
 
 ## Folders:
 ### code_kermany
-Is the code downloaded from: XXX of the Paper of Kermany et. al. 2018. It
-is important that you use a Python 3.7 distribution with a Tensorflow 1.15.x
+Is the code downloaded from: https://data.mendeley.com/datasets/rscbjbr9sj/2?__hstc=25856994.712c372e7ffc5b6a6790d5a9f28aae77.1649411884797.1649594031628.1649756975336.3&__hssc=25856994.1.1649756975336&__hsfp=1297509183
+of the Paper of Kermany et. al. 2018, distributed under a CC BY 4.0 License (read here for more detail: https://creativecommons.org/licenses/by/4.0/). 
+
+Kermany, Daniel; Zhang, Kang; Goldbaum, Michael (2018), “Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images for Classification”, Mendeley Data, V2, doi: 10.17632/rscbjbr9sj.2
+
+It is important that you use a Python 3.7 distribution with a Tensorflow 1.15.x
 distribution and a protobuf <= 3.20.x here. Otherwise, the code won't run.
 You can use the requirements.txt for this.
 
 You can run this code as describe in the extra README file under
 code_kermany > README.md
+
+The code was only used in the initial states of the master thesis to get an overview.
+It can be ignored when reproducing the results of the master thesis. However, the OCT data was used 
+as an example for medical data.
 
 ### code_mh_main
 Is the modified code provided by Marvin Herchenbach et al. in the paper "Explaining Image
@@ -17,80 +25,46 @@ Classifications with Near Misses, Near Hits and Prototypes: Supporting Domain Ex
 Understanding Decision boundaries".
 It came with a README.md file which I took the liberty to update and expand according to my needs.
 This is the main code I used for conducting my master thesis. The main changes are:
-1. Adding the ability to cope with a multi class data set (as opposed to the original binary classification)
+1. Added ability to cope with a multi class data set (as opposed to the original binary classification)
 You have to set this ability in the utils.py file with the BINARY switch
-2. LRP
-3. Bounding Boxes
+2. Added ability to generate LRP heatmaps via the innvestigate library and calculate near hits
+and near misses on their basis
+3. Changed the original CNN so it would be able to train it on the dataset of Kermany et. al (see above)
+4. Small changes on the XAI demonstrator 
+
+See own README.md for detailed information
 
 ### sort_ttv.py
-Stands for sort test train validation. This is a helper Python file which can sort images
-into the correct folder structure. There is a little "How To" as a comment at the
-beginning of the file
+Stands for _sort test train validation_. This is a helper Python file which can sort images
+into the correct folder structure for code_mh_main to sue.
+There is a little "How To" as a comment at the  beginning of the file
 
-## Documentation:
-### 1. Sort images
-Sorted the images into the appropriate folders. 
-Data of each patient was either put into train, test OR validation split. </br>
-Parameters used in the makeimagesplits() function : `splitbypatient=True, maxiter=10, deviation=0.05)`
+## Best practice:
+To get the same results as in the master thesis you can follow the steps in 
+_code_mh_main/documentation/README.me_
 
-Command used: </br>
-`python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany/all /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_split2 0.03 -s 0.1`
+The general workflow is also represented as flow charts in _code_mh_main/documentation/_
 
-This was used since in Original Dataset 250 images were used per class for testing ->
-that is at most 3% of the original size </br>
-For our training we thus use 0.03 testdata and 0.1 validation data
+You can also follow these steps if you want to use your own dataset:
 
-Which resulted in the following output:
-```
-Cycle  0  failed. Proportion of  0  Trying again ...
-Cycle  1  failed. Proportion of  0.01716576532945893  Trying again ...
-Cycle  2  failed. Proportion of  0.02712083299701348  Trying again ...
-Winning proportion for  CNV :  0.03126429359377943
-Cycle  0  failed. Proportion of  0  Trying again ...
-Cycle  1  failed. Proportion of  0.023901243214848537  Trying again ...
-Cycle  2  failed. Proportion of  0.05235510418490632  Trying again ...
-Winning proportion for  DME :  0.03090527053055507
-Cycle  0  failed. Proportion of  0  Trying again ...
-Cycle  1  failed. Proportion of  0.041647331786542924  Trying again ...
-Cycle  2  failed. Proportion of  0.01786542923433875  Trying again ...
-Cycle  3  failed. Proportion of  0.020069605568445475  Trying again ...
-Cycle  4  failed. Proportion of  0.03306264501160093  Trying again ...
-Cycle  5  failed. Proportion of  0.022273781902552203  Trying again ...
-Cycle  6  failed. Proportion of  0.02679814385150812  Trying again ...
-Winning proportion for  DRUSEN :  0.030394431554524363
-Cycle  0  failed. Proportion of  0  Trying again ...
-Cycle  1  failed. Proportion of  0.03298288230159031  Trying again ...
-Cycle  2  failed. Proportion of  0.031768322769195736  Trying again ...
-Winning proportion for  NORMAL :  0.0285041940258853
-Total number of all images: 83556
-['CNV', 'DME', 'DRUSEN', 'NORMAL']
-[37167, 11422, 8620, 26347]
-['Split1', 'Split2']
-81028,2528
-Copying train files ...
-Copying test files ...
-Cycle  0  failed. Proportion of  0  Trying again ...
-Cycle  1  failed. Proportion of  0.1072906540758228  Trying again ...
-Winning proportion for  CNV :  0.10140258297458686
-Cycle  0  failed. Proportion of  0  Trying again ...
-Cycle  1  failed. Proportion of  0.09440780558316017  Trying again ...
-Cycle  2  failed. Proportion of  0.07408076610353238  Trying again ...
-Cycle  3  failed. Proportion of  0.0751648748757792  Trying again ...
-Winning proportion for  DME :  0.10145451260276447
-Cycle  0  failed. Proportion of  0  Trying again ...
-Winning proportion for  DRUSEN :  0.10134003350083752
-Cycle  0  failed. Proportion of  0  Trying again ...
-Winning proportion for  NORMAL :  0.09649945303953743
-Total number of all images: 81028
-['CNV', 'DME', 'DRUSEN', 'NORMAL']
-[36005, 11069, 8358, 25596]
-['Split1', 'Split2']
-72937,8091
-Moving validation files ...
-Pictures to move:  83556
-Train pictures:  72937
-Test pictures:  2528
-Validation pictures:  8091
-0h 29.0min 53.89623975753784sec
-```
+1. Sort images via sort_ttv.py into the appropriate folders.
+`python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>`
+2. Change the _code_mh_main/utils.py_ file according to your needs
+3. Run `python3 code_mh_main/preprocessing.py` and follow the instructions on the command line
+4. Run `python3 xai_demo.py` to open the XAI demonstrator and view NHNMs of test images
 
+Be aware that when running _code_mh_main/preprocessing.py_ there is no possibility to test any
+parameters. You should do this beforehand. E.g. find the best parameter for the number of prototypes
+via screeplot/ellbow method in the _code_mh_main/prototype_selection.py_ file.
+Same goes for all tweaking parameters for LRP and of course training parameters for the CNN.
+
+## Citation
+None available yet
+
+Zimmer, Bianca (2023), “Explaining Decision Boundaries of CNNs Through Prototypes, Near Hits and Near Misses:
+A Comparison on Multiclass Medical Image Data Utilizing LRP Heatmaps”, University of Bamberg, Master Thesis
+
+## Licence
+CC BY 4.0
+
+https://creativecommons.org/licenses/by/4.0/
