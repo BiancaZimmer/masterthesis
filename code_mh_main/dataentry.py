@@ -11,6 +11,36 @@ from utils import *
 
 class DataEntry:
     """DataEntry object that refers to a data sample (image) and contains all its information
+
+    Attributes
+    ---------
+    fe: FeatureExtractor
+        FeatureExtractor model used for feature extraction
+    dataset: str
+        name of the dataset the image belongs to
+    img_path: str
+        path to the image
+    img_name: str
+        name of the image inferred from img_path
+    ground_truth_label: str
+        label of the folder of the image inferred from img_path
+    y: int
+        label of the folder of the image encoded by the LabelEncoder
+    feature_file: str
+        path of the feature embedding
+
+    Methods
+    ---------
+    initiate_feature_embedding()
+        function for extracting the Feature Vector of a single image for the first time
+    image_numpy(self, img_size: int = None, mode='L')
+        Function for loading and converting a single image into a numpy array. If img_size is given it will be resized.
+    dataentry_to_nparray()
+        transforms image to numpy array according to the FeatureExtractor
+    feature_embedding()
+        Lazy function for extracting or loading the Feature Vector of a single image
+    __compute_image()
+        Lazy function for loading and pre-processing a single image
     """
     img_path: str
     feature_file: str
@@ -54,7 +84,7 @@ class DataEntry:
         self.feature_file = pre + '.npy'
 
     def initiate_feature_embedding(self):
-        """Lazy function for extracting the Feature Vector of a single image for the first time
+        """ function for extracting the Feature Vector of a single image for the first time
 
         :return: *self* (`numpy.ndarray`) - One-dimensional feature vector
         """
@@ -116,11 +146,22 @@ class DataEntry:
         return x
 
     def dataentry_to_nparray(self):
+        """ transforms image to numpy array according to the FeatureExtractor
+
+        :return: numpy array
+        """
         _, x = self.fe.load_preprocess_img(self.img_path)
         return np.squeeze(x, axis=0)
        
 
 def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate='current', type_of_model="cnn"):
+    """
+
+    :param dataset: name of dataset: str
+    :param suffix_path: str, suffix path under which the model for the feature extractor is saved
+    :param feature_embeddings_to_initiate: str, shall the current FE be used or another one (like VGG16)
+    :param type_of_model: str, vgg or cnn
+    """
     from modelsetup import load_model_from_folder, get_output_layer
     from feature_extractor import FeatureExtractor
 
@@ -166,7 +207,6 @@ def code_from_dataentry(dataset, suffix_path='', feature_embeddings_to_initiate=
             feature_embeddings_to_initiate = "VGG16"
 
 
-# python code_mh_main/dataentry.py #works as of 20/05/2022
 if __name__ == '__main__':
     # run this to generate all feature embeddings
     # needs a trained model for the feature embeddings else VGG16 is used
@@ -177,36 +217,3 @@ if __name__ == '__main__':
         dataset_to_use = input("Which data set would you like to choose? Type 'help' if you need more information. ")
     suffix_path = input("What is the suffix of your model? Type a string. e.g. '_testcnn' ")
     code_from_dataentry(dataset_to_use, suffix_path, feature_embeddings_to_initiate="vgg16")
-
-#### OLD CODE #####
-    # import time
-    # from feature_extractor import *
-    # tic = time.time()
-    #
-    # dataset = DATA_DIR_FOLDERS[0]  # careful takes first data set hardcoded!
-    #
-    # # set feature extractor
-    # # gets FE from a loaded CNN with the dataset name and a suffix
-    # # fe = FeatureExtractor(loaded_model=load_model_from_folder(dataset, suffix_path="_multicnn"))
-    # # Standard FE for general model:
-    # # fe = FeatureExtractor()
-    # # fe.set_femodel("OCT_retrained_graph_2.pb", "retina1")
-    #
-    # fe = FeatureExtractor()  # loaded_model=VGG16(weights='imagenet', include_top=True)
-    # # VGG16(weights='imagenet', include_top=True).input needs to be possible
-    #
-    # # get all data entries
-    # image_path = os.path.join(DATA_DIR, dataset)
-    # data = [DataEntry(fe, dataset, os.path.join(path, file)) for path, _, files in os.walk(image_path) for file in files if file != ".DS_Store"]
-    #
-    # # create feature embeddings for all data entries
-    # for count, d in enumerate(data):
-    #     # print(d.feature_embedding)
-    #     d.initiate_feature_embedding()
-    #     if count % 100 == 0:
-    #         print(count, " feature embeddings created")
-    # print("")
-    #
-    # toc = time.time()
-    # print("{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), math.floor(((toc - tic) % (60 * 60)) / 60),
-    #                                 ((toc - tic) % 60)))
