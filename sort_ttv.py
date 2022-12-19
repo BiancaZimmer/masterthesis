@@ -1,14 +1,15 @@
 # Functions to sort images into train, test and validation folders
+# sample usage:
+# python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>
 
-# In order to set up the  training we need a certain file structure. For this wee need all our images divided into
+# In order to set up the  training we need a certain file structure. For this we need all our images divided into
 # training, validation and test set (each a unique folder) and each again divided into the label folders.
 # This code takes all the folders in the image directory, from this it infers how many and which labels we have,
-# creates the folder structure as mentioned above and sorts the images accordingly.
-# The validation folder is optional, use -s <float> to give a validation split.
+# creates the folder structure as mentioned above (train, test, val) and sorts the images accordingly.
+# The validation folder is optional, use -s <float> to give a validation split. Validation split is done from train data
 # If you do not want a test folder simply set the test split to 0.0
 
 # sample usage:
-# python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>
 # python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
 # python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small2/train /Users/biancazimmer/Documents/Masterthesis_data 0.2 -s 0.1
 # python3 sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/MNIST_data_jpg/train /Users/biancazimmer/Documents/Masterthesis_data 0.0 -s 0.1
@@ -49,7 +50,7 @@ def get_labels():
 
 
 def makedirs():
-    """Makes directories for train, test and optional validation set"""
+    """Makes directories for train, test and optional validation set including the subdirectories with label folders"""
     all_labels = get_labels()
 
     train_dir = os.path.join(args.basedir, 'train')
@@ -66,6 +67,12 @@ def makedirs():
 
 
 def dim(a):
+    """
+    Takes list of lists as input and returns a list of the lengths of each sublist
+
+    :param a: list of lists
+    :return: list of the lengths of the sublists
+    """
     lengthdim = []
     for elem in a:
         lengthdim.append(len(elem))
@@ -73,11 +80,12 @@ def dim(a):
 
 
 def split_by_patient(fnames, perc_split=0.2):
-    """ In the case of the Kermany et al data set we have multiple pictures per patient. Pictures of a patient should all be put into one split and not randomly assigned into both.
+    """ In the case of the Kermany et al data set we have multiple pictures per patient. Pictures of a patient should
+    all be put into one split (test OR train OR val) and not randomly assigned into both.
 
     :param fnames: file names of the structure "XX-XX-XX"
-    :param perc_split: default=0.2
-    :return: Two list with the paths of the images in them
+    :param perc_split: percent of the split; default=0.2
+    :return: Two list with the indices of the images
     """
     # split files at "-" and take the patient number
     patientnumbers = [f.split("-")[1] for f in fnames]
@@ -89,23 +97,26 @@ def split_by_patient(fnames, perc_split=0.2):
     idx_rest = np.where(np.isin(patientnumbers, testpatients, invert=True))[0]
     return idx_test, idx_rest
 
-# python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_small3/train /Users/biancazimmer/Documents/Masterthesis_data 0.2
-
 
 def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, deviation=0.01):
     """Splits the images from the imagedir into two splits
+    if splitbypatient is set to True, the images are split according to patient ID, in order to ensure that the split
+    is still done according to perc_split, a resampling of patient IDs is done until either maxiter is reached or
+    the image split is done accoring to perc_split with a deviation of the allowed deviation parameter
+    Prints statistics of split in each re-sampling iteration and at the end
+
     :param imagedir: directory where original images are
     :type imagedir: str
-    :param perc_split: default=0.2
+    :param perc_split: percent of the split; default=0.2
     :type perc_split: float
-    :param splitbypatient: In the case of the Kermany et al data set we have multiple pictures per patient. Pictures of a patient should all be put into one split and not randomly assigned into both.
+    :param splitbypatient: In the case of the Kermany et al data set we have multiple pictures per patient. Pictures of a patient should all be put into one split (test OR train OR val) and not randomly assigned into both.
     :type splitbypatient: boolean
     :param maxiter: maximum iteration when splitbypatient=True for resampling
     :type maxiter: integer
     :param deviation: maximum deviation from the perc_split when splitbypatient=True for resampling
     :type deviation: float
 
-    :return: Two list with the paths of the images in them
+    :return: Two list with lists of filenames
     """
 
     listoffnames = []
@@ -120,9 +131,9 @@ def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, 
         test = random.sample(fnames, round(perc_split * len(fnames)))
         rest = list(set(fnames) - set(test))
         if splitbypatient:
-            # while proportion is not right -> resample
             proportion = 0
             c = 0
+            # while proportion is not right -> resample
             while (perc_split*(1+deviation) < proportion or proportion < perc_split*(1-deviation)) and c < maxiter:
                 print("Cycle ", c, " failed. Proportion of ", proportion, " Trying again ...")
                 idx_test, idx_rest = split_by_patient(fnames, perc_split=perc_split)
@@ -144,7 +155,8 @@ def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, 
 
 def copyfiles(train_fnames, imagefolder, destinationfolder):
     """copy files into their respective directories
-    :param train_fnames:
+
+    :param train_fnames: list of list of filenames which should be moved from imagefolder to destinationfolder
     :type train_fnames: list
     :param imagefolder: original folder where images are
     :type imagefolder: str
@@ -154,10 +166,13 @@ def copyfiles(train_fnames, imagefolder, destinationfolder):
     :return: number of copied images
     """
     numcopied = []
+    # walk through labels + respective list of filenames
     for files, d in zip(train_fnames, get_labels()):
         pathfrom = os.path.join(imagefolder, d)
         pathto = os.path.join(destinationfolder, d)
+        # walk through sublist of filenames
         for f in files:
+            # if file is in folder (sanity check) copy to destination folder
             if os.path.isfile(os.path.join(pathfrom, f)):
                 shutil.copy(os.path.join(pathfrom, f), os.path.join(pathto, f))
         numcopied.append(len(os.listdir(pathto)))
@@ -165,8 +180,9 @@ def copyfiles(train_fnames, imagefolder, destinationfolder):
 
 
 def movefiles(train_fnames, imagefolder, destinationfolder):
-    """moves files into their respective directories
-    :param train_fnames:
+    """moves files into their respective directories; same as copyfiles() but moves them
+
+    :param train_fnames: list of list of filenames which should be moved from imagefolder to destinationfolder
     :type train_fnames: list
     :param imagefolder: original folder where images are
     :type imagefolder: str
@@ -176,10 +192,13 @@ def movefiles(train_fnames, imagefolder, destinationfolder):
     :return: number of moved images
     """
     nummoved = []
+    # walk through labels + respective list of filenames
     for files, d in zip(train_fnames, get_labels()):
         pathfrom = os.path.join(imagefolder, d)
         pathto = os.path.join(destinationfolder, d)
+        # walk through sublist of filenames
         for f in files:
+            # if file is in folder (sanity check) move to destination folder
             if os.path.isfile(os.path.join(pathfrom, f)):
                 shutil.move(os.path.join(pathfrom, f), os.path.join(pathto, f))
         nummoved.append(len(os.listdir(pathto)))
@@ -207,24 +226,32 @@ def checkmove():
         print("Validation pictures: ", sum(numimg))
 
 
-# MAIN starts here
 if __name__ == "__main__":
     import time
     tic = time.time()
+
+    # create destination folders
     makedirs()
+
+    # make train/test split
     train_fnames, test_fnames = makeimagesplits(args.imagedir, args.testsplit, splitbypatient=False, maxiter=10,
                                                 deviation=0.05)
+
+    # Copy train/test files from original folder into new directories
     print("Copying train files ...")
     numtrain = copyfiles(train_fnames, args.imagedir, os.path.join(args.basedir, "train"))
     print("Copying test files ...")
     numtest = copyfiles(test_fnames, args.imagedir, os.path.join(args.basedir, "test"))
 
     if args.validationsplit:
+        # make validation split from train data
         train_fnames, val_fnames = makeimagesplits(os.path.join(args.basedir, "train"), args.validationsplit,
                                                    splitbypatient=False, maxiter=10, deviation=0.05)
+        # Move validation images from train folder into destination folder
         print("Moving validation files ...")
         numval = movefiles(val_fnames, os.path.join(args.basedir, "train"), os.path.join(args.basedir, "val"))
 
+    # check if splitting was successful -> printout on console
     checkmove()
 
     toc = time.time()
