@@ -58,23 +58,72 @@ set_seed(RANDOMSEED)
 
 
 class ModelSetup():
-    """ Contains a model with its respective data set and other important attributes
-    self.selected_dataset
-    self.dataset
-    self.img_size
-    # Image Generator
-    self.train_set = None
-    self.val_set = None
-    self.test_set = None
-    self.mode_rgb = None
-    # Model specific
-    self.model = None
-    self.model_history = None
-    self.predictions = None
+    """ Contains a model with its respective dataset and other important attributes
+
+    Attributes
+    -------
+    selected_dataset: str
+        name of the dataset on which the classifier will be or was trained
+    dataset: DataSet
+        dataset of class DataSet on which the classifier will be or was trained
+    img_size: int
+        Image size onto which the images from the quality dataset are reduced, defaults to 128
+    # For Image Generator
+    train_set: tensorflow.keras.preprocessing.image.ImageDataGenerator
+        ImageDataGenerator of train data on which the classifier will be or was trained
+    val_set: tensorflow.keras.preprocessing.image.ImageDataGenerator
+        ImageDataGenerator of validation data DataSet on which the classifier will be or was validated
+    test_set: tensorflow.keras.preprocessing.image.ImageDataGenerator
+        ImageDataGenerator of test data DataSet on which the classifier will be or was tested
+    mode_rgb: bool
+        indirectly sets input channels for NN; if True 3 channels are used, else 1 -> grayscale
+    model: Keras.training.engine.Model
+        model which will be or was trained
+    model_history: json
+        history of model training
+    predictions: numpy.array
+        predictions of the test set made through the model
     # for multiclass
-    self.labelencoder = None
+    labelencoder: sklearn.preprocessing.LabelEncoder
+        LabelEncoder trained on training data to convert str labels into ints and back again
     # for imbalanced data
-    self.correct_for_imbalanced_data = True
+    correct_for_imbalanced_data: bool
+        set to True if training and evaluation should take imbalanced data sets into account
+
+    Methods
+    -------
+    _preprocess_img_gen()
+        sets train_set, val_set, test_set
+    _binary_cnn_model()
+        sets model if model shall be binary
+    _multiclass_cnn_model(use_original_cnn: bool = False)
+        sets model if model shall be multiclass
+    _pretrained_network(pretrainedmodel, optimizer)
+        sets a model which can be used for transferlearning
+    _multiclass_transferlearning_inception_model()
+        sets an inception model for a multiclass model which will be used for transferlearning
+    _multiclass_transferlearning_vgg16_model()
+        sets VGG16 model for a multiclass model which will be used for transferlearning
+    set_model(suffix_path: str = '')
+        Load the already trained SimpleCNN and its history about training.
+    fit(n_epochs: int = 50, patience: int = 10, suffix_path: str = '', save_model: bool = True)
+        fits model
+    eval(plot_losses: bool = True)
+        Return classification performance of the NN and plot Loss curve
+    img_preprocess_for_prediction(dataentry)
+        transforms the given DataEntry to be able to be predicted (correct rgb mode and dimensions)
+    pred_test_img(test_dataentry, plot: bool = False)
+        Classify the given test image
+    plot_rand10_pred()
+        Plot 10 random prediction by using images from the test dataset.
+    _set_selfprediction()
+        Sets the attribute prediction according to the model and the test_set
+    transform_prediction(prediction, threshold = 0.5)
+        Transforms the output of a model.predict() into a correctly predicted label and the according probability
+    get_misclassified(plot: bool = False)
+        Identifiy misclassifcation by the NN
+    plot_activation_map(test_dataentry)
+        Plot activation maps of the SimpleCNN by predicting a test image
     """
     def __init__(self, selected_dataset, sel_size: int = -1, batch_size: int = 32):
         """Initiliaze the data-specific attributes for training the model.
@@ -252,6 +301,12 @@ class ModelSetup():
         print(self.model.summary())
 
     def _pretrained_network(self, pretrainedmodel, optimizer):
+        """ modifies a pretrained model which will later be used for transferlearning to be fit for our use case
+
+        :param pretrainedmodel: pretrained model like VGG16 or InceptionNet
+        :param optimizer: optimiszer like Adam() or RMSprop
+        :return: slightly modified pretrainedmodel fit for our use case
+        """
         # pretrained model has to be topless
         numclasses = len(self.labelencoder.classes_)
         # set layers of pretained model to not be trainable
@@ -271,6 +326,9 @@ class ModelSetup():
         return model
 
     def _multiclass_transferlearning_inception_model(self):
+        """
+        sets self.model to a multiclass transferlearning inceptionnet
+        """
         image_shape = (self.img_size, self.img_size, 3)
 
         backend.clear_session()
@@ -285,6 +343,9 @@ class ModelSetup():
         print(self.model.summary())
 
     def _multiclass_transferlearning_vgg16_model(self):
+        """
+        sets self.model to a multiclass transferlearning vgg16
+        """
         image_shape = (self.img_size, self.img_size, 3)
 
         backend.clear_session()
@@ -312,7 +373,7 @@ class ModelSetup():
         print("Model input shape: ", self.model.input_shape)
 
     def fit(self, n_epochs: int = 50, patience: int = 10, suffix_path: str = '',  save_model: bool = True):
-        """Fit the SimpleCNN on the given dataset
+        """Fit the NN on the given dataset
 
         :param n_epochs: Number of epochs, defaults to 50
         :type n_epochs: int, optional
@@ -354,7 +415,7 @@ class ModelSetup():
             json.dump(self.model_history, open(os.path.join(STATIC_DIR, 'models', 'model_history_' + str(self.selected_dataset) + str(suffix_path) + '.json'), 'w'))
 
     def eval(self, plot_losses: bool = True):
-        """Return classification performance of the SimpleCNN and plot Loss curve
+        """Return classification performance of the NN and plot Loss curve
 
         :param plot_losses: Set to `False` if no loss curve should be plotted, defaults to True
         :type plot_losses: bool, optional
@@ -406,6 +467,11 @@ class ModelSetup():
         print(classification_report(groundtruth, self.predictions, digits=3))
 
     def img_preprocess_for_prediction(self, dataentry):
+        """ transforms the given DataEntry to be able to be predicted (correct rgb mode and dimensions)
+
+        :param dataentry: DataEntry to be transformed
+        :return: numpy array
+        """
         if self.mode_rgb:
             img_pred = img_to_array(load_img(dataentry.img_path, target_size=(self.img_size, self.img_size), color_mode='rgb'))
             img_pred = np.expand_dims(img_pred, 0)
@@ -422,7 +488,7 @@ class ModelSetup():
         :param plot: Set to `True`if the images and the classification results should be shown, defaults to False
         :type plot: bool, optional
         :return: 
-            - **predicted_label** (`str`) - Predicted label by using Simple CNN
+            - **predicted_label** (`str`) - Predicted label by using the model
             - **prob** (`float`) - Probability score for the predicted label
         """
 
@@ -486,7 +552,7 @@ class ModelSetup():
         plt.show()
 
     def _set_selfprediction(self):
-        """ Sets the attribute prediction according to the model and the test_set
+        """ Sets self.prediction according to the model and the test_set
         """
 
         self.test_set.reset()
@@ -522,7 +588,7 @@ class ModelSetup():
         return [predicted_label, prob]
 
     def get_misclassified(self, plot: bool = False):
-        """Identifiy misclassifcation by the Simple CNN
+        """Identifiy misclassifcation by the NN
 
         :param plot: Set to `True` to plot the misclassified images and the classification results, defaults to False
         :type plot: bool, optional
@@ -571,7 +637,7 @@ class ModelSetup():
         return misclassified
 
     def plot_activation_map(self, test_dataentry):
-        """Plot activation maps of the SimpleCNN by predicting a test image
+        """Plot activation maps of the CNN by predicting a test image
 
         :param test_dataentry: DataEntry object which should be taken from the test dataset
         :type test_dataentry: DataEntry
@@ -698,7 +764,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
                                                options_cnn=options_cnn,
                                                feature_model_output_layer=feature_model_output_layer))
     # initialize model
-    if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape # model_for_feature_embedding is None and
+    if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape; model_for_feature_embedding is None
         sel_model = ModelSetup(dataset_used, sel_size=224)
     else:
         sel_model = ModelSetup(dataset_used)
