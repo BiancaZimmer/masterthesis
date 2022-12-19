@@ -62,8 +62,6 @@ class Modelsetup{
     labelencoder: sklearn.preprocessing.LabelEncoder
 .. for imbalanced data ..
     correct_for_imbalanced_data: bool
-..
-    labelencoder: LabelEncoder
 --
 _preprocess_img_gen()   sets train_set, val_set, test_set
 _binary_cnn_model()     sets model
