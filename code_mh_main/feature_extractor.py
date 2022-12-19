@@ -28,6 +28,20 @@ set_seed(RANDOMSEED)
 
 class FeatureExtractor:
     """Feature Extractor model
+
+    Attributes
+    ----------
+    rgb: bool
+         if image input shape for FE model is 3 -> 3 channel = rgb else, grayscale
+    fe_model: Keras.training.engine.Model
+        model for the feature extractor
+
+    Methods
+    ----------
+    load_preprocess_img(path)
+        Returns the loaded and preprocessed image based on the current feature selector in PIL format as well as in a 4-dim numpy array.
+    extract_features(x)
+        Create the feature vector for given image (numpy array)
     """
     def __init__(self, loaded_model=None, use_flatten: bool = False,
                  model_name="Standard", options_cnn=True, feature_model_output_layer=None) -> None:
