@@ -27,6 +27,34 @@ set_seed(RANDOMSEED)
 
 class DataSet():
     """DataSet object for the image dataset containing list of DataEntries
+
+    Attributes
+    ---------
+    name: str
+        name of dataset to use
+    fe: FeatureExtractor
+        FE to use for images
+    path_datasets:str
+        usually global variable DATA_DIR, this is where the data is
+    DIR_TRAIN_DATA: str
+        path to folder of train data
+    DIR_VAL_DATA: str
+        path to folder of validation data
+    DIR_TEST_DATA: str
+        path to folder of test data
+    data: list of DataEntry
+        list of DataEntries from the train data
+    data_t: list of DataEntry
+        list of DataEntries from the test data
+    available_classes: list of str
+        class labels inferred from DIR_TRAIN_DATA
+
+    Methods
+    ---------
+    apply_elbow_method(self, use_image_embeddings:bool =True, sel_size:int = 128, components_PCA: int =None)
+        Elbow method that is applied to the feature embedding or the raw data of this DataSet
+    apply_sil_method(self, use_image_embeddings:bool =True, sel_size:int = 128, components_PCA: int =None)
+        Silhouette method that is applied to the feature embedding or the raw data of this DataSet
     """
     def __init__(self, name: str, fe: FeatureExtractor, path_datasets=DATA_DIR):
         """Initialization of the DataSet
