@@ -1,4 +1,4 @@
-# Functions to sort images into train, test and validation folders
+# Work flow to sort images into train, test and validation folders
 # sample usage:
 # python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>
 
@@ -40,8 +40,7 @@ parser.add_argument("-s", "--validationsplit",
 args = parser.parse_args()
 
 
-# help functions
-
+# ######## FUNCTIONS
 
 def get_labels():
     """Infers all the labels from the base directory"""
@@ -80,7 +79,9 @@ def dim(a):
 
 
 def split_by_patient(fnames, perc_split=0.2):
-    """ In the case of the Kermany et al data set we have multiple pictures per patient. Pictures of a patient should
+    """ Splits a list of filenames into test/train according to their labels and patient ID
+
+    In the case of the Kermany et al data set we have multiple pictures per patient. Pictures of a patient should
     all be put into one split (test OR train OR val) and not randomly assigned into both.
 
     :param fnames: file names of the structure "XX-XX-XX"
@@ -100,7 +101,8 @@ def split_by_patient(fnames, perc_split=0.2):
 
 def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, deviation=0.01):
     """Splits the images from the imagedir into two splits
-    if splitbypatient is set to True, the images are split according to patient ID, in order to ensure that the split
+
+    If splitbypatient is set to True, the images are split according to patient ID, in order to ensure that the split
     is still done according to perc_split, a resampling of patient IDs is done until either maxiter is reached or
     the image split is done accoring to perc_split with a deviation of the allowed deviation parameter
     Prints statistics of split in each re-sampling iteration and at the end
@@ -154,7 +156,7 @@ def makeimagesplits(imagedir, perc_split=0.2, splitbypatient=False, maxiter=10, 
 
 
 def copyfiles(train_fnames, imagefolder, destinationfolder):
-    """copy files into their respective directories
+    """ Copies files into their respective directories
 
     :param train_fnames: list of list of filenames which should be moved from imagefolder to destinationfolder
     :type train_fnames: list
@@ -180,7 +182,7 @@ def copyfiles(train_fnames, imagefolder, destinationfolder):
 
 
 def movefiles(train_fnames, imagefolder, destinationfolder):
-    """moves files into their respective directories; same as copyfiles() but moves them
+    """ Moves files into their respective directories; same as copyfiles() but moves them
 
     :param train_fnames: list of list of filenames which should be moved from imagefolder to destinationfolder
     :type train_fnames: list
@@ -206,7 +208,7 @@ def movefiles(train_fnames, imagefolder, destinationfolder):
 
 
 def checkmove():
-    """Checks if the copy/move of the files was successful. Prints number of pictures in folders onto the console"""
+    """ Checks if the copy/move of the files was successful. Prints number of pictures in folders onto the console"""
     numimg = []
     for l in get_labels():
         numimg.append(len(os.listdir(os.path.join(args.imagedir, l))))
