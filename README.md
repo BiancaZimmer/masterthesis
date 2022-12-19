@@ -1,9 +1,23 @@
-# README
+# Explaining Decision Boundaries of CNNs Through Prototypes, Near Hits and Near Misses:
+## A Comparison on Multiclass Medical Image Data Utilizing LRP Heatmaps
+This is the repository to the master thesis of Bianca Zimmer
+
+You can find the full code here. For any questions please contact
+bianca-katharina.zimmer@stud.uni-bamberg.de
+or anyone at the institution of Cognitive Systems at University of Bamberg
+---
 ## This repository is currently under construction, please bear in mind that especially the documentation is not yet completed!
+
+---
+
+## Abstract
+< under construction >
+
+---
 
 ## Folders:
 ### code_kermany
-Is the code downloaded from: https://data.mendeley.com/datasets/rscbjbr9sj/2?__hstc=25856994.712c372e7ffc5b6a6790d5a9f28aae77.1649411884797.1649594031628.1649756975336.3&__hssc=25856994.1.1649756975336&__hsfp=1297509183
+Is the code downloaded from: https://data.mendeley.com/datasets/rscbjbr9sj/2?
 of the Paper of Kermany et. al. 2018, distributed under a CC BY 4.0 License (read here for more detail: https://creativecommons.org/licenses/by/4.0/). 
 
 Kermany, Daniel; Zhang, Kang; Goldbaum, Michael (2018), “Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images for Classification”, Mendeley Data, V2, doi: 10.17632/rscbjbr9sj.2
