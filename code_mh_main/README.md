@@ -1,67 +1,62 @@
-# Explaining Image Classifications with Near Misses, Near Hits and Prototypes: Supporting Domain Experts in Understanding Decision oundaries
-___
-###  Marvin Herchenbach, Dennis Müller, Stehphan Scheele, Ute Schmid
-___
-
-## Abstract
-
-We propose a method for explaining the results of black box image classifiers to domain experts and end users, combining two example-based explanatory approaches: Firstly, prototypes as representative data points for classes, and secondly, contrastive example comparisons in the form of near misses and near hits. A prototype globally explains the relevant characteristics for a whole class, whereas near hit and near miss examples explain the local decision boundary of a specific prediction. The proposed approaches are evaluated with respect to parameter selection and suitability on two different data sets – the well-known MNIST as well as a real world data set from industrial quality control. Finally, it is shown how global and local example-based can be combined and realized within a demonstrator system.
-
-### Structure
+## Structure
 
 ```  
-├── README.md
+
 ├── classify.py
-├── cnn_model.py
-├── data                        || Folder of data
 ├── dataentry.py
 ├── dataset.py
 ├── feature_extractor.py
 ├── flaskutil.py
 ├── helpers.py
+├── helpers_innvestigate.py
+├── jaccard_evaluation.py
 ├── kernels.py
+├── licenses.rst
+├── LRP_heatmaps.py
 ├── mmd_critic.py
+├── modelsetup.py
 ├── near_miss_hits_selection.py
 ├── offline_feat_extraction.py
+├── pickle_preprocessing.py
 ├── prototype_selection.py
-├── requirements.txt
-├── static                      || Folder for static data - e.g. data, embeddings, models - of the FLASK app
+├── README.md
+├── requirements.txt            || Apply to avoid any dependency errors 
+├── static                      || Folder for static files - e.g. data, embeddings, models
 ├── templates                   || Folder for html files of the FLASK app
 ├── utils.py
 └── xai_demo.py
 
 ```
 
-## Ressources
-
-- Quality Dataset: https://www.kaggle.com/ravirajsinh45/real-life-industrial-dataset-of-casting-product
+## Data (Not included on GitHub)
+- Original Code: https://gitlab.cc-asp.fraunhofer.de/sees/vis-ml2022-mh Herchenbach, Marvin & Müller, Dennis & Scheele, Stephan & Schmid, Ute. (2022). Explaining Image Classifications with Near Misses, Near Hits and Prototypes: Supporting Domain Experts in Understanding Decision Boundaries. 10.1007/978-3-031-09282-4_35. 
 - MNIST Dataset: http://yann.lecun.com/exdb/mnist/
-- Original Code: https://gitlab.cc-asp.fraunhofer.de/sees/vis-ml2022-mh
+- OCT Dataset: https://data.mendeley.com/datasets/rscbjbr9sj/2? Kermany, Daniel; Zhang, Kang; Goldbaum, Michael (2018), “Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images for Classification”, Mendeley Data, V2, doi: 10.17632/rscbjbr9sj.2
 
-## Contact
+---
 
-* **Marvin Herchenbach** - If you have questions you can contact me under marv.her@t-online.de
+## How To
 
-# By Bianca
+1. Sort images `./sort_ttv.py`
+2. Change `utils.py` according to your needs
+3. Cut images into square format `helpers.py`
+4. Train Model `modelsetup.py`
+5. Create Feature Embeddings `dataentry.py`
+6. Create LRP Heatmaps `LRP_heatmaps.py`
+7. Create Prototypes `prototype_selection.py`
+8. Generate Near Hits & Near Misses `near_miss_hits_selection.py`
+9. Evaluation ``pickle_preprocessing.py`` and ``jaccard_evaluation``
+10. View NHNM in the demonstrator ``xai_demo.py``
 
-## Main programs can be found in:
-- preprocessing: file to preprocess data, train model, generate prototypes, ... for the web
-application
-- xai_demo: web application
+Steps 2.-6. can be done via `preprocessing.py` if all parameters have been tried and tested before
 
-## Setup
-- change the utils.py so the global variables fit your data
-  - DATA_DIR should contain the data in a folder with name <data_name>
-  - inside should be folders named "test", "validation" and "train" wherein your images in separate folders for the classes shall be found
-  - change DATA_DIR_FOLDERS to the name of your data folder(s) you want to use
-- run cnn_model.py to fit your model - important: for this you'll have to adjust the boolean switches in \_\_main__
-- run dataentry.py to get all feature embeddings - important: change the suffix_path in \_\_main__ to whatever the name of your model
-- run prototype_selection.py - when first running this you might have to evaluate the best number of prototypes via screeplot
-- run xai_demo.py - this will run a flask app
+To get the same results as in the master thesis you can follow the steps in 
+`documentation/README.md`
 
-Alternative to running the flask app:
-- run near_miss_hits_selection.py - to get near miss, hits and prototypes of a random (or fixed) test image
+The general workflow is also represented as flow charts in _documentation/_
 
+# For Bianca
+  
 ## Things I changed fundamentally:
 - README - now more readably and more documentation
 - added an option "DATA_DIR_FOLDERS" with which one can choose which data folder(s) should be used
@@ -82,3 +77,4 @@ flask app
   grayscale depending on the use case
   - changed eval functions so they can also handle rgb pictures + models
 - added LRP_heatmaps.py which computes LRP heatmaps
+
