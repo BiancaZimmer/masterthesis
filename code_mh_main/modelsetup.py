@@ -728,10 +728,10 @@ def get_output_layer(model, type_of_model):
         return None
 
 
-def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_path ='_testincep',
+def train_eval_model(dataset_to_use, fit: bool = True, type_of_model: str = 'vgg', suffix_path: str = '_testincep',
                      model_for_feature_embedding = None,
-                     eval = False, loss = False, misclassified = False,
-                     feature_model_output_layer = None, correct_for_imbalanced_data = True):
+                     eval: bool = False, loss: bool = False, misclassified: bool = False,
+                     feature_model_output_layer = None, correct_for_imbalanced_data: bool = True):
     """ Essentially this is the code to run for fitting/loading/evaluating a  model
     :param dataset_to_use: A string of the folder name of the data set you want to use
     :param fit: bool, if set to True a model is fitted otherwise an existing one is loaded
@@ -769,6 +769,7 @@ def train_eval_model(dataset_to_use, fit = True, type_of_model ='vgg', suffix_pa
     else:
         sel_model = ModelSetup(dataset_used)
     sel_model.correct_for_imbalanced_data = correct_for_imbalanced_data
+    # set rgb -> if model is cnn then we take grayscale as input -> rgb = False
     if type_of_model == 'cnn':
         sel_model.mode_rgb = False
     else:
