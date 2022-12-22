@@ -13,6 +13,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.metrics.pairwise import rbf_kernel as rbf
 
+from tensorflow.keras.models import load_model
 
 from sklearn_extra.cluster import KMedoids
 
@@ -27,6 +28,10 @@ from dataentry import *
 
 import json
 
+import warnings
+# this ignores the warnings induced by the numpy version > 1.19
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+
 # Set seed
 # 1. Set `PYTHONHASHSEED` environment variable at a fixed value
 os.environ['PYTHONHASHSEED'] = str(RANDOMSEED)
@@ -40,13 +45,41 @@ from tensorflow.random import set_seed
 set_seed(RANDOMSEED)
 
 
-class PrototypesSelector():
-    """Main prototype selector class from which the respective methods inherit
+class PrototypesSelector:
+    """Main prototype selector class from which the respective prototype_selector classes inherit
     """
-    def __init__(self):
-        """*To-Do:* initialise the several attributes, which all other methods have the same.
+    def __init__(self, dataset,
+                 num_prototypes: int = 3,
+                 use_image_embeddings: bool = True,
+                 use_lrp: bool = False,
+                 make_plots: bool = True,
+                 verbose: int = 0,
+                 sel_size = -1):
+        """Initalizes super-class PrototypeSelector; infers FeatureExtractor and DataSet from input parameters
+
+        :param dataset: An instance of type DataSet with the data to use
+        :param num_prototypes: number of prototypes which shall be generated
+        :param use_image_embeddings: bool, if True prototypes are calculated on basis of the feature embeddings
+        :param use_lrp: bool, if True prototypes are calculated on basis of the LRP heatmaps
+        :param make_plots: bool, if True plots are generated
+        :param verbose: 0, 1, 2 depending on the verbose output; 0 == no output
         """
-        pass
+
+        # only one of feature embeddings, lrp heatmaps or raw data can be used as reference point
+        self.use_image_embeddings = use_image_embeddings
+        self.use_lrp = use_lrp if not self.use_image_embeddings else False
+        self.use_raw = False if any([self.use_image_embeddings, self.use_lrp]) else True
+
+        self.num_prototypes = num_prototypes
+        self.make_plots = make_plots
+        self.verbose = verbose
+
+        self.prototypes_per_class = None
+        self.mmd2_per_class = None
+
+        self.dataset = dataset
+        self.available_classes = self.dataset.available_classes
+        self.sel_size = sel_size
 
     def plot_prototypes(self):
         """Plot selected prototypes for each available  class.
@@ -63,8 +96,8 @@ class PrototypesSelector():
                 if i >= self.num_prototypes:
                     axis.axis('off')
                     continue
-                #axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size,3))
-                #axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size), cmap='gray')
+                # axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size,3))
+                # axis.imshow(prototypes_sorted[i].reshape(resize_size,resize_size), cmap='gray')
                 axis.imshow(Image.open([item.img_path for _, item in enumerate(proto)][i]), cmap='gray')
                 axis.axis('off')
 
@@ -94,7 +127,7 @@ class PrototypesSelector():
             
         return prototypes_per_class_img_files
 
-    def _calc_mmd2(self, gamma =None, unbiased:bool =False):
+    def _calc_mmd2(self, gamma=None, unbiased: bool = False):
         """Calculate maximum mean discrepancy (MMD) based on Gaussian kernel function for keras models (theano or tensorflow backend) based on 'A kernel method for the two-sample-problem.' from 'Gretton, Arthur, et al. (2007)'.
 
         :param gamma: Kernel coefficient for RBF kernel, defaults to None
@@ -148,7 +181,7 @@ class PrototypesSelector():
 
         return mmd2_per_class
 
-    def _test_1NN(self, verbose:int =0):
+    def _test_1NN(self):
         """Implementation of the 1-NN classifier which is run over the range of the selected number of prototypes and returns a list for each metric.
 
         :param verbose: Set to `1` to print accuracy and recall, or even set to `2` to get further classifcation results, defaults to 0
@@ -159,18 +192,23 @@ class PrototypesSelector():
             - list_recallm (`list`) - List of recall
         """
 
-        test_num_prototypes =list(range(1,self.num_prototypes+1))
+        assert self.prototypes_per_class is not None, "No Prototypes selected yet! Please, fit the Selector first!"
+
+        test_num_prototypes = list(range(1, self.num_prototypes+1))
 
         eval_classes = self.prototypes_per_class.keys()
 
         if self.use_image_embeddings:
-            X_train = np.array([item.feature_embedding.flatten().astype(float) for available_class in eval_classes for item in self.prototypes_per_class[available_class]])
+            X_train = np.array([item.feature_embedding.flatten().astype(float) for available_class in eval_classes
+                                for item in self.prototypes_per_class[available_class]])
             X_test = np.array([item.feature_embedding.flatten().astype(float) for item in self.dataset.data_t])
         else:
-            X_train = np.array([item.image_numpy(img_size=self.sel_size).flatten() for available_class in eval_classes for item in self.prototypes_per_class[available_class]])
+            X_train = np.array([item.image_numpy(img_size=self.sel_size).flatten() for available_class in eval_classes
+                                for item in self.prototypes_per_class[available_class]])
             X_test = np.array([item.image_numpy(img_size=self.sel_size).flatten() for item in self.dataset.data_t])
 
-        y_train = np.array([item.y for available_class in eval_classes for item in self.prototypes_per_class[available_class]])
+        y_train = np.array([item.y for available_class in eval_classes
+                            for item in self.prototypes_per_class[available_class]])
         y_test = np.array([item.y for item in self.dataset.data_t])
 
         # print("len of X_train:" , np.shape(X_train))
@@ -184,16 +222,18 @@ class PrototypesSelector():
 
         for testm in test_num_prototypes:
             classifier = Classifier()
-            classifier.build_model(X_train[list(range(0,testm)) + list(range(self.num_prototypes,self.num_prototypes+testm)),:], y_train[list(range(0,testm)) + list(range(self.num_prototypes,self.num_prototypes+testm))], verbose)
-            accuracym, errorm, recallm = classifier.classify(X_test, y_test, verbose)
+            classifier.build_model(X_train[list(range(0,testm)) + list(range(self.num_prototypes, self.num_prototypes+testm)), :],
+                                   y_train[list(range(0, testm)) + list(range(self.num_prototypes,self.num_prototypes+testm))],
+                                   self.verbose)
+            accuracym, errorm, recallm = classifier.classify(X_test, y_test, self.verbose)
 
             list_errorm.append(errorm)
             list_accuracym.append(accuracym)
             list_recallm.append(recallm)
 
-            if verbose > 1 and testm == self.num_prototypes: 
+            if self.verbose > 1 and testm == self.num_prototypes:
                 print('########################## RESULTS for 【 m=%d 】Prototype ############# '% (testm))
-                if verbose > 2:
+                if self.verbose > 2:
                     print('Number of used prototype per class: ', testm)
                     print("Classified data points: ", len(y_test))
                 print(f"Accuracys for [1 to m={self.num_prototypes}] selected prototypes: {list_accuracym}")
@@ -202,28 +242,28 @@ class PrototypesSelector():
 
         return list_errorm, list_accuracym, list_recallm  
 
-    def score(self, verbose=None, sel_metric:str ='recall'):
+    def score(self, X=None, y=None, sel_metric: str = 'recall'):
         """Run 1-NN classifier (over the range of the selected number of prototypes) and calculate the metrics, that is also used for optimizing in GridSearchCV.
 
-        :param verbose: Set to `0` not to print accuracy, error rate, recall and mmd2 per class, defaults to 1
-        :type verbose: int, optional
+        :param X: always None, not used, needs to be there in order for GridSearchcv to work
+        :param y: always None, not used, needs to be there in order for GridSearchcv to work
         :param sel_metric: Select a metric among `accuracy`, `error` or `recall`, defaults to recall
         :type sel_metric: str, optional
         :return: *self* (`dict`) - Return the value of selected metric.
         """
 
-        errors, accuracys, recalls = self._test_1NN(verbose=self.verbose)
+        errors, accuracys, recalls = self._test_1NN()
         error = errors[-1]
         accuracy = accuracys[-1]
         recall = np.mean(recalls[-1])
         
         self.mmd2_per_class = self._calc_mmd2()
         
-        try: 
+        try:
             global mmd2_tracking
             mmd2_tracking[self.num_prototypes] = self.mmd2_per_class
-        except:
-            pass
+        except NameError:
+            print("No global mmd2_tracking variable found")
                 
         if self.verbose > 0:
             print('################## RESULTS | Metric to optimize: '+ str(sel_metric) + ' ###############')
@@ -242,59 +282,53 @@ class PrototypesSelector():
         else:
             print("Select either 'recall', 'accuracy' or 'error' as metric!")
 
+    def save_prototypes(self):
+        if self.use_image_embeddings:
+            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dataset.fe.fe_model.name, self.dataset.name)
+        else:
+            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', "rawData", self.dataset.name)
+
+        if not os.path.exists(DIR_PROTOTYPES_DATASET):
+            os.makedirs(DIR_PROTOTYPES_DATASET)
+
+        protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(self.num_prototypes) + '.json')
+
+        protos_img_files = self.get_prototypes_img_files()
+
+        if os.path.exists(protos_file):
+            print('[!!!] A file already exists! Please delete this file to save again prototypes of these settings.')
+        else:
+            print(protos_file)
+            # np.save(protos_file, protos_img_files)
+            print('Saving ...')
+            with open(protos_file, 'w') as fp:
+                json.dump(protos_img_files, fp)
+
 
 class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
     """K-Medoids based Prototype Selection
     """
 
-    def __init__(self, dataset, num_prototypes:int =3, 
-                 use_image_embeddings:bool =True, 
-                 sel_size:int =128,
-                 make_plots:bool = True,  
-                 verbose:int =0):
+    def __init__(self, *args, **kwds):
         """Initialize k-Medoids prototype selector
-
-        :param dataset: Dataset for which prototypes should be selected
-        :type dataset: DataSet
-        :param num_prototypes: Number of prototypes, defaults to 3
-        :type num_prototypes: int, optional
-        :param use_image_embeddings: Set to `False` if prototype selection should be run on raw data (i.e. no feature embedding), defaults to True
-        :type use_image_embeddings: bool, optional
-        :param sel_size: Image size of the images, which is neeed if prototype selection is run on raw data, defaults to 128
-        :type sel_size: int, optional
-        :param make_plots: Plot selected prototypes, defaults to True
-        :type make_plots: bool, optional
-        :param verbose: Set to `1` to get further details while prototype selection , defaults to 0
-        :type verbose: int, optional
         """
-        super().__init__()
+        super().__init__(*args, **kwds)
 
-        self.num_prototypes = num_prototypes
-        self.use_image_embeddings = use_image_embeddings
-        self.sel_size = sel_size
-        self.make_plots = make_plots
-        self.verbose = verbose
-    
-        self.prototypes_per_class = None
-        self.mmd2_per_class = None
-
-        self.dataset = dataset
-        self.available_classes = self.dataset.available_classes
-
-    def fit(self, data =None):  
+    def fit(self, data=None):
         """Run the prototype selection using the k-Medoids algorithm. The prototypes are stored in a dict **prototypes_per_class**.
 
         :param data: DataSet on which the selection as well as the GridSearchCV is run/fitted , defaults to None
         :type data: DataSet, optional
         """
 
-        if data is None: data = self.dataset.data
+        if data is None:
+            data = self.dataset.data
 
         data_per_class = {}
-        #data_t_per_class = {}
+        # data_t_per_class = {}
         for available_class in self.available_classes:
             data_per_class[available_class] = list(filter(lambda x: x.ground_truth_label == available_class, data))
-            #data_t_per_class[available_class] = list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data_t))
+            # data_t_per_class[available_class] = list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data_t))
 
         print("... selecting k-Medoids Prototypes")    
             
@@ -313,7 +347,7 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
 
         for available_class in self.available_classes:
 
-            if self.use_image_embeddings:
+            if self.use_image_embeddings:  # TODO maybe errors will rise here
                 X = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(data_per_class[available_class])])
             else:
                 X = np.array([item.image_numpy(img_size=self.sel_size).flatten() for index, item in enumerate(data_per_class[available_class])])
@@ -355,46 +389,27 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
     """MMD-based Prototype Selection by using parts of orignal implemention of *Been Kim*
     """
 
-    def __init__(self, dataset, num_prototypes:int =5, 
-                gamma:float =None, 
-                kernel_type:str ='global',
-                use_image_embeddings:bool =True, 
-                sel_size:int =128, 
-                make_plots:bool = True,  
-                verbose:int =0):
+    def __init__(self, dataset, gamma: float = None, kernel_type: str = 'global',
+                 num_prototypes: int = 3, use_image_embeddings: bool = True, use_lrp: bool = False,
+                 make_plots: bool = True, verbose: int = 0, sel_size = -1):
         """Initialize MMD2 prototype selector
 
-        :param dataset: Dataset for which prototypes should be selected
-        :type dataset: DataSet
-        :param num_prototypes: Number of prototypes, defaults to 5
-        :type num_prototypes: int, optional
-        :param use_image_embeddings: Set to `False` if prototype selection should be run on raw data (i.e. no feature embedding), defaults to True
-        :type use_image_embeddings: bool, optional
         :param gamma: Kernel coefficient for RBF kernel, defaults to None, defaults to None
         :type gamma: float, optional
-        :param sel_size: Image size of the images, which is needed if prototype selection is run on raw data, defaults to 128
-        :type sel_size: int, optional
-        :param make_plots: Plot selected prototypes, defaults to True
-        :type make_plots: bool, optional
-        :param verbose: Set to `1` to get further details while prototype selection , defaults to 0
-        :type verbose: int, optional
+        :param kernel_type: type of Kernel, currently only "global" is supported
+        :type kernel_type: str, optional
+        --- inherited from PrototypeSelector() ---
+        :param num_prototypes: number of prototypes which shall be generated
+        :param use_image_embeddings: bool, if True prototypes are calculated on basis of the feature embeddings
+        :param use_lrp: bool, if True prototypes are calculated on basis of the LRP heatmaps
+        :param make_plots: bool, if True plots are generated
+        :param verbose: 0, 1, 2 depending on the verbose output; 0 == no output
         """
-
-        super().__init__()
-
         self.gamma = gamma
         self.kernel_type = kernel_type
-        self.num_prototypes = num_prototypes
-        self.use_image_embeddings = use_image_embeddings
-        self.sel_size = sel_size
-        self.make_plots = make_plots
-        self.verbose = verbose
-
-        self.prototypes_per_class = None
-        self.mmd2_per_class = None
-
-        self.dataset = dataset
-        self.available_classes = self.dataset.available_classes
+        super().__init__(dataset=dataset, num_prototypes = num_prototypes, use_image_embeddings = use_image_embeddings,
+                         use_lrp = use_lrp, make_plots = make_plots, verbose = verbose, sel_size = sel_size)
+        # no *args **kwds here because we can not use it with gridsearchcv then :/
 
     def fit(self, data=None):
         """Run the prototype selection using the MMD2 algorithm. The prototypes are stored in a dict **prototypes_per_class**.
@@ -404,7 +419,8 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         :raises KeyError: The kernel_type must be either `global` or `local`, defaults to local
 
         """
-        if data is None: data = self.dataset.data
+        if data is None:
+            data = self.dataset.data
 
         data_per_class = {}
         # data_t_per_class = {}
@@ -415,6 +431,11 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         print("... selecting MMD Prototypes")    
 
         if self.verbose > 0:
+            print('======= Parameters =======')
+            print(f'num_prototypes:{self.num_prototypes}')
+            print(f'gamma:{self.gamma}')
+            print(f'use_image_embeddings:{self.use_image_embeddings}')
+        if self.verbose > 1:
             print('======= Parameters =======')
             print(f'num_prototypes:{self.num_prototypes}')
             print(f'gamma:{self.gamma}')
@@ -433,7 +454,7 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         for available_class in self.available_classes:
 
             # get feature embeddings in an array
-            if self.use_image_embeddings:
+            if self.use_image_embeddings:  # TODO errors may arise
                 X = np.array([item.feature_embedding.flatten().astype(float)
                               for index, item in enumerate(data_per_class[available_class])])
             else:
@@ -443,26 +464,27 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
             # compute Kernel
             if self.gamma is None: 
                 self.gamma = default_gamma(X)
-                print(f'[!!!] Setting default gamma={self.gamma} .. since no gamma value specified')
+                print(f'Setting default gamma={self.gamma} since no gamma value specified')
 
-            # ToDo local-Kernel!
+            # ToDo local-Kernel
             # In original setting of Been Kim, a local kernel in respect to the classes is also applied, which is not
-            # feasible here since near hits and misses alread shows class relation.
+            # feasible here since near hits and misses already show class relation.
             # However, this could be used for further exploration, maybe sub-classes.
             if self.kernel_type == 'global':
                 K = compute_rbf_kernel(X, self.gamma)
             else:
                 raise KeyError('kernel_type must be either "global" or "local"')
               
-            if self.verbose >= 2: print('Shape of X: ', np.shape(X), "\nKernel Shape:", np.shape(K))
+            if self.verbose >= 2:
+                print('Shape of X: ', np.shape(X), "\nKernel Shape:", np.shape(K))
 
             # select Prototypes
             if self.num_prototypes > 0:
-                
                 prototype_indices = select_prototypes(K, self.num_prototypes)
                 prototypes = [data_per_class[available_class][idx] for idx in prototype_indices]        
 
-                if self.verbose > 1: print('Indices: ', prototype_indices, '\nLabels: ', [item.ground_truth_label for _, item in enumerate(prototypes)])
+                if self.verbose > 1:
+                    print('Indices: ', prototype_indices, '\nLabels: ', [item.ground_truth_label for _, item in enumerate(prototypes)])
 
                 self.prototypes_per_class[available_class] = prototypes     
 
@@ -488,9 +510,12 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         return self
 
 
-def scree_plot_MMD2(mmd2_tracking, available_classes):
+def scree_plot_MMD2(mmd2_tracking, available_classes, save_path='test'):
 
     assert mmd2_tracking is not None, "No MMD2 values were tracked. Please init the dict 'mmd2_tracking' for storing the values while selection!"
+
+    print("=========== MMD2 values ===========")
+    print(mmd2_tracking)
 
     for available_class in available_classes:
         mmd2_per_proto_and_class = []
@@ -499,33 +524,129 @@ def scree_plot_MMD2(mmd2_tracking, available_classes):
             mmd2_per_proto_and_class.append(mmd2_tracking[k][available_class])
             num_proto.append(k)
 
-        plt.plot(num_proto, mmd2_per_proto_and_class,'bx-', markersize=10, color='#1F497D', linewidth=3)
+        fig1 = plt.figure()
+        plt.plot(num_proto, mmd2_per_proto_and_class, 'x-', markersize=10, color='#1F497D', linewidth=3)
         plt.xlabel('Number of Prototypes', fontsize=12, fontweight = 'medium')
         plt.ylabel('MMD2 Scores', fontsize=12, fontweight = 'medium')
         plt.title(f'Class: {available_class} - The Scree-plot on MMD2', fontsize=14, fontweight = 'demibold')
-        plt.show()
+        plt.tight_layout()
+        fig1.savefig(save_path+"_"+str(available_class)+".png", bbox_inches='tight')
+        # plt.show()
 
         # print(available_class,': -> ', num_proto, '=>>=', mmd2_per_proto_and_class)
 
 
+def gridsearch_crossval_forMMD(dataset_to_use: str, suffix_path: str, type_of_model: str = 'vgg', make_plots: bool = False,
+                               scree_params: dict = None, save_path = 'test'):
+
+    if scree_params is None:
+        scree_params = {"gamma": [None],
+                        "use_image_embeddings": [False],
+                        "use_lrp": [False],
+                        "num_prototypes": list(range(1, 10))}
+
+    if suffix_path == '':
+        model_for_feature_embedding = None  # -> VGG16 is used -> untrained
+    else:
+        model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + dataset_to_use +
+                                                              str(suffix_path) + '.hdf5'))
+
+    # Set up FeatureExtractor
+    if type_of_model == "cnn":
+        options_cnn = True
+    else:
+        options_cnn = False
+    if model_for_feature_embedding is not None:
+        feature_model_output_layer = get_output_layer(model_for_feature_embedding, type_of_model)
+    else:
+        feature_model_output_layer = None
+
+    fe = FeatureExtractor(loaded_model=model_for_feature_embedding,
+                          model_name=str.upper(type_of_model),
+                          options_cnn=options_cnn,
+                          feature_model_output_layer=feature_model_output_layer)
+
+    # set up dataset for grid search
+    dataset = DataSet(name=dataset_to_use, fe=fe)
+
+    method = PrototypesSelector_MMD(dataset=dataset, make_plots = make_plots, verbose = 1)
+
+    if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape; model_for_feature_embedding is None
+        method.sel_size = 224
+    else:
+        method.sel_size = model_for_feature_embedding.input_shape[1]
+
+    gs = GridSearchCV(method,
+                      scree_params,
+                      cv=[(slice(None), slice(None))],
+                      verbose=1)
+
+    # fitting of grid search plus timing
+    tic = time.time()
+    gs.fit(X = dataset.data)
+    toc = time.time()
+    print(
+        "{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
+                                  ((toc - tic) % 60)))
+
+    try:
+        global mmd2_tracking
+        scree_plot_MMD2(mmd2_tracking, method.available_classes, save_path)
+        mmd2_tracking = {}
+    except NameError:
+        print("No global mmd2_tracking variable found")
+
+
 if __name__ == "__main__":
+    # model_history_mnist_1247_cnn_seed3871
+    # model_history_oct_cc_cnn_seed3871
 
-    # -- Setup ---------------------------------------------------------------------- 
-
-    ## Init mmd2 dict where these values are stored
+    # global variable to save mmd2 values
     mmd2_tracking = {}
-    
-    ## -- Select dataset
-    # dataset_name = 'mnist'
-    dataset_name = DATA_DIR_FOLDERS[0]
 
-    ## -- Select Feature Extractor
-    fe = FeatureExtractor(loaded_model=get_CNNmodel(dataset_name, suffix_path="_multicnn"))  # gets FE from a loaded CNN with the dataset name and a suffix
-    # fe = FeatureExtractor(loaded_model=None) ## VGG16 -> loaded_model = None
+    # for the number of prototypes a scree plot must be drawn, since grid search will always use maximum num of prototypes
+    # for gamma we can then conduct another search independently
 
-    ## Load Dataset
-    dataset = DataSet(name=dataset_name, fe=fe)
+    params = {"gamma": [None],
+                    "use_image_embeddings": [False],
+                    "use_lrp": [False],
+                    "num_prototypes": list(range(1, 3))}
 
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0000")
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0001")
+
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001")
+
+   # With FE
+   #  params = {"gamma": [None],
+   #                  "use_image_embeddings": [True],
+   #                  "use_lrp": [False],
+   #                  "num_prototypes": list(range(1, 16))}
+   #
+   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
+   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params)
+   #
+   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
+   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params)
+   #
+   #  # With LRP
+   #  params = {"gamma": [None],
+   #                  "use_image_embeddings": [False],
+   #                  "use_lrp": [True],
+   #                  "num_prototypes": list(range(1, 16))}
+   #
+   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
+   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params)
+   #
+   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
+   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params)
+
+
+    # Find best gamma values
+
+
+### Marvin's code:
     # -- Screeplot of MMD across num of proto  ---------------------------------------
 
     # scree_params = {"gamma": [None],
@@ -617,33 +738,14 @@ if __name__ == "__main__":
     gamma_simpleCNN_mnist = 1
     gamma_rawData_mnist = 0.0001
 
-    ## Initialize Prototype Selector
-    tester = PrototypesSelector_MMD(dataset, num_prototypes=3, use_image_embeddings=True, gamma=gamma_simpleCNN_mnist,
-                                    verbose=1, make_plots=True)
+    # Initialize Prototype Selector
+    # tester = PrototypesSelector_MMD(dataset, num_prototypes=3, use_image_embeddings=True, gamma=gamma_simpleCNN_mnist,
+    #                                 verbose=1, make_plots=True)
+    #
+    # tester.fit()
+    # tester.score()
+    # tester.save_prototypes()
 
-    tester.fit()
-    tester.score()
-
-    if tester.use_image_embeddings:
-        DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', fe.fe_model.name, dataset.name)
-    else:
-        DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR,'static/prototypes', "rawData", dataset.name)
-
-    if not os.path.exists(DIR_PROTOTYPES_DATASET):
-        os.makedirs(DIR_PROTOTYPES_DATASET)
-    
-    protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(tester.num_prototypes) + '.json')
- 
-    protos_img_files = tester.get_prototypes_img_files()
-
-    if os.path.exists(protos_file):
-        print('[!!!] A file already exists! Please delete this file to save again prototypes of these settings.')
-    else:
-        print(protos_file)
-        # np.save(protos_file, protos_img_files)
-        print('SAVE ...')
-        with open(protos_file, 'w') as fp:
-            json.dump(protos_img_files, fp)
 
     # -- Final run of both prototype selection algorihtms  ---------------------------------------
 
