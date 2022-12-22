@@ -265,7 +265,7 @@ class PrototypesSelector:
         except NameError:
             print("No global mmd2_tracking variable found")
                 
-        if self.verbose > 0:
+        if self.verbose > 1:
             print('################## RESULTS | Metric to optimize: '+ str(sel_metric) + ' ###############')
             print("Overall Error: ", error)
             print("Overall Accuracy: ", accuracy)
@@ -610,7 +610,7 @@ if __name__ == "__main__":
     params = {"gamma": [None],
                     "use_image_embeddings": [False],
                     "use_lrp": [False],
-                    "num_prototypes": list(range(1, 3))}
+                    "num_prototypes": list(range(1, 16))}
 
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0000")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0001")
