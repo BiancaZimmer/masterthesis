@@ -263,8 +263,11 @@ class PrototypesSelector:
         
         try:
             global mmd2_tracking
-            mmd2_tracking[self.num_prototypes] = self.mmd2_per_class
-            mmd2_tracking[self.gamma] = self.mmd2_per_class
+            if self.gamma is not None:
+                mmd2_tracking[self.gamma] = self.mmd2_per_class
+            else:
+                mmd2_tracking[self.num_prototypes] = self.mmd2_per_class
+
         except NameError:
             print("No global mmd2_tracking variable found")
                 
@@ -588,7 +591,9 @@ def gridsearch_crossval_forMMD(dataset_to_use: str, suffix_path: str, type_of_mo
     tic = time.time()
     gs.fit(X = dataset.data)
     print("======= Results =======")
-    print(gs.cv_results_)
+    print(gs.best_params_)
+    print(gs.best_estimator_)
+    print(gs.best_score_)
     toc = time.time()
     print(
         "{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
@@ -650,17 +655,16 @@ if __name__ == "__main__":
 
     # Find best gamma values
 
-    params = {"gamma": [None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1, 2, 4, 6, 8, 10],
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
                     "use_image_embeddings": [False],
                     "use_lrp": [False],
-                    "num_prototypes": list(range(3, 7))}
+                    "num_prototypes": [3]}
 
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0000_g")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0001_g")
 
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000_g")
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001_g")
-
+    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000_g")
+    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001_g")
 
 ### Marvin's code:
     # -- Screeplot of MMD across num of proto  ---------------------------------------
