@@ -263,13 +263,14 @@ class PrototypesSelector:
         
         try:
             global mmd2_tracking
-            if self.gamma is not None:
+            global running_test_for
+            if running_test_for == "gamma":
                 mmd2_tracking[self.gamma] = self.mmd2_per_class
             else:
                 mmd2_tracking[self.num_prototypes] = self.mmd2_per_class
 
         except NameError:
-            print("No global mmd2_tracking variable found")
+            print("No global mmd2_tracking or running_test_for variable found")
                 
         if self.verbose > 1:
             print('################## RESULTS | Metric to optimize: '+ str(sel_metric) + ' ###############')
@@ -353,10 +354,12 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
 
         for available_class in self.available_classes:
 
-            if self.use_image_embeddings:  # TODO maybe errors will rise here
-                X = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(data_per_class[available_class])])
+            if self.use_image_embeddings:
+                X = np.array([item.feature_embedding.flatten().astype(float)
+                              for index, item in enumerate(data_per_class[available_class])])
             else:
-                X = np.array([item.image_numpy(img_size=self.sel_size).flatten() for index, item in enumerate(data_per_class[available_class])])
+                X = np.array([item.image_numpy(img_size=self.sel_size).flatten()
+                              for index, item in enumerate(data_per_class[available_class])])
 
             kmedoids = KMedoids(n_clusters=self.num_prototypes, random_state=42, metric='euclidean', method='alternate').fit(X)
 
@@ -460,9 +463,14 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
         for available_class in self.available_classes:
 
             # get feature embeddings in an array
-            if self.use_image_embeddings:  # TODO errors may arise
+            if self.use_image_embeddings:
                 X = np.array([item.feature_embedding.flatten().astype(float)
                               for index, item in enumerate(data_per_class[available_class])])
+            # get lrp heatmaps in an array if prototypes should be calculated on their basis
+            elif self.use_lrp:
+                # TODO have a look at compute_rbf_kernel(X, self.gamma) and select_prototypes(K, self.num_prototypes)
+                pass
+            # else use raw images
             else:
                 X = np.array([item.image_numpy(img_size=self.sel_size).flatten()
                               for index, item in enumerate(data_per_class[available_class])])
@@ -613,6 +621,7 @@ if __name__ == "__main__":
 
     # global variable to save mmd2 values
     mmd2_tracking = {}
+    running_test_for = "protos"
 
     # for the number of prototypes a scree plot must be drawn, since grid search will always use maximum num of prototypes
     # for gamma we can then conduct another search independently
@@ -628,43 +637,57 @@ if __name__ == "__main__":
     # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000")
     # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001")
 
-   # With FE
-   #  params = {"gamma": [None],
-   #                  "use_image_embeddings": [True],
-   #                  "use_lrp": [False],
-   #                  "num_prototypes": list(range(1, 16))}
-   #
-   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
-   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params)
-   #
-   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
-   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params)
-   #
-   #  # With LRP
-   #  params = {"gamma": [None],
-   #                  "use_image_embeddings": [False],
-   #                  "use_lrp": [True],
-   #                  "num_prototypes": list(range(1, 16))}
-   #
-   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
-   #  gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params)
-   #
-   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
-   #  gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params)
+    # With FE
+    params = {"gamma": [None],
+                    "use_image_embeddings": [True],
+                    "use_lrp": [False],
+                    "num_prototypes": list(range(1, 16))}
+
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0100")
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0101")
+
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1100")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1101")
+
+    # # With LRP
+    # params = {"gamma": [None],
+    #                 "use_image_embeddings": [False],
+    #                 "use_lrp": [True],
+    #                 "num_prototypes": list(range(1, 16))}
+    #
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params)
+    #
+    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params)
+    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params)
 
 
     # Find best gamma values
+    running_test_for = "gamma"
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
+                    "use_image_embeddings": [False],
+                    "use_lrp": [False],
+                    "num_prototypes": [4]}
+
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0000_g4")
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0001_g4")
+
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000_g4")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001_g4")
 
     params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
                     "use_image_embeddings": [False],
                     "use_lrp": [False],
-                    "num_prototypes": [3]}
+                    "num_prototypes": [5]}
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000_g5")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001_g5")
 
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0000_g")
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0001_g")
-
-    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000_g")
-    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001_g")
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
+                    "use_image_embeddings": [False],
+                    "use_lrp": [False],
+                    "num_prototypes": [6]}
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1000_g6")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1001_g6")
 
 ### Marvin's code:
     # -- Screeplot of MMD across num of proto  ---------------------------------------
