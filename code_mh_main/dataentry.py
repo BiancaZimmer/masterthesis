@@ -66,7 +66,7 @@ class DataEntry:
         # entire path to the image
         self.img_path = img_path 
         # image file name
-        self.img_name = ntpath.basename(img_path) 
+        self.img_name = ntpath.basename(img_path)
         # class of the image referring to the folder name
         self.ground_truth_label = folder_name 
         # extract index of folder name/class -> int value for the class
@@ -123,20 +123,26 @@ class DataEntry:
         """
         return self.fe.load_preprocess_img(self.img_path)
 
-    def image_numpy(self, img_size: int = None, mode='L'):
+    def image_numpy(self, img_size: int = None, mode='L', lrp: bool = False):
         """Function for loading and converting a single image into a numpy array. If img_size is given it will be resized.
 
         :param img_size: Select a image size (commonly used `128`), defaults to None
         :type img_size: int, optional
         :param mode: Color mode of the output image. use 'L' for grayscalale and 'RGB' for RGB, defaults to 'L'
+        :param lrp: bool, if True, path for lrp heatmap is generated and this image is converted to numpy array
 
         :return: *self* (`numpy.ndarray`) - Normalized image as numpy array
         """
 
         # TODO check occurrences, cuz might be same as fe.load_preprocess_img(self, path)
         # part answer: not the same since axes are not expanded
-
-        x = Image.open(self.img_path).convert(mode)
+        if lrp:
+            datasetname = str.split(self.img_path, "/")[-4]
+            heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', self.fe.fe_model.name, datasetname,
+                                             self.ground_truth_label, os.path.splitext(self.img_name)[0] + "_heatmap.png")
+            x = Image.open(heatmap_directory).convert(mode)
+        else:
+            x = Image.open(self.img_path).convert(mode)
         if img_size is not None:
             x = x.resize((img_size, img_size))
         x = np.array(x, dtype=np.float64)
