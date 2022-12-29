@@ -912,12 +912,12 @@ if __name__ == '__main__':
     # dataset_to_use = "mnist_1247"
     # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn_seed3871",  # TOP_N_NMNH
     #                  type_of_model="cnn", distance_measure='SSIM-pushed', raw=False, distance_on_image=True)
-
-    dataset_to_use = "oct_cc"  # input("Which data set? [mnist_1247/oct_cc] ")
-    distance_measure = "SSIM-threshold"  # input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/SSIM-threshold/CW-SSIM/euclidean/cosine/manhatten] ")
-    df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                      suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance_measure,
-                                      use_prediction=True, raw=False, distance_on_image=True)
+    #
+    # dataset_to_use = "oct_cc"  # input("Which data set? [mnist_1247/oct_cc] ")
+    # distance_measure = "SSIM-threshold"  # input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/SSIM-threshold/CW-SSIM/euclidean/cosine/manhatten] ")
+    # df = nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                                   suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance_measure,
+    #                                   use_prediction=True, raw=False, distance_on_image=True)
     # print(df.describe())
     # print(df.head())
 
