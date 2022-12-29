@@ -362,12 +362,15 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, model=None, top_n: in
 
     hit_class_data_entry = list(filter(lambda x: x.ground_truth_label == pred_label, data))
 
+    # SSIM/CW-SSIM + not raw => NHNM on LRP
+    # any distance + raw => NHNM on raw image data
     if distance_measure in ['SSIM', 'CW-SSIM'] or distance_on_image:
         scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distance_score_on_image(hit_class_data_entry,
                                                                                          test_dataentry, model, pred_label,
                                                                                          top_n=top_n, dist=distance_measure,
                                                                                          return_data_entry_ranked=True,
                                                                                          image=not raw)
+    #
     else:
         _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
@@ -718,7 +721,23 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
 
 
 def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
-                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False):
+                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False, maxiter=-1):
+    """ Calculates NHNMs for given parameters and saves results in DataFrames in lots of small pickle files
+
+    Dataset is walked through with a for loop in a random manner since some datasets might be too big to evaluate as
+    a whole and thus one can break after a certain amount.
+
+    :param dataset: str, folder name of dataset
+    :param suffix_path: str, suffix path of saved model
+    :param type_of_model: str, cnn/vgg, type of model
+    :param distance_measure: str, distance measure on which NHNM shall be calculated
+    :param top_n: int, number of NHNM which shall be calculated
+    :param use_prediction: bool, use prediction of model for calculation of NHNM, if False the groundtruth will be used
+    :param raw: bool, use raw image data to calculate NHNM on
+    :param distance_on_image: bool, calculate NHNM on basis of the image, if False FE will be used
+    :param maxiter: int, maximum number of iterations, if -1 all dataentries will be evaluated, maxiter * 5 = number of evaluated dataentries
+    :return: DataFrame of last dataentries with NHNM and stats
+    """
 
     from dataset import DataSet
     from modelsetup import ModelSetup, load_model_from_folder
@@ -777,6 +796,9 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
         picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
             use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter+1)
         picklepath = os.path.join(STATIC_DIR, picklename+".pickle")
+        # mechanism for continuing NHNM calculation after stop
+        # check if pickle path already exists, if not NHNM will be run
+        # if yes name of image will be saved and after 5 images we begin a new round and set counter+=1
         if os.path.exists(picklepath):
             test_names.append(test_dataentry.img_path)
             if len(test_names) == 5:
@@ -795,17 +817,17 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
 
         # print("Calculating Near Hits ...")
         scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(test_dataentry, pred_label,
-                                                                               data.data, fe,
-                                                                               sel_model, top_n,
-                                                                               distance_measure,
-                                                                               raw, distance_on_image)
+                                                                             data.data, fe,
+                                                                             sel_model, top_n,
+                                                                             distance_measure,
+                                                                             raw, distance_on_image)
         if BINARY:
             # print("Calculating Near Misses ...")
             scores_nearest_miss, ranked_nearest_miss_data_entry = get_nearest_miss(test_dataentry,
-                                                                                     pred_label, data.data,
-                                                                                     fe, sel_model, top_n,
-                                                                                     distance_measure,
-                                                                                     raw, distance_on_image)
+                                                                                   pred_label, data.data,
+                                                                                   fe, sel_model, top_n,
+                                                                                   distance_measure,
+                                                                                   raw, distance_on_image)
             near_misses.append([dataentry.img_path for dataentry in ranked_nearest_miss_data_entry])
             all_scores_nearest_miss.append(scores_nearest_miss)
         # gets top_n near misses per class instead of over all
@@ -821,12 +843,12 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
         test_names.append(test_dataentry.img_path)
         near_hits.append([dataentry.img_path for dataentry in ranked_nearest_hit_data_entry])
         all_scores_nearest_hits.append(scores_nearest_hit)
-        # if counter == 3:
-        #     break
+
+        # every 5 images save stats and set counter +=1
         if len(test_names) == 5:
             counter = counter + 1
             print(counter*5)
-            # safe in between
+            # save in between
             df = pd.DataFrame({"image_name": test_names,
                                "near_hits": near_hits,
                                "scores_hits": all_scores_nearest_hits,
@@ -837,7 +859,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
                 "{}h {}min {}sec ".format(np.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
                                           ((toc - tic) % 60)))
 
-            # safe dataframe as pickle
+            # save dataframe as pickle
             picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
                 use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter)
             picklepath = os.path.join(STATIC_DIR, picklename)
@@ -849,6 +871,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
             near_misses = []
             all_scores_nearest_miss = []
 
+    # number of dataentries might not be modulo 5 -> save results of last dataentries
     df = pd.DataFrame({"image_name": test_names,
                        "near_hits": near_hits,
                        "scores_hits": all_scores_nearest_hits,
