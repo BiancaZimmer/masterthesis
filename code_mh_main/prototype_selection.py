@@ -149,7 +149,11 @@ class PrototypesSelector:
             if self.use_image_embeddings:
                 X1 = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data)))])
                 X2 = np.array([item.feature_embedding.flatten().astype(float) for index, item in enumerate(self.prototypes_per_class[available_class])])
-
+            elif self.use_lrp:  # LRP
+                X1 = np.array([item.image_numpy(img_size=self.sel_size, lrp=True).flatten() for index, item in enumerate(
+                    list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data)))])
+                X2 = np.array([item.image_numpy(img_size=self.sel_size, lrp=True).flatten() for index, item in
+                               enumerate(self.prototypes_per_class[available_class])])
             else:
                 X1 = np.array([item.image_numpy(img_size=self.sel_size).flatten() for index, item in enumerate(list(filter(lambda x: x.ground_truth_label == available_class, self.dataset.data)))])
                 X2 = np.array([item.image_numpy(img_size=self.sel_size).flatten() for index, item in enumerate(self.prototypes_per_class[available_class])])
@@ -204,6 +208,10 @@ class PrototypesSelector:
             X_train = np.array([item.feature_embedding.flatten().astype(float) for available_class in eval_classes
                                 for item in self.prototypes_per_class[available_class]])
             X_test = np.array([item.feature_embedding.flatten().astype(float) for item in self.dataset.data_t])
+        elif self.use_lrp:
+            X_train = np.array([item.image_numpy(img_size=self.sel_size, lrp=True).flatten() for available_class in eval_classes
+                                for item in self.prototypes_per_class[available_class]])
+            X_test = np.array([item.image_numpy(img_size=self.sel_size, lrp=True).flatten() for item in self.dataset.data_t])
         else:
             X_train = np.array([item.image_numpy(img_size=self.sel_size).flatten() for available_class in eval_classes
                                 for item in self.prototypes_per_class[available_class]])
@@ -298,7 +306,10 @@ class PrototypesSelector:
         if not os.path.exists(DIR_PROTOTYPES_DATASET):
             os.makedirs(DIR_PROTOTYPES_DATASET)
 
-        protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(self.num_prototypes) + '.json')
+        if self.use_lrp:
+            protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(self.num_prototypes) + "_lrp" + '.json')
+        else:
+            protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(self.num_prototypes) + '.json')
 
         protos_img_files = self.get_prototypes_img_files()
 
@@ -357,7 +368,10 @@ class PrototypesSelector_KMedoids(BaseEstimator, PrototypesSelector):
             if self.use_image_embeddings:
                 X = np.array([item.feature_embedding.flatten().astype(float)
                               for index, item in enumerate(data_per_class[available_class])])
-            else:
+            elif self.use_lrp: # LRP
+                X = np.array([item.image_numpy(img_size=self.sel_size, lrp=True).flatten()
+                              for index, item in enumerate(data_per_class[available_class])])
+            else:  # raw
                 X = np.array([item.image_numpy(img_size=self.sel_size).flatten()
                               for index, item in enumerate(data_per_class[available_class])])
 
@@ -563,6 +577,8 @@ def gridsearch_crossval_forMMD(dataset_to_use: str, suffix_path: str, type_of_mo
     :param save_path: str, path+name where screeplot will be saved to
     :return: None
     """
+
+    from modelsetup import get_output_layer
 
     if scree_params is None:
         scree_params = {"gamma": [None],
