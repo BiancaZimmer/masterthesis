@@ -792,6 +792,10 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     all_scores_nearest_miss = []
     counter = 0
     for test_dataentry in random.sample(data.data_t, len(data.data_t)):
+        # check if maxiter has been reached and break for loop
+        if counter == maxiter:
+            print("Maximum iteration of "+str(maxiter)+" reached")
+            break
         # check if data is already present -> we can jump ahead (only possible with seed set)
         picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
             use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter+1)
