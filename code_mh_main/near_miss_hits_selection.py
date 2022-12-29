@@ -724,7 +724,8 @@ def get_nhnm_overview(dataset, suffix_path="_multicnn", type_of_model="cnn", dis
 
 
 def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
-                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False, maxiter=-1):
+                      top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False, maxiter=-1,
+                                 save_prefix=""):
     """ Calculates NHNMs for given parameters and saves results in DataFrames in lots of small pickle files
 
     Dataset is walked through with a for loop in a random manner since some datasets might be too big to evaluate as
@@ -739,6 +740,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     :param raw: bool, use raw image data to calculate NHNM on
     :param distance_on_image: bool, calculate NHNM on basis of the image, if False FE will be used
     :param maxiter: int, maximum number of iterations, if -1 all dataentries will be evaluated, maxiter * 5 = number of evaluated dataentries
+    :param save_prefix: str, prefix which can be given to the name where pickles will be saved, one can also specify a path here
     :return: DataFrame of last dataentries with NHNM and stats
     """
 
@@ -747,10 +749,18 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
 
     tic = time.time()
 
+    # if no prefex is given use default prefix of parameters
+    if save_prefix == "":
+        save_prefix = "_usepred"+str(use_prediction)+"_raw"+str(raw)+"_distonimg"+str(distance_on_image)
+
     # Load the first model
     # Initialize Feature Extractor Instance
     options_cnn = True if type_of_model == "cnn" else False
-    tmp_model = load_model_from_folder(dataset, suffix_path=suffix_path)
+    if suffix_path == "":
+        tmp_model = None  # if no suffix path is specified a pretrained VGG16 model ist used
+        type_of_model = "vgg"
+    else:
+        tmp_model = load_model_from_folder(dataset, suffix_path=suffix_path)
     fe = FeatureExtractor(loaded_model=tmp_model,
                           model_name=str.upper(type_of_model),
                           options_cnn=options_cnn,
@@ -800,8 +810,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
             print("Maximum iteration of "+str(maxiter)+" reached")
             break
         # check if data is already present -> we can jump ahead (only possible with seed set)
-        picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
-            use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter+1)
+        picklename = save_prefix + "_" + dataset + suffix_path + "_" + distance_measure + "_" + str(counter+1)
         picklepath = os.path.join(STATIC_DIR, picklename+".pickle")
         # mechanism for continuing NHNM calculation after stop
         # check if pickle path already exists, if not NHNM will be run
@@ -867,8 +876,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
                                           ((toc - tic) % 60)))
 
             # save dataframe as pickle
-            picklename = dataset + suffix_path + "_" + distance_measure + "_usepred" + str(
-                use_prediction) + "_raw" + str(raw) + "_distonimg" + str(distance_on_image) + "_" + str(counter)
+            picklename = save_prefix + "_" + dataset + suffix_path + "_" + distance_measure + "_" + str(counter)
             picklepath = os.path.join(STATIC_DIR, picklename)
             df.to_pickle(picklepath + ".pickle")
             # clean workspace
@@ -890,7 +898,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
                                     ((toc - tic) % 60)))
 
     # safe dataframe as pickle
-    picklename = dataset+suffix_path+"_"+distance_measure+"_usepred"+str(use_prediction)+"_raw"+str(raw)+"_distonimg"+str(distance_on_image)+"_"+str(counter)
+    picklename = save_prefix + "_" + dataset + suffix_path + "_" + distance_measure + "_" + str(counter)
     picklepath = os.path.join(STATIC_DIR, picklename)
     df.to_pickle(picklepath+".pickle")
 
@@ -912,6 +920,104 @@ if __name__ == '__main__':
                                       use_prediction=True, raw=False, distance_on_image=True)
     # print(df.describe())
     # print(df.head())
+
+    # # ============= Evaluation code for master thesis ==============
+    # suffix_path="_cnn_seed3871"  -> trained model
+    # suffix_path="" -> VGG
+
+    # # MNIST
+    dataset_to_use = "mnist_1247"
+    # # raw Data 000
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0001")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0001")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0001")
+
+    # # FE 010
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=20, save_prefix="NHNM/0100")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=20, save_prefix="NHNM/0101")
+
+    # # LRP 001
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/0010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/0011")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/0010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/0011")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/0010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/0011")
+
+    # # OCT
+    dataset_to_use = "oct_cc"
+    # # raw Data 100
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/1000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/1001")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/1000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/1001")
+
+    # # FE 110
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=20, save_prefix="NHNM/1100")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=20, save_prefix="NHNM/1101")
+
+    # # LRP 101
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/1010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/1011")
+
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/1010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=20, save_prefix="NHNM/1011")
 
 
 ###
