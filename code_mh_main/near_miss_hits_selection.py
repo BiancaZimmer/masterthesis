@@ -87,7 +87,7 @@ def calc_distances_scores_on_fe(class_data_entry_list, feature_vector, top_n: in
 
 
 def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, outputlabel, top_n: int = 5,
-                                 dist: str = 'SSIM', image: bool = True,
+                                 dist: str = 'SSIM', use_lrp: bool = True,
                                  return_data_entry_ranked: bool = False, plot_idx: bool = False):
     """
 
@@ -101,8 +101,8 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
     :type top_n: int, optional
     :param dist: Distance applied to images, e.g. 'SSIM'/'CW-SSIM', defaults to 'SSIM'
     :type dist: str
-    :param image: base the distance measurement on the lrp heatmaps (True) or on the raw images (False), defaults to True
-    :type image: bool
+    :param use_lrp: base the distance measurement on the lrp heatmaps (True) or on the raw images (False), defaults to True
+    :type use_lrp: bool
     :param return_data_entry_ranked: Set True in order to get a list of the DataEntries of the nearest samples, defaults to False
     :type return_data_entry_ranked: bool, optional
     :param plot_idx: Set to True in order to plot the indices of the nearest data samples, defaults to False
@@ -170,7 +170,7 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
 
         return array
 
-    if image:
+    if use_lrp:
         dataset_to_use = str.split(class_data_entry_list[0].img_path, "/")[-4]
         heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', class_data_entry_list[0].fe.fe_model.name, dataset_to_use)
         image_names = [str.split(img.img_name, ".")[0] for img in class_data_entry_list]
@@ -366,21 +366,22 @@ def get_nearest_hits(test_dataentry, pred_label, data, fe, model=None, top_n: in
     # any distance + raw => NHNM on raw image data
     if distance_measure in ['SSIM', 'CW-SSIM'] or distance_on_image:
         scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distance_score_on_image(hit_class_data_entry,
-                                                                                         test_dataentry, model, pred_label,
-                                                                                         top_n=top_n, dist=distance_measure,
+                                                                                         test_dataentry, model,
+                                                                                         pred_label,
+                                                                                         top_n=top_n,
+                                                                                         dist=distance_measure,
                                                                                          return_data_entry_ranked=True,
-                                                                                         image=not raw)
-    #
+                                                                                         use_lrp=not raw)
+    # comparison on feature embeddings (FE)
     else:
         _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
 
-        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores_on_fe(hit_class_data_entry, feature_vector,
+        scores_nearest_hit, ranked_nearest_hit_data_entry = calc_distances_scores_on_fe(hit_class_data_entry,
+                                                                                        feature_vector,
                                                                                         top_n=top_n,
                                                                                         dist=distance_measure,
                                                                                         return_data_entry_ranked=True)
-        # TODO add parameter for raw FE/image comparison
-
     return scores_nearest_hit, ranked_nearest_hit_data_entry
 
 
@@ -411,13 +412,17 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, model=None, top_n: in
     """
     miss_class_data_entry = list(filter(lambda x: x.ground_truth_label != pred_label, data))
 
+    # SSIM/CW-SSIM + not raw => NHNM on LRP
+    # any distance + raw => NHNM on raw image data
     if (distance_measure in ['SSIM', 'CW-SSIM']) or distance_on_image:
         scores_nearest_miss, ranked_nearest_miss__data_entry = calc_distance_score_on_image(miss_class_data_entry,
-                                                                                            test_dataentry, model, pred_label,
+                                                                                            test_dataentry, model,
+                                                                                            pred_label,
                                                                                             top_n=top_n,
                                                                                             dist=distance_measure,
                                                                                             return_data_entry_ranked=True,
-                                                                                            image=not raw)
+                                                                                            use_lrp=not raw)
+    # comparison on feature embeddings (FE)
     else:
         _, x = fe.load_preprocess_img(test_dataentry.img_path)
         feature_vector = fe.extract_features(x)
@@ -426,8 +431,6 @@ def get_nearest_miss(test_dataentry, pred_label, data, fe, model=None, top_n: in
                                                                                            feature_vector, top_n=top_n,
                                                                                            dist=distance_measure,
                                                                                            return_data_entry_ranked=True)
-        # TODO add parameter for raw FE/image comparison
-
     return scores_nearest_miss, ranked_nearest_miss__data_entry
 
 
@@ -897,17 +900,10 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
 
 
 if __name__ == '__main__':
+    # # ============= Sample usages ==============
     # dataset_to_use = "mnist_1247"
-
     # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn_seed3871",  # TOP_N_NMNH
     #                  type_of_model="cnn", distance_measure='SSIM-pushed', raw=False, distance_on_image=True)
-
-    # dataset_to_use = "oct_cc"  # model_history_oct_cc_cnn_seed3871
-    # get_nhnm_overview(dataset_to_use, top_n=TOP_N_NMNH, use_prediction=True, suffix_path="_cnn_seed3871",  # TOP_N_NMNH
-    #                   type_of_model="cnn", distance_measure='SSIM-threshold', raw=False, distance_on_image=True)
-
-    # dist == 'CW-SSIM' # Very slow algorithm - up to 50x times slower than SIFT or SSIM. but good results
-    # dist == SSIM # Default SSIM implementation of Scikit-Image # quick
 
     dataset_to_use = "oct_cc"  # input("Which data set? [mnist_1247/oct_cc] ")
     distance_measure = "SSIM-threshold"  # input("Distance Measure [SSIM/SSIM-pushed/SSIM-mm/SSIM-blur/SSIM-threshold/CW-SSIM/euclidean/cosine/manhatten] ")

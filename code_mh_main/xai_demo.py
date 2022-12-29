@@ -2,7 +2,7 @@
 """
 
 from flaskutil import FlaskApp
-from flask import Flask, request, g, jsonify   # TODO look up what g is
+from flask import Flask, request, g, jsonify
 from flask.templating import render_template, render_template_string
 import os
 import json
