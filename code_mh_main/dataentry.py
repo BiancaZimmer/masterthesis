@@ -138,15 +138,21 @@ class DataEntry:
         # part answer: not the same since axes are not expanded
         if lrp:
             datasetname = str.split(self.img_path, "/")[-4]
-            heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', self.fe.fe_model.name, datasetname,
-                                             self.ground_truth_label, os.path.splitext(self.img_name)[0] + "_heatmap.png")
+            if str.split(self.img_path, "/")[-3] == "test":
+                heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', self.fe.fe_model.name, datasetname, "test",
+                                                 self.ground_truth_label,
+                                                 os.path.splitext(self.img_name)[0] + "_heatmap.png")
+            else:
+                heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', self.fe.fe_model.name, datasetname,
+                                                 self.ground_truth_label,
+                                                 os.path.splitext(self.img_name)[0] + "_heatmap.png")
             x = Image.open(heatmap_directory).convert(mode)
         else:
             x = Image.open(self.img_path).convert(mode)
         if img_size is not None:
             x = x.resize((img_size, img_size))
         x = np.array(x, dtype=np.float64)
-        #Normalize to [0,1]
+        # Normalize to [0,1]
         x /= 255.
         # print(np.shape(x))
         return x
