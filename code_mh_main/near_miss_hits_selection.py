@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import distance
 import cv2
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from keras.applications.vgg16 import VGG16
 import pickle
 
 import ssim.ssimlib as pyssim
@@ -759,12 +760,15 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     if suffix_path == "":
         tmp_model = None  # if no suffix path is specified a pretrained VGG16 model ist used
         type_of_model = "vgg"
+        fe = FeatureExtractor(loaded_model=tmp_model,
+                              model_name=str.upper(type_of_model),
+                              options_cnn=False)
     else:
         tmp_model = load_model_from_folder(dataset, suffix_path=suffix_path)
-    fe = FeatureExtractor(loaded_model=tmp_model,
-                          model_name=str.upper(type_of_model),
-                          options_cnn=options_cnn,
-                          feature_model_output_layer=get_output_layer(tmp_model, type_of_model))
+        fe = FeatureExtractor(loaded_model=tmp_model,
+                              model_name=str.upper(type_of_model),
+                              options_cnn=options_cnn,
+                              feature_model_output_layer=get_output_layer(tmp_model, type_of_model))
     data = DataSet(dataset, fe)
 
     # if distance measure requires feature embedding check whether all are created and if not -> create them
@@ -789,7 +793,11 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     else:
         sel_model = ModelSetup(data)
     sel_model._preprocess_img_gen()
-    sel_model.set_model(suffix_path=suffix_path)
+    if suffix_path == "":
+        sel_model.model = VGG16(weights='imagenet', include_top=True)
+        use_prediction = False
+    else:
+        sel_model.set_model(suffix_path=suffix_path)
 
     if type_of_model == 'cnn':
         sel_model.mode_rgb = False
@@ -928,9 +936,9 @@ if __name__ == '__main__':
     # # MNIST
     dataset_to_use = "mnist_1247"
     # # raw Data 000
-    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
-                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0000")
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0000")
     nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
                                  suffix_path="", type_of_model="vgg", distance_measure="euclidean",
                                  use_prediction=True, raw=True, distance_on_image=True, maxiter=20, save_prefix="NHNM/0001")
