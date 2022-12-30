@@ -682,17 +682,17 @@ if __name__ == "__main__":
     # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1100")
     # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1101")
 
-    # With LRP
-    params = {"gamma": [None],
-                    "use_image_embeddings": [False],
-                    "use_lrp": [True],
-                    "num_prototypes": list(range(1, 16))}
-
+    # # With LRP
+    # params = {"gamma": [None],
+    #                 "use_image_embeddings": [False],
+    #                 "use_lrp": [True],
+    #                 "num_prototypes": list(range(1, 16))}
+    #
     # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010")
     # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011")
-
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010")
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011")
+    #
+    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010")
+    # gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011")
 
 
     # # =========== Find best gamma values ===========
@@ -765,52 +765,33 @@ if __name__ == "__main__":
                     "use_lrp": [True],
                     "num_prototypes": [3]}
 
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010_g3")
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011_g3")
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010_g3")
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011_g3")
 
-    ## gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010_g3")
-    ## gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011_g3")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010_g3")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011_g3")
 
     params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
                     "use_image_embeddings": [False],
                     "use_lrp": [True],
                     "num_prototypes": [4]}
 
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010_g4")
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011_g4")
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010_g4")
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011_g4")
+
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010_g4")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011_g4")
 
     params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
                     "use_image_embeddings": [False],
                     "use_lrp": [True],
                     "num_prototypes": [5]}
 
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010_g5")
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011_g5")
-
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
-                    "use_image_embeddings": [False],
-                    "use_lrp": [True],
-                    "num_prototypes": [6]}
-
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010_g6")
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011_g6")
-
-    # optional for LRP if enough time
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
-                    "use_image_embeddings": [False],
-                    "use_lrp": [True],
-                    "num_prototypes": [5]}
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/0010_g5")
+    # gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/0011_g5")
 
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010_g5")
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011_g5")
-
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
-                    "use_image_embeddings": [False],
-                    "use_lrp": [True],
-                    "num_prototypes": [8]}
-
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn', scree_params=params, save_path="static/1010_g8")
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params, save_path="static/1011_g8")
 
     # #=========== Save all prototypes locally with tuned parameters ===========
     # TODO: array with gammas, num_prototypes, ... for loop -> save
