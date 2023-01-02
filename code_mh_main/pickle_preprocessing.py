@@ -221,3 +221,87 @@ for df in oct_df:
     print(picklepath)
     oct_df[df].to_pickle(picklepath + ".pickle")
 # -
+
+# # Final run
+# ## Combine Pickles
+
+# +
+path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
+
+# 0000_mnist_1247_cnn_seed3871_euclidean
+# 0000_mnist_1247_cnn_seed3871_SSIM
+# 0000_mnist_1247_cnn_seed3871_CW-SSIM
+
+# 0001_mnist_1247_euclidean
+# 0001_mnist_1247_SSIM
+# 0001_mnist_1247_CW-SSIM
+
+# 0010_mnist_1247_cnn_seed3871_euclidean
+# 0010_mnist_1247_cnn_seed3871_SSIM
+# 0010_mnist_1247_cnn_seed3871_CW-SSIM
+
+# 0011_mnist_1247_euclidean
+# 0011_mnist_1247_SSIM
+# CW-SSIM missing too long runtime
+
+# 0100_mnist_1247_cnn_seed3871_euclidean
+# 0101_mnist_1247_euclidean
+
+
+# 1000_oct_cc_cnn_seed3871_euclidean
+# 1000_oct_cc_cnn_seed3871_SSIM
+# 1001_oct_cc_euclidean
+# # 1001_oct_cc_SSIM
+
+
+
+m0000_eucl = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_euclidean", range(1, 21))
+m0000_ssim = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_SSIM", range(1, 21))
+m0000_cw = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_CW-SSIM", range(1, 21))
+
+m0001_eucl = combine_pickle(path_base + "0001_mnist_1247_euclidean", range(1, 21))
+m0001_ssim = combine_pickle(path_base + "0001_mnist_1247_SSIM", range(1, 21))
+m0001_cw = combine_pickle(path_base + "0001_mnist_1247_CW-SSIM", range(1, 21))
+
+m0010_eucl = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_euclidean", range(1, 21))
+m0010_ssim = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_SSIM", range(1, 21))
+m0010_cw = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_CW-SSIM", range(1, 21))
+
+m0011_eucl = combine_pickle(path_base + "0011_mnist_1247_euclidean", range(1, 21))
+m0011_ssim = combine_pickle(path_base + "0011_mnist_1247_SSIM", range(1, 21))
+# m0011_cw = combine_pickle(path_base + "0011_mnist_1247_CW-SSIM", range(1, 21))
+
+m0100_eucl = combine_pickle(path_base + "0100_mnist_1247_cnn_seed3871_euclidean", range(1, 21))
+m0101_eucl = combine_pickle(path_base + "0101_mnist_1247_euclidean", range(1, 21))
+
+
+# o1000_eucl = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_euclidean", range(1, 21))
+# o1000_ssim = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_SSIM", range(1, 21))
+
+# o1001_eucl = combine_pickle(path_base + "1001_oct_cc_euclidean", range(1, 21))
+# o1001_ssim = combine_pickle(path_base + "1001_oct_cc_SSIM", range(1, 21))
+# -
+
+all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
+          "0001_eucl": m0001_eucl, "0001_ssim": m0001_ssim, "0001_cw": m0001_cw,
+          "0010_eucl": m0010_eucl, "0010_ssim": m0010_ssim, "0010_cw": m0010_cw,
+          "0011_eucl": m0011_eucl, "0011_ssim": m0011_ssim, # "0011_cw": m0011_cw,
+          "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl #, 
+          # "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
+          # "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
+         }
+
+# ## Add top Misses for all df
+
+for df in all_df:
+    add_top_misses(all_df[df])
+
+# ## Save new pickles
+
+for df in all_df:
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/" + df + \
+                 "_FINAL100"
+    print(picklepath)
+    all_df[df].to_pickle(picklepath + ".pickle")
+
+
