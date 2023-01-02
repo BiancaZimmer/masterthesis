@@ -319,6 +319,7 @@ class PrototypesSelector:
         protos_img_files = self.get_prototypes_img_files()
 
         if os.path.exists(protos_file):
+            print(protos_file)
             print('[!!!] A file already exists! Please delete this file to save again prototypes of these settings.')
         else:
             # np.save(protos_file, protos_img_files)
