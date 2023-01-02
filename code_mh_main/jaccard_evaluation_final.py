@@ -33,6 +33,16 @@ set_seed(RANDOMSEED)
 
 # +
 def humanfriendly_trafo(path):
+    """ transforms a path and returns the last element (file name) of the path
+
+    Takes as input:
+     str (path)
+     list of str
+     list of list of str
+
+    :param path: str or list, path to be transformed
+    :return: file names of input paths in input format
+    """
     if type(path) is str:
         return path.split("/")[-1]
     elif type(path[0]) is str:
@@ -42,6 +52,12 @@ def humanfriendly_trafo(path):
 
 
 def show_humanfriendly(df, columns=["image_name", "near_hits", "near_misses", "top_misses"]):
+    """
+
+    :param df: pandas.DataFrame, DataFrame which shall be shown in an easily readable manner
+    :param columns: list, list of column names which shall be transformed
+    :return: pandas.DataFrame with shortened paths
+    """
     dfh = df.copy()
     for c in columns:
         dfh[c] = [humanfriendly_trafo(row) for row in df[c]]
@@ -51,6 +67,13 @@ def show_humanfriendly(df, columns=["image_name", "near_hits", "near_misses", "t
 # -
 
 def jaccard_df(df1, df2, method="intersection"):
+    """ Calculates Jaccard Index over whole dataframe per row, best put in two column vectors
+
+    :param df1: pandas.DataFrame, first df to be compared
+    :param df2: pandas.DataFrame, second df to be compared to df2
+    :param method: str, method according to function **jaccard**
+    :return: column vector with Jaccard Indeices
+    """
     if type(df1[0][0]) is list:
         result = [jaccard(list(chain.from_iterable(l1)), list(chain.from_iterable(l2)), method) for
                   l1, l2 in zip(df1, df2)]
@@ -61,9 +84,6 @@ def jaccard_df(df1, df2, method="intersection"):
 
 
 # ## Load pickles
-
-mnist_eucl = pd.read_pickle(path_base+"mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_FINAL100.pickle")
-
 
 # +
 path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
@@ -109,27 +129,20 @@ mnist_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_c
 
 # ## Overview over distance scores
 
-# +
-# metrics
-metrics = ["eucl", "SSIM", "CW-SSIM", # 0000
-          "eucl", "SSIM", "CW-SSIM",  # 0001
-          "eucl", "SSIM", "CW-SSIM",  # 0010
-          "eucl", "SSIM",             # 0011
-          "eucl", "eucl"]             # 0101 and # 0100
-eucl = [0, 3, 6, 9, 11, 12]
-ssim = [1, 4, 7, 10]
-cw = [2, 5, 8]
-
-# column names
+# generate column names
 scores_names = []
 scores_top_names = []
 for m in mnist_df:
     scores_names.append("scores_hit_"+m)
     scores_top_names.append("scores_top_misses_"+m)
 scores_top_names
-# -
 
 # ### MNIST
+
+# metrics
+eucl = [0, 3, 6, 9, 11, 12]
+ssim = [1, 4, 7, 10]
+cw = [2, 5, 8]
 
 # +
 mnist_scores = pd.DataFrame()
@@ -186,14 +199,16 @@ oct_scores.describe()
 
 oct_scores.boxplot(column=scores_names[:-1], rot= 10)
 
-# oct_scores.boxplot(column=scores_names[1:-1], rot= 10)
+oct_scores.boxplot(column=scores_names[1:-1], rot= 10)
 
 oct_scores.boxplot(column=scores_top_names[:-1], rot= 10)
 
-# oct_scores.boxplot(column=scores_top_names[1:-1], rot= 10)
+oct_scores.boxplot(column=scores_top_names[1:-1], rot= 10)
 
 
 # #### Results:
+#
+# old:
 # Similar to those of the MNIST dataset
 #
 # Probably need more values to varify this but runtime too long
@@ -222,16 +237,17 @@ def jaccard_nhnmtm(df1, df2, group=None, df1_name=None, df2_name=None):
 # ### MNIST
 
 # +
+# calculate Jaccard Indeces for every combination of DataFrames
 jaccards = pd.DataFrame()
 for m1, df1 in mnist_df.items():
     for m2, df2 in mnist_df.items():
         # print(m1+"_"+m2)
-        if m1 == m2:
+        if m1 == m2:  # if compare DataFrame to itself -> continue
             continue
         try:
-            if m2+"_"+m1 in np.array(jaccards.group):
+            if m2+"_"+m1 in np.array(jaccards.group):  # since jaccard(A,B) == jaccard(B,A) we can speed up by skipping
                 continue
-        except AttributeError:
+        except AttributeError:  # if it's the first time we compare these DataFrames it's okay to have an error
             pass
         new = jaccard_nhnmtm(df1, df2, group = m1+"_"+m2, df1_name=m1, df2_name=m2)
         jaccards = pd.concat([jaccards, new], ignore_index = True)
@@ -246,6 +262,7 @@ jaccards.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccar
                 figsize=(30,30), rot = 90, fontsize=20)
 
 # #### Result:
+# old:
 # * Since Jaccard index is a measure of similarity 0 means that A nad B are totally different
 # * Euclidean produces very different results from all SSIM metrics
 # * Maybe pushed and minmax are closes to each other
@@ -255,16 +272,17 @@ jaccards.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccar
 # ### OCT
 
 # +
+# calculate Jaccard Indeces for every combination of DataFrames
 jaccards_oct = pd.DataFrame()
 for m1, df1 in oct_df.items():
     for m2, df2 in oct_df.items():
         # print(m1+"_"+m2)
-        if m1 == m2:
+        if m1 == m2:  # if compare DataFrame to itself -> continue
             continue
         try:
-            if m2 + "_" + m1 in np.array(jaccards_oct.group):
+            if m2 + "_" + m1 in np.array(jaccards_oct.group):  # since jaccard(A,B) == jaccard(B,A) we can speed up by skipping
                 continue
-        except AttributeError:
+        except AttributeError:  # if it's the first time we compare these DataFrames it's okay to have an error
             pass
         new = jaccard_nhnmtm(df1, df2, group=m1 + "_" + m2, df1_name=m1, df2_name=m2)
         jaccards_oct = pd.concat([jaccards_oct, new], ignore_index=True)
@@ -281,6 +299,7 @@ jaccards_oct.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "ja
 
 
 # #### Results:
+# old:
 # * Similar to mnist, but more prominent
 # * Except for the SSIM-threshold which seems to not give similar results to any of the other metrics. Only for the overall misses there are some overlaps to SSIM
 # * This is different to the mnist dataset
