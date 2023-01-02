@@ -139,6 +139,8 @@ show_humanfriendly(mnist_SSIM)
 
 path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
 
+r = range(1, 21)
+
 # mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue
 # mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue
 # mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue
@@ -152,29 +154,23 @@ path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_
 # oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue
 # oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue
 
-mnist_eucl = combine_pickle(path_base + "mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue",
-                            range(1, 21))
-mnist_SSIM = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-mnist_SSIM_mm = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue",
-                               range(1, 21))
+mnist_eucl = combine_pickle(path_base + "mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue", r)
+mnist_SSIM = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", r)
+mnist_SSIM_mm = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue", r)
 mnist_SSIM_pushed = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue",
-                                   range(1, 21))
-mnist_SSIM_blur = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue",
-                                 range(1, 21))
-mnist_CW_SSIM = combine_pickle(path_base + "mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue",
-                               range(1, 21))
+                                   r)
+mnist_SSIM_blur = combine_pickle(path_base + "mnist_1247_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue", r)
+mnist_CW_SSIM = combine_pickle(path_base + "mnist_1247_cnn_seed3871_CW-SSIM_usepredTrue_rawFalse_distonimgTrue", r)
 mnist_SSIM_threshold = combine_pickle(
-    path_base + "mnist_1247_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
+    path_base + "mnist_1247_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue", r)
 
-oct_eucl = combine_pickle(path_base + "oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM_mm = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue", range(1, 21))
-oct_SSIM_pushed = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue",
-                                 range(1, 21))
-oct_SSIM_blur = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue",
-                               range(1, 21))
+oct_eucl = combine_pickle(path_base + "oct_cc_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue", r)
+oct_SSIM = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue", r)
+oct_SSIM_mm = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-mm_usepredTrue_rawFalse_distonimgTrue", r)
+oct_SSIM_pushed = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-pushed_usepredTrue_rawFalse_distonimgTrue", r)
+oct_SSIM_blur = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-blur_usepredTrue_rawFalse_distonimgTrue", r)
 oct_SSIM_threshold = combine_pickle(path_base + "oct_cc_cnn_seed3871_SSIM-threshold_usepredTrue_rawFalse_distonimgTrue",
-                                    range(1, 21))
+                                    r)
 
 # +
 # OCT-threshold was run on a different computer -> different paths
@@ -228,6 +224,8 @@ for df in oct_df:
 # +
 path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
 
+r = range(1, 11)
+
 # 0000_mnist_1247_cnn_seed3871_euclidean
 # 0000_mnist_1247_cnn_seed3871_SSIM
 # 0000_mnist_1247_cnn_seed3871_CW-SSIM
@@ -255,31 +253,31 @@ path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_
 
 
 
-m0000_eucl = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_euclidean", range(1, 21))
-m0000_ssim = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_SSIM", range(1, 21))
-m0000_cw = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_CW-SSIM", range(1, 21))
+m0000_eucl = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_euclidean", r)
+m0000_ssim = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_SSIM", r)
+m0000_cw = combine_pickle(path_base + "0000_mnist_1247_cnn_seed3871_CW-SSIM", r)
 
-m0001_eucl = combine_pickle(path_base + "0001_mnist_1247_euclidean", range(1, 21))
-m0001_ssim = combine_pickle(path_base + "0001_mnist_1247_SSIM", range(1, 21))
-m0001_cw = combine_pickle(path_base + "0001_mnist_1247_CW-SSIM", range(1, 21))
+m0001_eucl = combine_pickle(path_base + "0001_mnist_1247_euclidean", r)
+m0001_ssim = combine_pickle(path_base + "0001_mnist_1247_SSIM", r)
+m0001_cw = combine_pickle(path_base + "0001_mnist_1247_CW-SSIM", r)
 
-m0010_eucl = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_euclidean", range(1, 21))
-m0010_ssim = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_SSIM", range(1, 21))
-m0010_cw = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_CW-SSIM", range(1, 21))
+m0010_eucl = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_euclidean", r)
+m0010_ssim = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_SSIM", r)
+m0010_cw = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_CW-SSIM", r)
 
-m0011_eucl = combine_pickle(path_base + "0011_mnist_1247_euclidean", range(1, 21))
-m0011_ssim = combine_pickle(path_base + "0011_mnist_1247_SSIM", range(1, 21))
-# m0011_cw = combine_pickle(path_base + "0011_mnist_1247_CW-SSIM", range(1, 21))
+m0011_eucl = combine_pickle(path_base + "0011_mnist_1247_euclidean", r)
+m0011_ssim = combine_pickle(path_base + "0011_mnist_1247_SSIM", r)
+# m0011_cw = combine_pickle(path_base + "0011_mnist_1247_CW-SSIM", r)
 
-m0100_eucl = combine_pickle(path_base + "0100_mnist_1247_cnn_seed3871_euclidean", range(1, 21))
-m0101_eucl = combine_pickle(path_base + "0101_mnist_1247_euclidean", range(1, 21))
+m0100_eucl = combine_pickle(path_base + "0100_mnist_1247_cnn_seed3871_euclidean", r)
+m0101_eucl = combine_pickle(path_base + "0101_mnist_1247_euclidean", r)
 
 
-# o1000_eucl = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_euclidean", range(1, 21))
-# o1000_ssim = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_SSIM", range(1, 21))
+# o1000_eucl = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_euclidean", r)
+# o1000_ssim = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_SSIM", r)
 
-# o1001_eucl = combine_pickle(path_base + "1001_oct_cc_euclidean", range(1, 21))
-# o1001_ssim = combine_pickle(path_base + "1001_oct_cc_SSIM", range(1, 21))
+# o1001_eucl = combine_pickle(path_base + "1001_oct_cc_euclidean", r)
+# o1001_ssim = combine_pickle(path_base + "1001_oct_cc_SSIM", r)
 # -
 
 all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
@@ -303,5 +301,3 @@ for df in all_df:
                  "_FINAL100"
     print(picklepath)
     all_df[df].to_pickle(picklepath + ".pickle")
-
-
