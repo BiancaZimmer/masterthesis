@@ -304,7 +304,8 @@ class PrototypesSelector:
         :param name: str, extra name which can be given to the saved prototypes
         """
         if self.use_image_embeddings or self.use_lrp:
-            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dataset.fe.fe_model.name, self.dataset.name)
+            DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', self.dataset.fe.fe_model.name,
+                                                  self.dataset.name)
         else:
             DIR_PROTOTYPES_DATASET = os.path.join(MAIN_DIR, 'static/prototypes', "rawData", self.dataset.name)
 
@@ -314,7 +315,8 @@ class PrototypesSelector:
         if self.use_lrp:
             protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(self.num_prototypes) + "_lrp" + name + '.json')
         else:
-            protos_file = os.path.join(DIR_PROTOTYPES_DATASET, str(self.num_prototypes) + name + '.json')
+            protos_file = os.path.join(DIR_PROTOTYPES_DATASET,
+                                       str(self.num_prototypes) + "_" + self.dataset.fe.fe_model.name + name + '.json')
 
         protos_img_files = self.get_prototypes_img_files()
 
@@ -965,18 +967,18 @@ if __name__ == "__main__":
                                  "1001": [4, False, False, 224, 0.1],
                                  "1101": [4, True, False, 224, 1e-07],
                                  "1011": [4, False, True, 224, 0.01]}
-    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1) #
+    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1) #
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
 
     # ================ END of code for master thesis recreation ================
 
