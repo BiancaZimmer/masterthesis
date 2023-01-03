@@ -1034,19 +1034,19 @@ if __name__ == '__main__':
     #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
     #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
     #                              save_prefix="NHNM/1010")
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+    #                              save_prefix="NHNM/1011")
+    #
     nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/1010")  # running on 1
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
                                  use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
                                  save_prefix="NHNM/1011")  # will be running on 1
-    #
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/1010")  # will be running on 0
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="SSIM",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/1011")  # will be running on 0
 
 
 ###
