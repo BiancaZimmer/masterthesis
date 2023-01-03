@@ -816,6 +816,7 @@ def nhnm_calc_for_all_testimages(dataset, suffix_path="_multicnn", type_of_model
     for test_dataentry in random.sample(data.data_t, len(data.data_t)):
         # check if maxiter has been reached and break for loop
         if counter == maxiter:
+            counter = counter + 100
             print("Maximum iteration of "+str(maxiter)+" reached")
             break
         # check if data is already present -> we can jump ahead (only possible with seed set)
@@ -938,66 +939,66 @@ if __name__ == '__main__':
     # # MNIST
     dataset_to_use = "mnist_1247"
     # # raw Data 000
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
-    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0000")
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="euclidean",
-    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0001")
-    #
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
-    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0000")
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="SSIM",
-    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0001")
-    #
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="CW-SSIM",
-    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0000")
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="CW-SSIM",
-    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=20,
-    #                              save_prefix="NHNM/0001")
-    #
-    # # # FE 010
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
-    #                              use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0100")
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="euclidean",
-    #                              use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0101")
-    #
-    # # # LRP 001
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0010")
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="euclidean",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0011")
-    #
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0010")
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="", type_of_model="vgg", distance_measure="SSIM",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0011")
-    #
-    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="CW-SSIM",
-    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/0010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0001")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0001")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0000")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0001")
+
+    # # FE 010
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
+                                 save_prefix="NHNM/0100")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
+                                 save_prefix="NHNM/0101")
+
+    # # LRP 001
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0011")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0010")
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0011")
+
+    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="CW-SSIM",
+                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+                                 save_prefix="NHNM/0010")
     # TODO did not run --- too long run time
     # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
     #                              suffix_path="", type_of_model="vgg", distance_measure="CW-SSIM",
@@ -1014,15 +1015,15 @@ if __name__ == '__main__':
                                  suffix_path="", type_of_model="vgg", distance_measure="euclidean",
                                  use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
                                  save_prefix="NHNM/1001")
-
-    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
-                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-                                 save_prefix="NHNM/1000")
-    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                 suffix_path="", type_of_model="vgg", distance_measure="SSIM",
-                                 use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-                                 save_prefix="NHNM/1001")
+    #
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
+    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+    #                              save_prefix="NHNM/1000")
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="", type_of_model="vgg", distance_measure="SSIM",
+    #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
+    #                              save_prefix="NHNM/1001")
 
     # # FE 110
     nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
