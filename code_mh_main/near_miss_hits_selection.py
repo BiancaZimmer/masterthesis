@@ -171,37 +171,31 @@ def calc_distance_score_on_image(class_data_entry_list, test_data_entry, model, 
 
         return array
 
+    # outputlabel needs to be a string
+    if type(outputlabel) != str:
+        outputlabel = outputlabel[0]
+
     if use_lrp:
         dataset_to_use = str.split(class_data_entry_list[0].img_path, "/")[-4]
         heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', class_data_entry_list[0].fe.fe_model.name, dataset_to_use)
         image_names = [str.split(img.img_name, ".")[0] for img in class_data_entry_list]
-        # outputlabel needs to be a string
-        try:
-            image_paths_list = [os.path.join(heatmap_directory, outputlabel, name+"_heatmap.png") for name in image_names]
-        except TypeError:
-            image_paths_list = [os.path.join(heatmap_directory, outputlabel[0], name+"_heatmap.png") for name in image_names]
+        image_paths_list = [os.path.join(heatmap_directory, outputlabel, name+"_heatmap.png") for name in image_names]
         images = [cv2.imread(img, cv2.IMREAD_GRAYSCALE) for img in image_paths_list]
         # is equal to:
         # images = [np.squeeze(img_to_array(load_img(img, color_mode='grayscale'))) for img in image_paths_list]
         # print(images[0].shape)
 
         test_image_name = str.split(test_data_entry.img_name, ".")[0]
-        test_image_path = os.path.join(heatmap_directory, "test", outputlabel[0], test_image_name + "_heatmap.png")
+        test_image_path = os.path.join(heatmap_directory, "test", outputlabel, test_image_name + "_heatmap.png")
 
         if not os.path.exists(test_image_path):  # heatmap not yet created -> create heatmap
-            if not os.path.exists(os.path.join(heatmap_directory, "test", outputlabel[0])):
-                os.makedirs(os.path.join(heatmap_directory, "test", outputlabel[0]))
+            if not os.path.exists(os.path.join(heatmap_directory, "test", outputlabel)):
+                os.makedirs(os.path.join(heatmap_directory, "test", outputlabel))
             # calculate heatmap for testimage
             analyzer = create_special_analyzer(model.model, dataset_to_use)
-            # outputlabel needs to be a string
-            try:
-                outputneuron = model.labelencoder.transform(outputlabel[0])
-                img_test_heatmap = generate_LRP_heatmap(model.img_preprocess_for_prediction(test_data_entry), analyzer,
-                                                        outputneuron)
-            except ValueError:
-                outputneuron = model.labelencoder.transform(outputlabel)
-                img_test_heatmap = generate_LRP_heatmap(model.img_preprocess_for_prediction(test_data_entry), analyzer,
-                                                        outputneuron)
+            outputneuron = model.labelencoder.transform(outputlabel)
+            img_test_heatmap = generate_LRP_heatmap(model.img_preprocess_for_prediction(test_data_entry), analyzer,
+                                                    outputneuron)
             plt.imsave(test_image_path, img_test_heatmap)
         # print("saved ", outputneuron, "  label ", outputlabel)
         img_test = cv2.imread(test_image_path, cv2.IMREAD_GRAYSCALE)
@@ -1019,7 +1013,7 @@ if __name__ == '__main__':
     # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
     #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
     #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
-    #                              save_prefix="NHNM/1000")  # running on 0
+    #                              save_prefix="NHNM/1000")  # running on 0 // 40
     # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
     #                              suffix_path="", type_of_model="vgg", distance_measure="SSIM",
     #                              use_prediction=True, raw=True, distance_on_image=True, maxiter=maxiteration,
@@ -1030,21 +1024,20 @@ if __name__ == '__main__':
     #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
     #                              use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
     #                              save_prefix="NHNM/1100")
-    # TODO may not run - not enough memory
-    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                 suffix_path="", type_of_model="vgg", distance_measure="euclidean",
-                                 use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
-                                 save_prefix="NHNM/1101")
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="", type_of_model="vgg", distance_measure="euclidean",
+    #                              use_prediction=True, raw=False, distance_on_image=False, maxiter=maxiteration,
+    #                              save_prefix="NHNM/1101")
     #
     # # # LRP 101
-    nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
-                                 suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
-                                 use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-                                 save_prefix="NHNM/1010")
+    # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
+    #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="euclidean",
+    #                              use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
+    #                              save_prefix="NHNM/1010")
     nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
                                  suffix_path="", type_of_model="vgg", distance_measure="euclidean",
                                  use_prediction=True, raw=False, distance_on_image=True, maxiter=maxiteration,
-                                 save_prefix="NHNM/1011")
+                                 save_prefix="NHNM/1011")  # will be running on 1
     #
     # nhnm_calc_for_all_testimages(dataset_to_use, top_n=TOP_N_NMNH,
     #                              suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure="SSIM",
