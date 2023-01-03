@@ -132,6 +132,7 @@ mnist_SSIM = pd.read_pickle(
 add_top_misses(mnist_SSIM)
 show_humanfriendly(mnist_SSIM)
 
+# # For metric comparison
 # ## Combine pickles
 
 # +
@@ -218,13 +219,13 @@ for df in oct_df:
     oct_df[df].to_pickle(picklepath + ".pickle")
 # -
 
-# # Final run
+# # For final run
 # ## Combine Pickles
 
 # +
 path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
 
-r = range(1, 11)
+r = range(1, 10)
 
 # 0000_mnist_1247_cnn_seed3871_euclidean
 # 0000_mnist_1247_cnn_seed3871_SSIM
@@ -278,6 +279,15 @@ m0101_eucl = combine_pickle(path_base + "0101_mnist_1247_euclidean", r)
 
 # o1001_eucl = combine_pickle(path_base + "1001_oct_cc_euclidean", r)
 # o1001_ssim = combine_pickle(path_base + "1001_oct_cc_SSIM", r)
+
+# o1010_eucl = combine_pickle(path_base + "1010_oct_cc_cnn_seed3871_euclidean", r)
+# o1010_ssim = combine_pickle(path_base + "1010_oct_cc_cnn_seed3871_SSIM", r)
+
+# o1011_eucl = combine_pickle(path_base + "1011_oct_cc_euclidean", r)
+# o1011_ssim = combine_pickle(path_base + "1011_oct_cc_SSIM", r)
+
+# o1100_eucl = combine_pickle(path_base + "1100_oct_cc_cnn_seed3871_euclidean", r)
+# o1101_eucl = combine_pickle(path_base + "1101_oct_cc_euclidean", r)
 # -
 
 all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
@@ -287,6 +297,9 @@ all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
           "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl #, 
           # "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
           # "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
+          # "1010_eucl": o1010_eucl, "1010_ssim": o1010_ssim,
+          # "1011_eucl": o1011_eucl, "1011_ssim": o1011_ssim,
+          # "1100_eucl": o1100_eucl, "1101_eucl": o1101_eucl
          }
 
 # ## Add top Misses for all df
@@ -298,6 +311,8 @@ for df in all_df:
 
 for df in all_df:
     picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/" + df + \
-                 "_FINAL100"
+                 "_FINAL50"
     print(picklepath)
     all_df[df].to_pickle(picklepath + ".pickle")
+
+
