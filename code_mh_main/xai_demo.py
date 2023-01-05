@@ -70,7 +70,7 @@ def get_dataentry_by_img_path(data, img_path:str):
 
 # TODO: user input: which model to load
 # also change in dataset.get_dict_datasets_with_all_embeddings()
-suffix_path = "_cnn"
+suffix_path = "_cnn_seed3871"
 
 tic = time.time()
 
@@ -81,7 +81,7 @@ else:
     dataset_list = get_available_dataset()
 
 # List if local available datasets and their embeddings (global variable)
-dict_datasets_and_embeddings = get_dict_datasets_with_all_embeddings()
+dict_datasets_and_embeddings = get_dict_datasets_with_all_embeddings(suffix_path)
 
 dict_cnn_models = {}
 for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
@@ -99,9 +99,6 @@ for dataset_name, embedding_dict in dict_datasets_and_embeddings.items():
             dict_cnn_models[dataset_name] = ModelSetup(selected_dataset=value)
             dict_cnn_models[dataset_name]._preprocess_img_gen()
             dict_cnn_models[dataset_name].set_model(suffix_path=suffix_path)
-
-
-# use_CNN_feature_embedding = True
 
 toc = time.time()
 print("{}h {}min {}sec ".format(math.floor(((toc - tic) / (60 * 60))), np.floor(((toc - tic) % (60 * 60)) / 60),
@@ -237,7 +234,7 @@ class ExamplebasedXAIDemo(FlaskApp):
                              'content': render_template_string('<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">\
                                  <p>Image Name: <b>{{ g.test_img_path.split("test/")[1] }}</b></p>')},
                             {'elem': 'test-prediction','content':render_template_string('')},
-                            {'elem': 'nh-nm-images','content':render_template_string('')} ])  #,
+                            {'elem': 'nh-nm-images','content':render_template_string('')} ])  #,  TODO protos
                             # {'elem': 'protos-images', 'content':render_template_string('')}])
 
         elif id == 'classify-button' and type == 'onclick':
@@ -264,6 +261,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             g.nearest_hits = zip([x.img_path for x in ranked_nearest_hit_data_entry], scores_nearest_hit, ['nh_'+str(i+1) for i in range(top_n)])
             g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss, ['nm_'+str(i+1) for i in range(top_n)])
 
+            # TODO protos
             # # use_CNN_feature_embeddding = True
             # num_prototypes = 3
             # # if use_CNN_feature_embeddding:
@@ -286,6 +284,7 @@ class ExamplebasedXAIDemo(FlaskApp):
             # print("PROTOTYPES: ", prototypes_per_class)
 
             # TODO print img name, print actual label
+            # TODO protos
             return jsonify([
                 # '<img src="./static/{{ g.test_img_path }}" width="200px" height="200px">'
                 # g.test_img_path = value.split("static/")[1]
@@ -328,18 +327,19 @@ class ExamplebasedXAIDemo(FlaskApp):
             top_n = TOP_N_NMNH
 
             scores_nearest_hit, ranked_nearest_hit_data_entry = get_nearest_hits(self.test_dataentry, self.pred_label,
-                                                                                 self.data, self.fe, top_n,
-                                                                                 self.distance_measure, rgb=self.rgb)
+                                                                                 self.data, self.fe, self.cnn_model,
+                                                                                 top_n, self.distance_measure)
             scores_nearest_miss, ranked_nearest_miss__data_entry = get_nearest_miss(self.test_dataentry,
                                                                                     self.pred_label, self.data, self.fe,
-                                                                                    top_n, self.distance_measure,
-                                                                                    rgb=self.rgb)
+                                                                                    self.cnn_model, top_n,
+                                                                                    self.distance_measure)
 
             g.nearest_hits = zip([x.img_path for x in ranked_nearest_hit_data_entry], scores_nearest_hit,
                                  ['nh_' + str(i + 1) for i in range(top_n)])
             g.nearest_misses = zip([x.img_path for x in ranked_nearest_miss__data_entry], scores_nearest_miss,
                                    ['nm_' + str(i + 1) for i in range(top_n)])
 
+            # TODO protos
             # # use_CNN_feature_embeddding = True
             # num_prototypes = 3
             # # if use_CNN_feature_embeddding:
