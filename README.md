@@ -5,6 +5,7 @@ This is the repository to the master thesis of Bianca Zimmer
 You can find the full code here. For any questions please contact
 bianca-katharina.zimmer@stud.uni-bamberg.de
 or anyone at the institution of Cognitive Systems at University of Bamberg
+
 ---
 ## This repository is currently under construction, please bear in mind that especially the documentation is not yet completed!
 
@@ -53,13 +54,15 @@ Stands for _sort test train validation_. This is a helper Python file which can 
 into the correct folder structure for code_mh_main to sue.
 There is a little "How To" as a comment at the  beginning of the file
 
+---
+
 ## Best practice:
 To get the same results as in the master thesis you can follow the steps in 
-_code_mh_main/documentation/README.me_
+_code_mh_main/documentation/README.md_
 
 The general workflow is also represented as flow charts in _code_mh_main/documentation/_
 
-You can also follow these steps if you want to use your own dataset:
+You can follow these steps if you want to use your own dataset:
 
 1. Sort images via sort_ttv.py into the appropriate folders.
 `python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>`
