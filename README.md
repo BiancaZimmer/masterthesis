@@ -45,7 +45,7 @@ You have to set this ability in the utils.py file with the BINARY switch
 2. Added ability to generate LRP heatmaps via the innvestigate library and calculate near hits
 and near misses on their basis
 3. Changed the original CNN so it would be able to train it on the dataset of Kermany et. al (see above)
-4. Small changes on the XAI demonstrator 
+4. Deleted the XAI demonstrator since it was not compatible with the tensorflow versions anymore
 
 See own README.md for detailed information
 
@@ -68,7 +68,7 @@ You can follow these steps if you want to use your own dataset:
 `python3 sort_ttv.py <from imagedir> <to basedir> <testsplit> -s <validationsplit>`
 2. Change the _code_mh_main/utils.py_ file according to your needs
 3. Run `python3 code_mh_main/preprocessing.py` and follow the instructions on the command line
-4. Run `python3 xai_demo.py` to open the XAI demonstrator and view NHNMs of test images
+4. Run `python3 code_mh_main/jaccard_evaluation_final.py` to view NHNMs of test images
 
 Be aware that when running _code_mh_main/preprocessing.py_ there is no possibility to test any
 parameters. You should do this beforehand. E.g. find the best parameter for the number of prototypes

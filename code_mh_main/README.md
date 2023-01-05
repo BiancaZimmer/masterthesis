@@ -24,7 +24,6 @@
 ├── static                      || Folder for static files - e.g. data, embeddings, models
 ├── templates                   || Folder for html files of the FLASK app
 ├── utils.py
-└── xai_demo.py
 
 ```
 
@@ -45,8 +44,8 @@
 6. Create LRP Heatmaps `LRP_heatmaps.py`
 7. Create Prototypes `prototype_selection.py`
 8. Generate Near Hits & Near Misses `near_miss_hits_selection.py`
-9. Evaluation ``pickle_preprocessing.py`` and ``jaccard_evaluation``
-10. View NHNM in the demonstrator ``xai_demo.py``
+9. Evaluation ``pickle_preprocessing.py`` and ``jaccard_evaluation_final.py``
+10. View NHNM in ``jaccard_evaluation_final.py``
 
 Steps 2.-6. can be done via `preprocessing.py` if all parameters have been tried and tested before
 
