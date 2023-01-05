@@ -459,7 +459,7 @@ plt.close("all")
 # ## Plot certain images + maps
 
 def plot_nhnm_overview_from_input(lst,
-                                  dataset, suffix_path="_multicnn", type_of_model="cnn", distance_measure='cosine',
+                                  dataset, suffix_path="_multicnn", type_of_model="cnn", save_name='cosine',
                                   top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False
                                   ):
     """
@@ -540,8 +540,7 @@ def plot_nhnm_overview_from_input(lst,
         print("SCORES NEAREST HITS")
         print(pd.Series(scores_nearest_hit).describe())
     else:
-        # Plot random image + heatmap
-
+        # Plot image + heatmap
         heatmap_directory = os.path.join(STATIC_DIR, 'heatmaps', test_img.fe.fe_model.name, dataset)
 
         fig1 = plt.figure()
@@ -604,16 +603,16 @@ def plot_nhnm_overview_from_input(lst,
 
         # concatenate them
         pic_all = hconcat_resize_max([pic1, vconcat_resize_min([pic23, pic45])])
-        save_path = STATIC_DIR+"/"+test_img.img_name+"_"+distance_measure+"_eval.png"
+        save_path = STATIC_DIR+"/"+test_img.img_name+"_"+save_name+"_eval.png"
         cv2.imwrite(save_path, pic_all)
 
 
 if __name__ == '__main__':
-    distance = "SSIM-blur"
+    combination = "1010_eucl"
 
-    for i in range(0, 21):
-        plot_nhnm_overview_from_input(list(oct_df[distance].iloc[i]),
-                                          "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", distance_measure=distance,
+    for i in range(0, 2):
+        plot_nhnm_overview_from_input(list(oct_df[combination].iloc[i]),
+                                          "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", save_name=combination,
                                           top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=True)
 
 
