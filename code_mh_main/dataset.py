@@ -258,12 +258,14 @@ def get_available_featureembeddings(path_features =DIR_FEATURES):
     return next(os.walk(path_features))[1]
 
 
-def get_dict_datasets_with_all_embeddings():
-    """Function to get a dictionary where the keys are the avaiable DataSets and their values another dictionary with the available feature embeddings.
+def get_dict_datasets_with_all_embeddings(suffix_path):
+    """Function to get a dictionary where the keys are the available DataSets and their values another dictionary with the available feature embeddings.
+
+    :param suffix_path: str, suffix path of CNN models
 
     :return: *self* (`dict`) - Dictionary with all feature embeddings in respect to the avaiable datasets
     """
-    from modelsetup import load_model_from_folder
+    from modelsetup import load_model_from_folder, get_output_layer
     # LOAD the DATASETS
     if len(DATA_DIR_FOLDERS) > 0:
         dataset_list = DATA_DIR_FOLDERS
@@ -272,11 +274,18 @@ def get_dict_datasets_with_all_embeddings():
     dict_datasets_embeddings = {}
     for dataset_name in dataset_list:
         dict_embeddings = {}
-            
-        fe_CNNmodel = FeatureExtractor(loaded_model=load_model_from_folder(sel_dataset=dataset_name, suffix_path='_cnn'))
-        dict_embeddings[fe_CNNmodel.fe_model.name] = DataSet(name = dataset_name, fe=fe_CNNmodel)
-        fe_VGG16 = FeatureExtractor(loaded_model=None)
-        dict_embeddings[fe_VGG16.fe_model.name] = DataSet(name = dataset_name, fe=fe_VGG16)
+
+        model_for_feature_embedding = load_model_from_folder(sel_dataset=dataset_name, suffix_path=suffix_path)
+        fe_CNNmodel = FeatureExtractor(loaded_model=model_for_feature_embedding,
+                                       model_name=str.upper("cnn"),
+                                       options_cnn=True,
+                                       feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
+        dict_embeddings[fe_CNNmodel.fe_model.name] = DataSet(name=dataset_name, fe=fe_CNNmodel)
+        fe_VGG16 = FeatureExtractor(loaded_model=None,
+                                    model_name=str.upper("vgg"),
+                                    options_cnn=False,
+                                    feature_model_output_layer=None)
+        dict_embeddings[fe_VGG16.fe_model.name] = DataSet(name=dataset_name, fe=fe_VGG16)
 
         dict_datasets_embeddings[dataset_name] = dict_embeddings
 
@@ -310,29 +319,6 @@ def get_dict_datasets(use_CNN_feature_embeddding:bool, use_all_datasets: bool):
             dict_datasets[dataset_name] = DataSet(name = dataset_name, fe = fe_VGG16)
     print(f'Possible dataset: {dict_datasets.keys()}')
     return dict_datasets
-
-
-def get_quality(fe =None):
-    """Function to get the DataSet of quality data.
-
-    :param fe: FeatureExtractor model that is used for the feature embedding, e.g. VGG16 for model-agnostic feature extraction
-    :type fe: FeatureExtractor
-
-    :return: *self* (`DataSet`) - DataSet object of the quality data.
-    """
-    return DataSet(name = 'quality', fe =fe) 
-
-
-def get_mnist(fe =None):
-    """Function to get the DataSet of MNIST data.
-
-    :param fe: FeatureExtractor model that is used for the feature embedding, e.g. VGG16 for model-agnostic feature extraction
-    :type fe: FeatureExtractor
-
-    :return: *self* (`DataSet`) - DataSet object of the MNIST data.
-    """
-
-    return DataSet(name = 'mnist', fe =fe) 
 
 
 if __name__ == "__main__":
