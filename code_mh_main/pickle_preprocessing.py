@@ -274,32 +274,32 @@ m0100_eucl = combine_pickle(path_base + "0100_mnist_1247_cnn_seed3871_euclidean"
 m0101_eucl = combine_pickle(path_base + "0101_mnist_1247_euclidean", r)
 
 
-# o1000_eucl = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_euclidean", r)
-# o1000_ssim = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_SSIM", r)
+o1000_eucl = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_euclidean", r)
+o1000_ssim = combine_pickle(path_base + "1000_oct_cc_cnn_seed3871_SSIM", r)
 
-# o1001_eucl = combine_pickle(path_base + "1001_oct_cc_euclidean", r)
-# o1001_ssim = combine_pickle(path_base + "1001_oct_cc_SSIM", r)
+o1001_eucl = combine_pickle(path_base + "1001_oct_cc_euclidean", r)
+o1001_ssim = combine_pickle(path_base + "1001_oct_cc_SSIM", r)
 
-# o1010_eucl = combine_pickle(path_base + "1010_oct_cc_cnn_seed3871_euclidean", r)
-# o1010_ssim = combine_pickle(path_base + "1010_oct_cc_cnn_seed3871_SSIM", r)
+o1010_eucl = combine_pickle(path_base + "1010_oct_cc_cnn_seed3871_euclidean", r)
+o1010_ssim = combine_pickle(path_base + "1010_oct_cc_cnn_seed3871_SSIM", r)
 
-# o1011_eucl = combine_pickle(path_base + "1011_oct_cc_euclidean", r)
-# o1011_ssim = combine_pickle(path_base + "1011_oct_cc_SSIM", r)
+o1011_eucl = combine_pickle(path_base + "1011_oct_cc_euclidean", r)
+o1011_ssim = combine_pickle(path_base + "1011_oct_cc_SSIM", r)
 
-# o1100_eucl = combine_pickle(path_base + "1100_oct_cc_cnn_seed3871_euclidean", r)
-# o1101_eucl = combine_pickle(path_base + "1101_oct_cc_euclidean", r)
+o1100_eucl = combine_pickle(path_base + "1100_oct_cc_cnn_seed3871_euclidean", r)
+o1101_eucl = combine_pickle(path_base + "1101_oct_cc_euclidean", r)
 # -
 
 all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
           "0001_eucl": m0001_eucl, "0001_ssim": m0001_ssim, "0001_cw": m0001_cw,
           "0010_eucl": m0010_eucl, "0010_ssim": m0010_ssim, "0010_cw": m0010_cw,
           "0011_eucl": m0011_eucl, "0011_ssim": m0011_ssim, # "0011_cw": m0011_cw,
-          "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl #, 
-          # "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
-          # "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
-          # "1010_eucl": o1010_eucl, "1010_ssim": o1010_ssim,
-          # "1011_eucl": o1011_eucl, "1011_ssim": o1011_ssim,
-          # "1100_eucl": o1100_eucl, "1101_eucl": o1101_eucl
+          "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl, 
+          "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
+          "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
+          "1010_eucl": o1010_eucl, "1010_ssim": o1010_ssim,
+          "1011_eucl": o1011_eucl, "1011_ssim": o1011_ssim,
+          "1100_eucl": o1100_eucl, "1101_eucl": o1101_eucl
          }
 
 # ## Add top Misses for all df

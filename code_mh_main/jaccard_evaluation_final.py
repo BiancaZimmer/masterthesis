@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from itertools import chain
 import matplotlib.pyplot as plt
+import seaborn as sns
 import cv2
 
 # from feature_extractor import FeatureExtractor
@@ -86,67 +87,75 @@ def jaccard_df(df1, df2, method="intersection"):
 # ## Load pickles
 
 # +
-path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
+# predefine names
+m0000_eucl = m0000_ssim = m0000_cw = []
+m0001_eucl = m0001_ssim = m0001_cw = []
+m0010_eucl = m0010_ssim = m0010_cw = []
+m0011_eucl = m0011_ssim = []  # m0011_cw = []
+m0100_eucl = m0101_eucl = []
 
+o1000_eucl = o1000_ssim = []
+o1001_eucl = o1001_ssim = []
+o1010_eucl = o1010_ssim = []
+o1011_eucl = o1011_ssim = []
+o1100_eucl = o1101_eucl = []
 
-m0000_eucl = pd.read_pickle(path_base+"0000_eucl_FINAL100.pickle")
-m0000_ssim = pd.read_pickle(path_base+"0000_ssim_FINAL100.pickle")
-m0000_cw = pd.read_pickle(path_base+"0000_cw_FINAL100.pickle")
-
-m0001_eucl = pd.read_pickle(path_base+"0001_eucl_FINAL100.pickle")
-m0001_ssim = pd.read_pickle(path_base+"0001_ssim_FINAL100.pickle")
-m0001_cw = pd.read_pickle(path_base+"0001_cw_FINAL100.pickle")
-
-m0010_eucl = pd.read_pickle(path_base+"0010_eucl_FINAL100.pickle")
-m0010_ssim = pd.read_pickle(path_base+"0010_ssim_FINAL100.pickle")
-m0010_cw = pd.read_pickle(path_base+"0010_cw_FINAL100.pickle")
-
-m0011_eucl = pd.read_pickle(path_base+"0011_eucl_FINAL100.pickle")
-m0011_ssim = pd.read_pickle(path_base+"0011_ssim_FINAL100.pickle")
-# m0011_cw = pd.read_pickle(path_base+"0011_cw_FINAL100.pickle")
-
-m0100_eucl = pd.read_pickle(path_base+"0100_eucl_FINAL100.pickle")
-m0101_eucl = pd.read_pickle(path_base+"0101_eucl_FINAL100.pickle")
-
-
-# +
 all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
           "0001_eucl": m0001_eucl, "0001_ssim": m0001_ssim, "0001_cw": m0001_cw,
           "0010_eucl": m0010_eucl, "0010_ssim": m0010_ssim, "0010_cw": m0010_cw,
           "0011_eucl": m0011_eucl, "0011_ssim": m0011_ssim, # "0011_cw": m0011_cw,
-          "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl #, 
-          # "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
-          # "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
+          "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl, 
+          "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
+          "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
+          "1010_eucl": o1010_eucl, "1010_ssim": o1010_ssim,
+          "1011_eucl": o1011_eucl, "1011_ssim": o1011_ssim,
+          "1100_eucl": o1100_eucl, "1101_eucl": o1101_eucl
          }
 
-mnist_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
-          "0001_eucl": m0001_eucl, "0001_ssim": m0001_ssim, "0001_cw": m0001_cw,
-          "0010_eucl": m0010_eucl, "0010_ssim": m0010_ssim, "0010_cw": m0010_cw,
-          "0011_eucl": m0011_eucl, "0011_ssim": m0011_ssim, # "0011_cw": m0011_cw,
-          "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl
-         }
+mnist_df_names = ["0000_eucl", "0000_ssim", "0000_cw",
+          "0001_eucl", "0001_ssim", "0001_cw",
+          "0010_eucl", "0010_ssim", "0010_cw",
+          "0011_eucl", "0011_ssim", # "0011_cw",
+          "0100_eucl", "0101_eucl"]
+
+oct_df_names = ["1000_eucl", "1000_ssim",
+          "1001_eucl", "1001_ssim",
+          "1010_eucl", "1010_ssim",
+          "1011_eucl", "1011_ssim",
+          "1100_eucl", "1101_eucl"]
 # -
+
+# load all pickles
+for df in all_df:
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/" + df + \
+                 "_FINAL50.pickle"
+    print(picklepath)
+    all_df[df] = pd.read_pickle(picklepath)
+
+mnist_df = {df_name: all_df[df_name] for df_name in all_df if df_name in mnist_df_names}
+oct_df = {df_name: all_df[df_name] for df_name in all_df if df_name in oct_df_names}
 
 # ## Overview over distance scores
 
+# ### MNIST
+
+# +
 # generate column names
 scores_names = []
 scores_top_names = []
 for m in mnist_df:
     scores_names.append("scores_hit_"+m)
     scores_top_names.append("scores_top_misses_"+m)
-scores_top_names
-
-# ### MNIST
 
 # metrics
 eucl = [0, 3, 6, 9, 11, 12]
 ssim = [1, 4, 7, 10]
 cw = [2, 5, 8]
 
+scores_top_names
+
 # +
 mnist_scores = pd.DataFrame()
-
 
 for score_hit, score_top, df in zip(scores_names, scores_top_names, mnist_df.values()):
     mnist_scores[score_hit] = list(chain.from_iterable(df.scores_hits))
@@ -154,7 +163,7 @@ for score_hit, score_top, df in zip(scores_names, scores_top_names, mnist_df.val
 mnist_scores
 # -
 
-mnist_scores.describe()
+mnist_scores.describe().transpose()
 
 # #### Distances for Hits
 
@@ -164,9 +173,7 @@ mnist_scores.boxplot(column= [scores_names[i] for i in eucl], rot= 20)
 
 mnist_scores.boxplot(column= [scores_names[i] for i in ssim+cw], rot= 20)
 
-# +
-#### Distances for Top Misses
-# -
+# #### Distances for Top Misses
 
 mnist_scores.boxplot(column=scores_top_names, rot= 20)
 
@@ -174,44 +181,110 @@ mnist_scores.boxplot(column=[scores_top_names[i] for i in eucl], rot= 20)
 
 mnist_scores.boxplot(column=[scores_top_names[i] for i in ssim+cw], rot= 20)
 
+# #### Compare misses + hits
+
+mnist_scores.describe().transpose()[["mean","50%"]]
+
+cols = [scores_names[i] for i in eucl]+[scores_top_names[i] for i in eucl]
+cols.sort(key=lambda name: name[-9:])
+mnist_scores.boxplot(column= cols, rot= 45)
+
+cols = [scores_names[i] for i in ssim]+[scores_top_names[i] for i in ssim]
+cols.sort(key=lambda name: name[-9:])
+mnist_scores.boxplot(column= cols, rot= 45)
+
+cols = [scores_names[i] for i in cw]+[scores_top_names[i] for i in cw]
+cols.sort(key=lambda name: name[-7:])
+mnist_scores.boxplot(column= cols, rot= 45)
+
 # #### Results:
+# all distance measures:
+# * distances for misses are higher than for hits as expected; exception: 0010_euclidean, here distances for misses are a lot lower
+# * distances of near hits behave about the same as distances of near misses.
 #
-# old:
-# * euclidean distance seems to be lower in Misses than in Hits, which is contraintuitive
-# * In all SSIM distances the Misses have higher distance values than the Hits - which is what we expected
-# * SSIM seems to be fairly good compared to the minmax metric, the CW-SSIM and the transformed/pushed metric
-# * SSIM and SSIM-threshold give very similar results
-# * SSIM on the blurred + transformed pictures seems to give the best results since the distances between the pictures are minimal (close to 0)
+# euclidean distances:
+# * euclidean distances for 0011 (lrp + vgg) are a lot higher than all the other euclidean distances -> vgg does not perform well -> as expected
+# * euclidean distances for 0101 are also higher than those of 0100 -> vgg does not perform well
+# * euclidean distances for FE are a lot smaller than those of LRP -> to be expected since euclidean distanmce might not be the optimal citerion here
+#
+# SSIM + CW-SSIM:
+# * SSIM distances are generally lower than those of the CW-SSIM; this could be due to the fact that rotation + translation is not taken into account and a lot of the images are black; otherwise this is contra-intuitive
+# * SSIM on the LRP heatmaps are a lot smaller than on the raw images; this could be due to the fact that a lot more of the LRP heatmaps share the same color (grey) than the original image (black); this observation can not be seen in the CW-LRP heatmaps vs the CW-raw images
 
 # ### OCT
 
 # +
+# generate column names
+scores_names = []
+scores_top_names = []
+for m in oct_df:
+    scores_names.append("scores_hit_"+m)
+    scores_top_names.append("scores_top_misses_"+m)
+
+# metrics
+eucl = [0, 2, 4, 6, 8, 9]
+ssim = [1, 3, 5, 7]
+
+scores_top_names
+
+# +
 oct_scores = pd.DataFrame()
 
-
-for score_hit, score_top, df in zip(scores_names[:-1], scores_top_names[:-1], oct_df.values()):
+for score_hit, score_top, df in zip(scores_names, scores_top_names, oct_df.values()):
     oct_scores[score_hit] = list(chain.from_iterable(df.scores_hits))
     oct_scores[score_top] = list(chain.from_iterable(df.scores_top_misses))
 oct_scores
 # -
 
-oct_scores.describe()
+oct_scores.describe().transpose()
 
-oct_scores.boxplot(column=scores_names[:-1], rot= 10)
+oct_df["1000_eucl"]["image_name"].equals(oct_df["1001_eucl"]["image_name"])
 
-oct_scores.boxplot(column=scores_names[1:-1], rot= 10)
+# #### Hits comparison
 
-oct_scores.boxplot(column=scores_top_names[:-1], rot= 10)
+oct_scores.boxplot(column=scores_names, rot= 30)
 
-oct_scores.boxplot(column=scores_top_names[1:-1], rot= 10)
+oct_scores.boxplot(column= [scores_names[i] for i in eucl], rot= 20)
+
+oct_scores.boxplot(column= [scores_names[i] for i in ssim], rot= 20)
+
+# #### Misses Comparison
+
+oct_scores.boxplot(column=scores_top_names, rot= 30)
+
+oct_scores.boxplot(column= [scores_top_names[i] for i in eucl], rot= 20)
+
+oct_scores.boxplot(column= [scores_top_names[i] for i in ssim], rot= 20)
+
+# #### Compare misses+hits
+
+oct_scores.describe().transpose()[["mean","50%"]]
+
+cols = [scores_names[i] for i in eucl]+[scores_top_names[i] for i in eucl]
+cols.sort(key=lambda name: name[-9:])
+oct_scores.boxplot(column= cols, rot= 45)
+
+cols = [scores_names[i] for i in ssim]+[scores_top_names[i] for i in ssim]
+cols.sort(key=lambda name: name[-9:])
+oct_scores.boxplot(column= cols, rot= 45)
 
 
 # #### Results:
 #
-# old:
-# Similar to those of the MNIST dataset
+# all distance measures:
+# * distances for the VGG16-based NHNM are higher than for the corresponding CNN-based NHNM -> as expected; difference not as prominent as in MNIST
+# * distances of near hits behave about the same as distances of near misses.
+# * distances for misses are higher than for hits as expected; exception: 1000_ssim , 1010_euclidean and 1011_ssim, here distances for misses are lower; however difference it not as prominent as in MNIST -> might need more data
+# * weird: 1000 != 1001 (unlike for MNIST)
 #
-# Probably need more values to varify this but runtime too long
+# euclidean distances:
+# * euclidean distances for raw images are the highest -> to be expected since euclidean distance might not be the optimal citerion here
+# * euclidean distances for FE are a lot smaller than those of LRP -> to be expected since euclidean distance might not be the optimal citerion here
+#
+#
+# SSIM:
+# * SSIM on the LRP heatmaps are a smaller than on the raw images; this could be due to the fact that a lot more of the LRP heatmaps share the same color (grey) than the original image (black); -> difference not as prominent as on MNIST data
+#
 
 # ## Calculate Jaccard indices
 
@@ -234,6 +307,28 @@ def jaccard_nhnmtm(df1, df2, group=None, df1_name=None, df2_name=None):
     return res
 
 
+# +
+# jaccards.groupby(["df1_name", "df2_name"]).describe()
+
+def jaccards_heatmap(jaccards_df, column):
+    """
+    :param columns: str, one of "jaccard_misses", "jaccard_top_misses", "jaccard_hits", "jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"
+    """
+    mean_topmisses = jaccards_df[[column,
+                                  "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).median().unstack()
+
+    fig, ax = plt.subplots(figsize=(14,14))
+    sns.set(font_scale=1.3)
+    ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True) # vmin=0.05, vmax=0.2, 
+    ax.set(xlabel="df2", ylabel="df1")
+    ax.xaxis.tick_top()
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=90)
+    plt.show()
+
+
+# -
+
 # ### MNIST
 
 # +
@@ -255,19 +350,74 @@ for m1, df1 in mnist_df.items():
 jaccards
 # -
 
+jaccards_heatmap(jaccards, "jaccard_misses")
+jaccards_heatmap(jaccards, "jaccard_top_misses")
+jaccards_heatmap(jaccards, "jaccard_hits")
+
+# #### Jaccard Indices
+
+# raw
+jaccards[((jaccards.df1_name.str[-9:-6]== "000") |
+         (jaccards.df1_name.str[-7:-4] == "000")) &
+        ((jaccards.df2_name.str[-9:-6]== "000") |
+         (jaccards.df2_name.str[-7:-4] == "000"))].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+
+
+# euclidean
+# CNN
+jaccards[(jaccards.df1_name.str[-6:]== "0_eucl") |
+         (jaccards.df2_name.str[-6:] == "0_eucl")].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+# VGG
+jaccards[(jaccards.df1_name.str[-6:]== "1_eucl") |
+         (jaccards.df2_name.str[-6:] == "1_eucl")].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+
+
+# ssim
+# CNN
+jaccards[(jaccards.df1_name.str[-6:]== "0_ssim") |
+         (jaccards.df2_name.str[-6:] == "0_ssim")].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+# VGG
+jaccards[(jaccards.df1_name.str[-6:]== "1_ssim") |
+         (jaccards.df2_name.str[-6:] == "1_ssim")].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+
+
+#cw ssim
+# CNN
+jaccards[(jaccards.df1_name.str[-4:]== "0_cw") |
+         (jaccards.df2_name.str[-4:] == "0_cw")].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+# VGG
+jaccards[(jaccards.df1_name.str[-4:]== "1_cw") |
+         (jaccards.df2_name.str[-4:] == "1_cw")].boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], 
+                                                      by=["df1_name", "df2_name"], figsize=(30,30), rot = 90, fontsize=20)
+
+
 jaccards.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
                 figsize=(30,30), rot = 90, fontsize=20)
+
+# #### Absolute intersection
+# Reminder: the maximum absolute number is #NHNM for the hits and #NHNM * (#classes - 1) for misses
 
 jaccards.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"], by=["df1_name", "df2_name"],
                 figsize=(30,30), rot = 90, fontsize=20)
 
 # #### Result:
-# old:
+#
+# all distances:
 # * Since Jaccard index is a measure of similarity 0 means that A nad B are totally different
-# * Euclidean produces very different results from all SSIM metrics
-# * Maybe pushed and minmax are closes to each other
-# * SSIM threshold and SSIM produce similar results, this was to be expected when looking at the boxplots for the SSIM scores
-# * The other metrics produce quite but not totally different results
+# * top 15 misses yield higher jaccard indices than top misses -> to be expected since more variability in top15 allowed than in top misses. here the misses have to match per category
+# * not surprisingly distances on the raw images produce same NHNM for CNN and VGG -> model is not used here anyway
+#
+# euclidean:
+# * 0010_eucl to 0010_ssim yields the most similar results in the top 15 missed, same goes for top misses
+# * 0101_eucl is pretty similar to all the rawData hits/misses -> FE of VGG gives not much different information than raw image data
+# * results for VGG are different than those for CNN: 0101_eucl produces similar results to all rawData models (ssim and cw) -> 0101_eucl (FE) does not give much different information than the rawData; not surpising since this was run on VGG and thus not much of an information gain was to be expected
+# * no similarity can be seen when looking at 0010_eucl/0010_ssim to 0011_eucl which was to be expected -> CNN gives different information than general VGG; same goes for 010_eucl to 0101_eucl
 
 # ### OCT
 
