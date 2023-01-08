@@ -225,7 +225,7 @@ for df in oct_df:
 # +
 path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
 
-r = range(1, 10)
+r = range(1, 21)
 
 # 0000_mnist_1247_cnn_seed3871_euclidean
 # 0000_mnist_1247_cnn_seed3871_SSIM
@@ -268,7 +268,7 @@ m0010_cw = combine_pickle(path_base + "0010_mnist_1247_cnn_seed3871_CW-SSIM", r)
 
 m0011_eucl = combine_pickle(path_base + "0011_mnist_1247_euclidean", r)
 m0011_ssim = combine_pickle(path_base + "0011_mnist_1247_SSIM", r)
-# m0011_cw = combine_pickle(path_base + "0011_mnist_1247_CW-SSIM", r)
+m0011_cw = combine_pickle(path_base + "0011_mnist_1247_CW-SSIM", r)
 
 m0100_eucl = combine_pickle(path_base + "0100_mnist_1247_cnn_seed3871_euclidean", r)
 m0101_eucl = combine_pickle(path_base + "0101_mnist_1247_euclidean", r)
@@ -293,7 +293,7 @@ o1101_eucl = combine_pickle(path_base + "1101_oct_cc_euclidean", r)
 all_df = {"0000_eucl": m0000_eucl, "0000_ssim": m0000_ssim, "0000_cw": m0000_cw,
           "0001_eucl": m0001_eucl, "0001_ssim": m0001_ssim, "0001_cw": m0001_cw,
           "0010_eucl": m0010_eucl, "0010_ssim": m0010_ssim, "0010_cw": m0010_cw,
-          "0011_eucl": m0011_eucl, "0011_ssim": m0011_ssim, # "0011_cw": m0011_cw,
+          "0011_eucl": m0011_eucl, "0011_ssim": m0011_ssim, "0011_cw": m0011_cw,
           "0100_eucl": m0100_eucl, "0101_eucl": m0101_eucl, 
           "1000_eucl": o1000_eucl, "1000_ssim": o1000_ssim,
           "1001_eucl": o1001_eucl, "1001_ssim": o1001_ssim,
@@ -311,7 +311,7 @@ for df in all_df:
 
 for df in all_df:
     picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/" + df + \
-                 "_FINAL50"
+                 "_FINAL100"
     print(picklepath)
     all_df[df].to_pickle(picklepath + ".pickle")
 
