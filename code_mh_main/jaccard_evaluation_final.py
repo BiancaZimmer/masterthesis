@@ -163,39 +163,74 @@ for score_hit, score_top, df in zip(scores_names, scores_top_names, mnist_df.val
 mnist_scores
 # -
 
+mnist_scores_long = mnist_scores.stack().reset_index()
+mnist_scores_long.columns = ["id", "group", "value"]
+mnist_scores_long["nhnm"] = [t.split("_")[-3] for t in mnist_scores_long["group"]]
+mnist_scores_long["number"] = [t.split("_")[-2] for t in mnist_scores_long["group"]]
+mnist_scores_long["distance"] = [t.split("_")[-1] for t in mnist_scores_long["group"]]
+mnist_scores_long
+
 mnist_scores.describe().transpose()
 
 # #### Distances for Hits
 
-mnist_scores.boxplot(column=scores_names, rot= 30)
+cols = [scores_names[i] for i in eucl]
+sns.boxplot(data=mnist_scores[cols], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(cols)+1),
+           labels=[name.split("_",2)[2] for name in cols],
+           rotation=20, ha="right")
+plt.title("Near Hits - Distance Comparison - Euclidean")
+plt.show
 
-mnist_scores.boxplot(column= [scores_names[i] for i in eucl], rot= 20)
-
-mnist_scores.boxplot(column= [scores_names[i] for i in ssim+cw], rot= 20)
+sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] != "eucl"],
+            y=mnist_scores_long["value"][(mnist_scores_long["nhnm"] == "hit") &
+                                         (mnist_scores_long["distance"] != "eucl")],
+            palette="pastel", width=0.5,
+            hue=mnist_scores_long["distance"][mnist_scores_long["distance"] != "eucl"])
+plt.title("Near Misses - Distance Comparison - SSIM & CW")
+plt.show
 
 # #### Distances for Top Misses
 
-mnist_scores.boxplot(column=scores_top_names, rot= 20)
+cols = [scores_top_names[i] for i in eucl]
+sns.boxplot(data=mnist_scores[cols], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(cols)+1),
+           labels=[name.split("_",3)[3] for name in cols],
+           rotation=20, ha="right")
+plt.title("Near Misses - Distance Comparison - Euclidean")
+plt.show
 
-mnist_scores.boxplot(column=[scores_top_names[i] for i in eucl], rot= 20)
-
-mnist_scores.boxplot(column=[scores_top_names[i] for i in ssim+cw], rot= 20)
+sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] != "eucl"],
+            y=mnist_scores_long["value"][(mnist_scores_long["nhnm"] == "misses") &
+                                         (mnist_scores_long["distance"] != "eucl")],
+            palette="pastel", width=0.5,
+            hue=mnist_scores_long["distance"][mnist_scores_long["distance"] != "eucl"])
+plt.title("Near Misses - Distance Comparison - SSIM & CW")
+plt.show
 
 # #### Compare misses + hits
 
 mnist_scores.describe().transpose()[["mean","50%"]]
 
-cols = [scores_names[i] for i in eucl]+[scores_top_names[i] for i in eucl]
-cols.sort(key=lambda name: name[-9:])
-mnist_scores.boxplot(column= cols, rot= 45)
+sns.boxplot(x=mnist_scores_long["number"], y=mnist_scores_long["value"][mnist_scores_long["distance"] == "eucl"],
+            palette="pastel", width=0.5,
+            hue=mnist_scores_long["nhnm"])
+plt.title("NHNM - Distance Comparison - Euclidean")
+plt.show
 
-cols = [scores_names[i] for i in ssim]+[scores_top_names[i] for i in ssim]
-cols.sort(key=lambda name: name[-9:])
-mnist_scores.boxplot(column= cols, rot= 45)
+sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] == "ssim"],
+            y=mnist_scores_long["value"][mnist_scores_long["distance"] == "ssim"],
+            palette="pastel", width=0.5,
+            hue=mnist_scores_long["nhnm"])
+plt.title("SSIM - Distance Comparison - Euclidean")
+plt.show
 
-cols = [scores_names[i] for i in cw]+[scores_top_names[i] for i in cw]
-cols.sort(key=lambda name: name[-7:])
-mnist_scores.boxplot(column= cols, rot= 45)
+sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] == "cw"],
+            y=mnist_scores_long["value"][mnist_scores_long["distance"] == "cw"],
+            palette="pastel", width=0.5,
+            hue=mnist_scores_long["nhnm"])
+plt.title("CW-SSIM - Distance Comparison - Euclidean")
+plt.show
 
 # #### Results:
 # all distance measures:
@@ -236,37 +271,78 @@ for score_hit, score_top, df in zip(scores_names, scores_top_names, oct_df.value
 oct_scores
 # -
 
+oct_scores_long = oct_scores.stack().reset_index()
+oct_scores_long.columns = ["id", "group", "value"]
+oct_scores_long["nhnm"] = [t.split("_")[-3] for t in oct_scores_long["group"]]
+oct_scores_long["number"] = [t.split("_")[-2] for t in oct_scores_long["group"]]
+oct_scores_long["distance"] = [t.split("_")[-1] for t in oct_scores_long["group"]]
+oct_scores_long
+
 oct_scores.describe().transpose()
 
 oct_df["1000_eucl"]["image_name"].equals(oct_df["1001_eucl"]["image_name"])
 
 # #### Hits comparison
 
-oct_scores.boxplot(column=scores_names, rot= 30)
+cols = [scores_names[i] for i in eucl]
+sns.boxplot(data=oct_scores[cols], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(cols)+1),
+           labels=[name.split("_")[2] for name in cols])
+plt.title("Near Hits - Distance Comparison - Euclidean")
+plt.show
 
-oct_scores.boxplot(column= [scores_names[i] for i in eucl], rot= 20)
+# same plot as above - different layout
+sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
+            y=oct_scores_long["value"][(oct_scores_long["nhnm"] == "hit") &
+                                         (oct_scores_long["distance"] == "eucl")],
+            palette="pastel", width=0.5,
+            hue=oct_scores_long["distance"][oct_scores_long["distance"] == "eucl"])
+plt.title("Near Hits - Distance Comparison - Euclidean")
+plt.show
 
-oct_scores.boxplot(column= [scores_names[i] for i in ssim], rot= 20)
+sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] != "eucl"],
+            y=oct_scores_long["value"][(oct_scores_long["nhnm"] == "hit") &
+                                         (oct_scores_long["distance"] != "eucl")],
+            palette="pastel", width=0.5,
+            hue=oct_scores_long["distance"][oct_scores_long["distance"] != "eucl"])
+plt.title("Near Hits - Distance Comparison - SSIM")
+plt.show
 
 # #### Misses Comparison
 
-oct_scores.boxplot(column=scores_top_names, rot= 30)
+sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
+            y=oct_scores_long["value"][(oct_scores_long["nhnm"] == "misses") &
+                                         (oct_scores_long["distance"] == "eucl")],
+            palette="pastel", width=0.5,
+            hue=oct_scores_long["distance"][oct_scores_long["distance"] == "eucl"])
+plt.title("Near Misses - Distance Comparison - Euclidean")
+plt.show
 
-oct_scores.boxplot(column= [scores_top_names[i] for i in eucl], rot= 20)
-
-oct_scores.boxplot(column= [scores_top_names[i] for i in ssim], rot= 20)
+sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] != "eucl"],
+            y=oct_scores_long["value"][(oct_scores_long["nhnm"] == "misses") &
+                                         (oct_scores_long["distance"] != "eucl")],
+            palette="pastel", width=0.5,
+            hue=oct_scores_long["distance"][oct_scores_long["distance"] != "eucl"])
+plt.title("Near Misses - Distance Comparison - SSIM")
+plt.show
 
 # #### Compare misses+hits
 
 oct_scores.describe().transpose()[["mean","50%"]]
 
-cols = [scores_names[i] for i in eucl]+[scores_top_names[i] for i in eucl]
-cols.sort(key=lambda name: name[-9:])
-oct_scores.boxplot(column= cols, rot= 45)
+sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
+            y=oct_scores_long["value"][oct_scores_long["distance"] == "eucl"],
+            palette="pastel", width=0.5,
+            hue=oct_scores_long["nhnm"])
+plt.title("NHNM - Distance Comparison - Euclidean")
+plt.show
 
-cols = [scores_names[i] for i in ssim]+[scores_top_names[i] for i in ssim]
-cols.sort(key=lambda name: name[-9:])
-oct_scores.boxplot(column= cols, rot= 45)
+sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "ssim"],
+            y=oct_scores_long["value"][oct_scores_long["distance"] == "ssim"],
+            palette="pastel", width=0.5,
+            hue=oct_scores_long["nhnm"])
+plt.title("NHNM - Distance Comparison - SSIM")
+plt.show
 
 
 # #### Results:
@@ -307,23 +383,46 @@ def jaccard_nhnmtm(df1, df2, group=None, df1_name=None, df2_name=None):
     return res
 
 
+def sort_triangular(matrix):
+    """ Takes matrix/DataFrame as input and sorts columns and rows into an upper triangular matrix if rest is NAN
+
+    :param matrix: pandas.DataFrame
+    :return: pandas.DataFrame with sorted columns and rows
+    """
+    nan_count_c = matrix.apply(lambda x: x.isna().sum(), axis=0)
+    nan_count_r = matrix.apply(lambda x: x.isna().sum(), axis=1)
+    triangular = matrix.iloc[np.argsort(nan_count_r), np.argsort(-nan_count_c)]
+    return triangular
+
+
 # +
 # jaccards.groupby(["df1_name", "df2_name"]).describe()
 
-def jaccards_heatmap(jaccards_df, column):
+def jaccards_heatmap(jaccards_df, column, title = None, vmin=None, vmax=None):
     """
     :param columns: str, one of "jaccard_misses", "jaccard_top_misses", "jaccard_hits", "jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"
     """
     mean_topmisses = jaccards_df[[column,
                                   "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).median().unstack()
-
-    fig, ax = plt.subplots(figsize=(14,14))
-    sns.set(font_scale=1.3)
-    ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True) # vmin=0.05, vmax=0.2, 
+    mean_topmisses.columns = mean_topmisses.columns.get_level_values(1)
+    mean_topmisses = sort_triangular(mean_topmisses)
+    
+    fig, ax = plt.subplots(figsize=(20,20))
+    sns.set(font_scale=1.6)
+    if (vmin is None) and (vmax is None):
+        ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True)
+    else:
+        ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True,
+                        vmin=vmin, vmax=vmax)
     ax.set(xlabel="df2", ylabel="df1")
     ax.xaxis.tick_top()
-    locs, labels = plt.xticks()
-    plt.setp(labels, rotation=90)
+    texts = [t for t in ax.get_xticklabels()]
+    plt.xticks(ticks=np.arange(0, len(texts))+0.5,
+           labels=texts,
+           rotation=90, ha="center")
+    if title is None:
+        title = column
+    plt.title(title)
     plt.show()
 
 

@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from itertools import chain
 import matplotlib.pyplot as plt
+import seaborn as sns
 import cv2
 
 # from feature_extractor import FeatureExtractor
@@ -117,15 +118,30 @@ for score_hit, score_top, df in zip(scores_names, scores_top_names, mnist_df.val
 mnist_scores
 # -
 
-mnist_scores.describe()
+mnist_scores.describe().transpose()
 
-mnist_scores.boxplot(column=scores_names, rot= 10)
-
-mnist_scores.boxplot(column=scores_names[1:], rot= 10)
+sns.boxplot(data=mnist_scores[scores_names], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_names)+1),
+           labels=[name.split("_")[2] for name in scores_names],
+           rotation=20, ha="right")
+plt.title("Near Hits - Distance Comparison")
+plt.show
 
 # mnist_scores.boxplot(column=scores_top_names, rot= 10)
 
-mnist_scores.boxplot(column=scores_top_names[1:], rot= 10)
+sns.boxplot(data=mnist_scores[scores_names[1:]], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_names[1:])+1),
+           labels=[name.split("_")[2] for name in scores_names[1:]],
+           rotation=20, ha="right")
+plt.title("Near Hits - Distance Comparison")
+plt.show
+
+sns.boxplot(data=mnist_scores[scores_top_names[1:]], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_top_names[1:])+1),
+           labels=[name.split("_")[3] for name in scores_top_names[1:]],
+           rotation=20, ha="right")
+plt.title("Near Misses - Distance Comparison")
+plt.show
 
 # #### Results:
 #
@@ -147,15 +163,30 @@ for score_hit, score_top, df in zip(scores_names[:-1], scores_top_names[:-1], oc
 oct_scores
 # -
 
-oct_scores.describe()
+oct_scores.describe().transpose()
 
-oct_scores.boxplot(column=scores_names[:-1], rot= 10)
+sns.boxplot(data=oct_scores[scores_names[:-1]], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_names[:-1])+1),
+           labels=[name.split("_")[2] for name in scores_names[1:]],
+           rotation=20, ha="right")
+plt.title("Near Hits - Distance Comparison")
+plt.show
 
 # oct_scores.boxplot(column=scores_names[1:-1], rot= 10)
 
-oct_scores.boxplot(column=scores_top_names[:-1], rot= 10)
+sns.boxplot(data=oct_scores[scores_top_names[:-1]], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_top_names[:-1])+1),
+           labels=[name.split("_")[3] for name in scores_top_names[:-1]],
+           rotation=20, ha="right")
+plt.title("Near Misses - Distance Comparison")
+plt.show
 
-# oct_scores.boxplot(column=scores_top_names[1:-1], rot= 10)
+sns.boxplot(data=oct_scores[scores_top_names[1:-1]], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_top_names[1:-1])+1),
+           labels=[name.split("_")[3] for name in scores_top_names[1:-1]],
+           rotation=20, ha="right")
+plt.title("Near Misses - Distance Comparison")
+plt.show
 
 
 # #### Results:
@@ -184,6 +215,51 @@ def jaccard_nhnmtm(df1, df2, group=None, df1_name=None, df2_name=None):
     return res
 
 
+def sort_triangular(matrix):
+    """ Takes matrix/DataFrame as input and sorts columns and rows into an upper triangular matrix if rest is NAN
+
+    :param matrix: pandas.DataFrame
+    :return: pandas.DataFrame with sorted columns and rows
+    """
+    nan_count_c = matrix.apply(lambda x: x.isna().sum(), axis=0)
+    nan_count_r = matrix.apply(lambda x: x.isna().sum(), axis=1)
+    triangular = matrix.iloc[np.argsort(nan_count_r), np.argsort(-nan_count_c)]
+    return triangular
+
+
+# +
+# jaccards.groupby(["df1_name", "df2_name"]).describe()
+
+def jaccards_heatmap(jaccards_df, column, title = None, vmin=None, vmax=None):
+    """
+    :param columns: str, one of "jaccard_misses", "jaccard_top_misses", "jaccard_hits", "jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"
+    """
+    mean_topmisses = jaccards_df[[column,
+                                  "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).median().unstack()
+    mean_topmisses.columns = mean_topmisses.columns.get_level_values(1)
+    mean_topmisses = sort_triangular(mean_topmisses)
+    
+    fig, ax = plt.subplots(figsize=(10,10))
+    sns.set(font_scale=1.3)
+    if (vmin is None) and (vmax is None):
+        ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True)
+    else:
+        ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True,
+                        vmin=vmin, vmax=vmax)
+    ax.set(xlabel="df2", ylabel="df1")
+    ax.xaxis.tick_top()
+    texts = [t for t in ax.get_xticklabels()]
+    plt.xticks(ticks=np.arange(0, len(texts))+0.5,
+           labels=texts,
+           rotation=90, ha="center")
+    if title is None:
+        title = column
+    plt.title(title)
+    plt.show()
+
+
+# -
+
 # ### MNIST
 
 # +
@@ -204,6 +280,11 @@ for m1, df1 in mnist_df.items():
 jaccards
 # -
 
+jaccards_heatmap(jaccards, "jaccard_misses", vmax=1)
+jaccards_heatmap(jaccards, "jaccard_top_misses", vmax=1)
+jaccards_heatmap(jaccards, "jaccard_hits", vmax=1)
+
+sns.reset_defaults()
 jaccards.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
                 figsize=(30,30), rot = 90, fontsize=20)
 
@@ -237,6 +318,11 @@ for m1, df1 in oct_df.items():
 jaccards_oct
 # -
 
+jaccards_heatmap(jaccards_oct, "jaccard_misses", vmax=1)
+jaccards_heatmap(jaccards_oct, "jaccard_top_misses", vmax=1)
+jaccards_heatmap(jaccards_oct, "jaccard_hits", vmax=1)
+
+sns.reset_defaults()
 jaccards_oct.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
                  figsize=(30, 30), rot=90, fontsize=20)
 
