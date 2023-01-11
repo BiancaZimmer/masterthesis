@@ -11,6 +11,7 @@ from itertools import chain
 import matplotlib.pyplot as plt
 import seaborn as sns
 import cv2
+import scipy.stats as stats
 
 # from feature_extractor import FeatureExtractor
 from dataentry import DataEntry
@@ -222,14 +223,14 @@ sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] == "ssim
             y=mnist_scores_long["value"][mnist_scores_long["distance"] == "ssim"],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["nhnm"])
-plt.title("SSIM - Distance Comparison - Euclidean")
+plt.title("NHNM - Distance Comparison - Euclidean")
 plt.show
 
 sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] == "cw"],
             y=mnist_scores_long["value"][mnist_scores_long["distance"] == "cw"],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["nhnm"])
-plt.title("CW-SSIM - Distance Comparison - Euclidean")
+plt.title("NHNM - Distance Comparison - CW-SSIM")
 plt.show
 
 # #### Results:
@@ -288,7 +289,7 @@ cols = [scores_names[i] for i in eucl]
 sns.boxplot(data=oct_scores[cols], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(cols)+1),
            labels=[name.split("_")[2] for name in cols])
-plt.title("Near Hits - Distance Comparison - Euclidean")
+plt.title("Near Hits - Comparison - Euclidean")
 plt.show
 
 # same plot as above - different layout
@@ -297,7 +298,7 @@ sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
                                          (oct_scores_long["distance"] == "eucl")],
             palette="pastel", width=0.5,
             hue=oct_scores_long["distance"][oct_scores_long["distance"] == "eucl"])
-plt.title("Near Hits - Distance Comparison - Euclidean")
+plt.title("Near Hits - Comparison - Euclidean")
 plt.show
 
 sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] != "eucl"],
@@ -305,7 +306,7 @@ sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] != "eucl"],
                                          (oct_scores_long["distance"] != "eucl")],
             palette="pastel", width=0.5,
             hue=oct_scores_long["distance"][oct_scores_long["distance"] != "eucl"])
-plt.title("Near Hits - Distance Comparison - SSIM")
+plt.title("Near Hits - Comparison - SSIM")
 plt.show
 
 # #### Misses Comparison
@@ -315,7 +316,7 @@ sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
                                          (oct_scores_long["distance"] == "eucl")],
             palette="pastel", width=0.5,
             hue=oct_scores_long["distance"][oct_scores_long["distance"] == "eucl"])
-plt.title("Near Misses - Distance Comparison - Euclidean")
+plt.title("Near Misses - Comparison - Euclidean")
 plt.show
 
 sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] != "eucl"],
@@ -323,7 +324,7 @@ sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] != "eucl"],
                                          (oct_scores_long["distance"] != "eucl")],
             palette="pastel", width=0.5,
             hue=oct_scores_long["distance"][oct_scores_long["distance"] != "eucl"])
-plt.title("Near Misses - Distance Comparison - SSIM")
+plt.title("Near Misses - Comparison - SSIM")
 plt.show
 
 # #### Compare misses+hits
@@ -334,14 +335,14 @@ sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
             y=oct_scores_long["value"][oct_scores_long["distance"] == "eucl"],
             palette="pastel", width=0.5,
             hue=oct_scores_long["nhnm"])
-plt.title("NHNM - Distance Comparison - Euclidean")
+plt.title("NHNM Comparison - Euclidean")
 plt.show
 
 sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "ssim"],
             y=oct_scores_long["value"][oct_scores_long["distance"] == "ssim"],
             palette="pastel", width=0.5,
             hue=oct_scores_long["nhnm"])
-plt.title("NHNM - Distance Comparison - SSIM")
+plt.title("NHNM Comparison - SSIM")
 plt.show
 
 
@@ -398,30 +399,44 @@ def sort_triangular(matrix):
 # +
 # jaccards.groupby(["df1_name", "df2_name"]).describe()
 
-def jaccards_heatmap(jaccards_df, column, title = None, vmin=None, vmax=None):
+def jaccards_heatmap(jaccards_df, column, title = None, vmin=None, vmax=None, metric="median", q=0.5):
     """
-    :param columns: str, one of "jaccard_misses", "jaccard_top_misses", "jaccard_hits", "jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"
+    :param column: str, one of "jaccard_misses", "jaccard_top_misses", "jaccard_hits", "jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"
     """
-    mean_topmisses = jaccards_df[[column,
-                                  "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).median().unstack()
+    # prepare data + sort into triangulart matrix
+    if metric == "mean":
+        mean_topmisses = jaccards_df[[column,
+                                      "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).mean().unstack()
+    elif metric == "quantile":
+        metric = str(q*100) + "%-quantile"
+        mean_topmisses = jaccards_df[[column,
+                                      "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).quantile(q).unstack()
+    else:
+        metric = "median"
+        mean_topmisses = jaccards_df[[column,
+                                      "df1_name", "df2_name"]].groupby(["df1_name", "df2_name"]).quantile(0.5).unstack()
     mean_topmisses.columns = mean_topmisses.columns.get_level_values(1)
     mean_topmisses = sort_triangular(mean_topmisses)
     
+    # set figure size + font size
     fig, ax = plt.subplots(figsize=(20,20))
     sns.set(font_scale=1.6)
+    # set boundary values for legend
     if (vmin is None) and (vmax is None):
         ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True)
     else:
         ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True,
                         vmin=vmin, vmax=vmax)
+    # set axes label, put them on top of the figure and rotate them
     ax.set(xlabel="df2", ylabel="df1")
     ax.xaxis.tick_top()
     texts = [t for t in ax.get_xticklabels()]
     plt.xticks(ticks=np.arange(0, len(texts))+0.5,
            labels=texts,
            rotation=90, ha="center")
+    # set title
     if title is None:
-        title = column
+        title = column + " - " + metric
     plt.title(title)
     plt.show()
 
@@ -449,11 +464,15 @@ for m1, df1 in mnist_df.items():
 jaccards
 # -
 
+jaccards.groupby(["df1_name", "df2_name"]).describe() #.transpose()
+
 jaccards_heatmap(jaccards, "jaccard_misses")
 jaccards_heatmap(jaccards, "jaccard_top_misses")
 jaccards_heatmap(jaccards, "jaccard_hits")
 
 # #### Jaccard Indices
+
+sns.reset_defaults()
 
 # raw
 jaccards[((jaccards.df1_name.str[-9:-6]== "000") |
@@ -505,18 +524,52 @@ jaccards.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"]
 jaccards.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"], by=["df1_name", "df2_name"],
                 figsize=(30,30), rot = 90, fontsize=20)
 
+# #### Statistical tests
+
+# t-test
+c = 0
+for m1 in jaccards.group.value_counts().index:
+    _, p = stats.ttest_1samp(a=jaccards[jaccards.group == m1]["jaccard_misses"], popmean=0)
+    if p > 0.01:  # p value too big, these are not different from an all 0 distribution
+        print(m1)
+        print(p)
+        c += 1
+print(c)
+
+# comparison to all 0 vector
+tmp = [0] * 100
+c = 0
+for m1 in jaccards.group.value_counts().index:
+    try:
+        _, p = stats.wilcoxon(jaccards[jaccards.group == m1]["jaccard_misses"],tmp)
+        if p > 0.005:  # p value too big, these are not different from an all 0 distribution
+            print(m1)
+            print(p)
+            c += 1
+    except ValueError:
+        print(m1)
+        print("all values 0")
+        c += 1
+print(c)
+
 # #### Result:
 #
 # all distances:
 # * Since Jaccard index is a measure of similarity 0 means that A nad B are totally different
 # * top 15 misses yield higher jaccard indices than top misses -> to be expected since more variability in top15 allowed than in top misses. here the misses have to match per category
 # * not surprisingly distances on the raw images produce same NHNM for CNN and VGG -> model is not used here anyway
+# * all combinations yield Jaccard Indices pretty close to 0 -> all combinations seem to yield different results
+# * conducting a Wilcoxon Rank Test to a vector of 100*0, alpha = 0.005 (corrected for multiple 91x testing) we can see that in 15 cases we can not reject the Nullhypothesis that the JaccardIndices are indeed 0.
+# * although t-Test normality distribution assumption not met - 13 cases we can not reject the Nullhypothesis that the JaccardIndices are indeed 0
 #
 # euclidean:
 # * 0010_eucl to 0010_ssim yields the most similar results in the top 15 missed, same goes for top misses
 # * 0101_eucl is pretty similar to all the rawData hits/misses -> FE of VGG gives not much different information than raw image data
 # * results for VGG are different than those for CNN: 0101_eucl produces similar results to all rawData models (ssim and cw) -> 0101_eucl (FE) does not give much different information than the rawData; not surpising since this was run on VGG and thus not much of an information gain was to be expected
 # * no similarity can be seen when looking at 0010_eucl/0010_ssim to 0011_eucl which was to be expected -> CNN gives different information than general VGG; same goes for 010_eucl to 0101_eucl
+#
+# ## TODO!!
+#
 
 # ### OCT
 
@@ -548,6 +601,12 @@ jaccards_heatmap(jaccards_oct, "jaccard_misses")
 jaccards_heatmap(jaccards_oct, "jaccard_top_misses")
 jaccards_heatmap(jaccards_oct, "jaccard_hits")
 
+jaccards_heatmap(jaccards_oct, "jaccard_misses", metric = "quantile", q=0.9)
+jaccards_heatmap(jaccards_oct, "jaccard_top_misses", metric = "quantile", q=0.9)
+jaccards_heatmap(jaccards_oct, "jaccard_hits", metric = "quantile", q=0.9)
+
+sns.reset_defaults()
+
 jaccards_oct.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
                  figsize=(30, 30), rot=90, fontsize=20)
 
@@ -556,11 +615,49 @@ jaccards_oct.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "ja
                  figsize=(30, 30), rot=90, fontsize=20)
 
 
+# #### Statistical tests
+
+# t-test
+c = 0
+for m1 in jaccards_oct.group.value_counts().index:
+    _, p = stats.ttest_1samp(a=jaccards_oct[jaccards_oct.group == m1]["jaccard_misses"], popmean=0)
+    if p > 0.01:  # p value too big, these are not different from an all 0 distribution
+        print(m1)
+        print(p)
+        c += 1
+print(c)
+
+# comparison to all 0 vector
+tmp = [0] * 100
+c = 0
+for m1 in jaccards_oct.group.value_counts().index:
+    try:
+        _, p = stats.wilcoxon(jaccards_oct[jaccards_oct.group == m1]["jaccard_misses"],tmp)
+        if p > 0.005:  # p value too big, these are not different from an all 0 distribution
+            print(m1)
+            print(p)
+            c += 1
+    except ValueError:
+        print(m1)
+        print("all values 0")
+        c += 1
+print(c)
+
 # #### Results:
-# old:
-# * Similar to mnist, but more prominent
-# * Except for the SSIM-threshold which seems to not give similar results to any of the other metrics. Only for the overall misses there are some overlaps to SSIM
-# * This is different to the mnist dataset
+# all distances:
+#
+# same as for MNIST:
+# * Since Jaccard index is a measure of similarity 0 means that A nad B are totally different
+# * not surprisingly distances on the raw images produce same NHNM for CNN and VGG -> model is not used here anyway
+#
+# different from MNIST:
+# * top 15 misses DO NOT yield higher jaccard indices than top misses in general
+# * all combinations have Jaccard Indices close to 0. This might have two reasons:
+#     * A lot more training samples to choose from (73k for oct vs 22k for mnist) -> more possibilities mean more possibile variety -> solution would be to first cluster the training examples and only take the near miss/hits from here
+#     * not enough test samples evaluated. 100 might not be enough
+# * if anything then the raw images evaluated with SSIM have some little points in common with the Euclidean distance on FE
+#
+# -> Qualitative evaluation needed
 
 plt.close("all")
 
