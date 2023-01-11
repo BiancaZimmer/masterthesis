@@ -127,8 +127,6 @@ plt.xticks(ticks=range(0, len(scores_names)+1),
 plt.title("Near Hits - Distance Comparison")
 plt.show
 
-# mnist_scores.boxplot(column=scores_top_names, rot= 10)
-
 sns.boxplot(data=mnist_scores[scores_names[1:]], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(scores_names[1:])+1),
            labels=[name.split("_")[2] for name in scores_names[1:]],
