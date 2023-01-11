@@ -167,11 +167,17 @@ def plot_nhnm_overview_from_input(lst,
 
     # Initialize Feature Extractor Instance
     options_cnn = True if type_of_model == "cnn" else False
-    tmp_model = load_model_from_folder(dataset, suffix_path=suffix_path)
-    fe = FeatureExtractor(loaded_model=tmp_model,
-                          model_name=str.upper(type_of_model),
-                          options_cnn=options_cnn,
-                          feature_model_output_layer=get_output_layer(tmp_model, type_of_model))
+    if suffix_path == "":
+        fe = FeatureExtractor(loaded_model=None,
+                              model_name=str.upper(type_of_model),
+                              options_cnn=options_cnn,
+                              feature_model_output_layer=None)
+    else:
+        tmp_model = load_model_from_folder(dataset, suffix_path=suffix_path)
+        fe = FeatureExtractor(loaded_model=tmp_model,
+                              model_name=str.upper(type_of_model),
+                              options_cnn=options_cnn,
+                              feature_model_output_layer=get_output_layer(tmp_model, type_of_model))
     data = DataSet(dataset, fe)
 
     # if distance measure requires feature embedding check whether all are created and if not -> create them
@@ -190,30 +196,33 @@ def plot_nhnm_overview_from_input(lst,
 
         print("... newly loaded feature embeddings, which were not considered yet : ", i)
 
-    # initialize model
-    if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape # model_for_feature_embedding is None and
-        sel_model = ModelSetup(data, sel_size=224)
-    else:
-        sel_model = ModelSetup(data)
-    sel_model._preprocess_img_gen()
-    sel_model.set_model(suffix_path=suffix_path)
-
-    if type_of_model == 'cnn':
-        sel_model.mode_rgb = False
-    else:
-        sel_model.mode_rgb = True
-
     test_img = DataEntry(fe, dataset, change_imgpath(lst[0]))
     img, x = fe.load_preprocess_img(test_img.img_path)
 
     pred_label = test_img.ground_truth_label
 
     if use_prediction:
+        # initialize model
+        if type_of_model == "vgg":  # VGG16 will be used -> needs correct input shape # model_for_feature_embedding is None and
+            sel_model = ModelSetup(data, sel_size=224)
+        else:
+            sel_model = ModelSetup(data)
+        sel_model._preprocess_img_gen()
+        sel_model.set_model(suffix_path=suffix_path)
+
+        if type_of_model == 'cnn':
+            sel_model.mode_rgb = False
+        else:
+            sel_model.mode_rgb = True
+
         pred_label, pred_prob = sel_model.pred_test_img(test_img)
         print("Ground Truth: ", test_img.ground_truth_label)
         print("Prediction: ", pred_label)
         print("Probability: ", pred_prob)
 
+    # pred_label needs to be a string
+    if type(pred_label) != str:
+        pred_label = pred_label[0]
     # near hits
     scores_nearest_hit = lst[2]
     ranked_nearest_hit_data_entry = [DataEntry(fe, dataset, change_imgpath(path)) for path in lst[1]]
@@ -239,7 +248,7 @@ def plot_nhnm_overview_from_input(lst,
         if distance_on_image and not raw:
             # get correct path to heatmap
             test_image_name = str.split(test_img.img_name, ".")[0]
-            test_image_heatmap_path = os.path.join(heatmap_directory, "test", pred_label[0],
+            test_image_heatmap_path = os.path.join(heatmap_directory, "test", pred_label,
                                                    test_image_name + "_heatmap.png")
             plt.subplot(2, 1, 2)
             plt.title("Heatmap", weight='bold', size=12)
@@ -256,7 +265,7 @@ def plot_nhnm_overview_from_input(lst,
         fig2.savefig("fig2.png", bbox_inches='tight')
         plt.close()
         if distance_on_image and not raw:
-            fig3 = plot_nmnh_heatmaps(ranked_nearest_hit_data_entry, scores_nearest_hit, pred_label[0],
+            fig3 = plot_nmnh_heatmaps(ranked_nearest_hit_data_entry, scores_nearest_hit, pred_label,
                                       title="Near Hits Heatmaps")
             fig3.savefig("fig3.png", bbox_inches='tight')
             plt.close()
@@ -268,7 +277,7 @@ def plot_nhnm_overview_from_input(lst,
         plt.close()
         if distance_on_image and not raw:
             fig5 = plot_nmnh_heatmaps(np.concatenate(ranked_nearest_miss_multi_data_entry),
-                                      np.concatenate(scores_nearest_miss_multi), pred_label[0],
+                                      np.concatenate(scores_nearest_miss_multi), pred_label,
                                       title="Near Misses Heatmaps per Class")
             fig5.savefig("fig5.png", bbox_inches='tight')
             plt.close()
@@ -293,19 +302,26 @@ def plot_nhnm_overview_from_input(lst,
         pic_all = hconcat_resize_max([pic1, vconcat_resize_min([pic23, pic45])])
         save_path = STATIC_DIR+"/"+test_img.img_name+"_"+save_name+"_eval.png"
         cv2.imwrite(save_path, pic_all)
+        plt.close("all")
 
 
 if __name__ == '__main__':
-    combination = "1100_eucl"
+    # _cnn_seed3871
+    combination = "011_cw"
+    use_prediction = False
+    raw = False
+    distance_on_image = True
+    # #000_eucl  #001_eucl  #000_ssim #001_ssim  #100_eucl  #101_eucl  010_eucl  010_ssim  #011_eucl #011_ssim
+    # #000_cw #001_cw 010_cw #011_cw
 
-    for i in range(0, 5):
-        # plot_nhnm_overview_from_input(list(mnist_df[combination].iloc[i]),
-        #                                   "mnist_1247", suffix_path="_cnn_seed3871", type_of_model="cnn", save_name=combination,
-        #                                   top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=True)
-        plot_nhnm_overview_from_input(list(oct_df[combination].iloc[i]),
-                                          "oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn", save_name=combination,
-                                          top_n=TOP_N_NMNH, use_prediction=True, raw=False, distance_on_image=False)
-
-
-
-
+    for i in range(0, 20):
+        plot_nhnm_overview_from_input(list(mnist_df["0" + combination].iloc[i]),
+                                      "mnist_1247", suffix_path="", type_of_model="vgg",
+                                      save_name="0" + combination,  top_n=TOP_N_NMNH,
+                                      use_prediction=use_prediction, raw=raw, distance_on_image=distance_on_image)
+    for i in range(0, 20):
+        plot_nhnm_overview_from_input(list(oct_df["1" + combination].iloc[i]),
+                                      "oct_cc", suffix_path="", type_of_model="vgg",
+                                      save_name="1" + combination, top_n=TOP_N_NMNH,
+                                      use_prediction=use_prediction, raw=raw, distance_on_image=distance_on_image)
+        #011_eucl 011_ssim
