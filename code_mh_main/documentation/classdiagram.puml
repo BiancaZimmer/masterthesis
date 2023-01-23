@@ -3,8 +3,8 @@
 
 Dataset *-- "many" DataEntry: > contains
 Modelsetup <|- "1" Dataset: > contains
-DataEntry <|- FeatureExtractor: > contains
-Dataset <|- FeatureExtractor: > contains
+DataEntry <|- "1" FeatureExtractor: > contains
+Dataset <|- "1" FeatureExtractor: > contains
 
 class DataEntry{
 .. Init ..
@@ -47,6 +47,7 @@ class Dataset{
 class Modelsetup{
 .. Init ..
     selected_dataset: str
+    dataset: DataSet
     img_size: int
     batch_size: int
 .. for Image Generator ..
