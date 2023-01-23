@@ -426,8 +426,8 @@ class ModelSetup():
             print(losses)
             plt.figure(figsize=(10, 6))
             plt.title("Loss/Accuracy Plot", size=20, weight='bold')
-            plt.ylabel('Epochs', size=14, weight='bold')
-            plt.xlabel('Loss/Accuracy', size=14, weight='bold')
+            plt.ylabel('Loss/Accuracy', size=14, weight='bold')
+            plt.xlabel('Epochs', size=14, weight='bold')
             train_loss, = plt.plot(losses['loss'])
             train_acc, = plt.plot(losses['accuracy'])
             val_loss, = plt.plot(losses['val_loss'])
@@ -613,6 +613,8 @@ class ModelSetup():
         print(f'[=>] {len(idx_misclassified)} misclassified images with names: {misclassified_names}')
 
         misclassified = [entry for entry in self.dataset.data_t if entry.img_name in misclassified_names]
+        if len(misclassified) > 15:
+            misclassified = random.choices(misclassified, k=15)
 
         if plot:
             plt.figure(figsize=(20, 8))
@@ -621,7 +623,7 @@ class ModelSetup():
                 label = misentry.ground_truth_label
                 predicted_label, prob = self.pred_test_img(misentry, plot=False)
 
-                plt.subplot(int(np.ceil(len(idx_misclassified)/5)), 5, i+1)
+                plt.subplot(int(np.ceil(len(misclassified)/5)), 5, i+1)
                 
                 plt.title(f"{misentry.img_name}\n\
                 Actual Label : {label}\n\
