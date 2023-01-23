@@ -196,6 +196,7 @@ class PrototypesSelector:
             - list_errorm (`list`) - List of error rates 
             - list_accuracym (`list`) - List of accuracy
             - list_recallm (`list`) - List of recall
+            - list_f1m (`list`) - List of F1 scores
         """
 
         assert self.prototypes_per_class is not None, "No Prototypes selected yet! Please, fit the Selector first!"
@@ -229,17 +230,19 @@ class PrototypesSelector:
         list_errorm = []
         list_accuracym = []
         list_recallm = []
+        list_f1m = []
 
         for testm in test_num_prototypes:
             classifier = Classifier()
             classifier.build_model(X_train[list(range(0,testm)) + list(range(self.num_prototypes, self.num_prototypes+testm)), :],
                                    y_train[list(range(0, testm)) + list(range(self.num_prototypes,self.num_prototypes+testm))],
                                    self.verbose)
-            accuracym, errorm, recallm = classifier.classify(X_test, y_test, self.verbose)
+            accuracym, errorm, recallm, f1m = classifier.classify(X_test, y_test, self.verbose)
 
             list_errorm.append(errorm)
             list_accuracym.append(accuracym)
             list_recallm.append(recallm)
+            list_f1m.append(f1m)
 
             if self.verbose > 1 and testm == self.num_prototypes:
                 print('########################## RESULTS for 【 m=%d 】Prototype ############# '% (testm))
@@ -248,24 +251,26 @@ class PrototypesSelector:
                     print("Classified data points: ", len(y_test))
                 print(f"Accuracys for [1 to m={self.num_prototypes}] selected prototypes: {list_accuracym}")
                 print(f"Recalls for [1 to m={self.num_prototypes}] and prototypes: {list_recallm}")
+                print(f"F1-scores for [1 to m={self.num_prototypes}] and prototypes: {list_f1m}")
                 print('####################################################################### ')
 
-        return list_errorm, list_accuracym, list_recallm  
+        return list_errorm, list_accuracym, list_recallm, list_f1m
 
-    def score(self, X=None, y=None, sel_metric: str = 'recall'):
+    def score(self, X=None, y=None, sel_metric: str = 'f1score'):
         """Run 1-NN classifier (over the range of the selected number of prototypes) and calculate the metrics, that is also used for optimizing in GridSearchCV.
 
         :param X: always None, not used, needs to be there in order for GridSearchcv to work
         :param y: always None, not used, needs to be there in order for GridSearchcv to work
-        :param sel_metric: Select a metric among `accuracy`, `error` or `recall`, defaults to recall
+        :param sel_metric: Select a metric among `accuracy`, `error`, `f1score` or `recall`, defaults to f1score
         :type sel_metric: str, optional
         :return: *self* (`dict`) - Return the value of selected metric.
         """
 
-        errors, accuracys, recalls = self._test_1NN()
+        errors, accuracys, recalls, f1 = self._test_1NN()
         error = errors[-1]
         accuracy = accuracys[-1]
         recall = np.mean(recalls[-1])
+        f1score = f1[-1]
         
         self.mmd2_per_class = self._calc_mmd2()
         
@@ -294,6 +299,8 @@ class PrototypesSelector:
             return accuracy
         elif sel_metric == 'error':
             return error
+        elif sel_metric == 'f1score':
+            return f1score
         else:
             print("Select either 'recall', 'accuracy' or 'error' as metric!")
 
@@ -913,72 +920,72 @@ if __name__ == "__main__":
 
     # =========== Find best gamma values ===========
     running_test_for = "gamma"
-    # find_best_gamma_value()
+    find_best_gamma_value()
 
     # =========== Save all prototypes locally with tuned parameters ===========
     running_test_for = "nothing"
     # Run this code if you want to create the prototypes
-    from modelsetup import get_output_layer
-
-    # prepare datasets for MNIST data with trained CNN model and untrained VGG
-    model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "mnist_1247" +
-                                                          str("_cnn_seed3871") + '.hdf5'))
-    fe_mnist_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
-                                    model_name=str.upper("cnn"),
-                                    options_cnn=True,
-                                    feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
-    dataset_mnist_cnn = DataSet(name="mnist_1247", fe=fe_mnist_cnn)
-
-    fe_mnist_vgg = FeatureExtractor(loaded_model=None,
-                                    model_name=str.upper("vgg"),
-                                    options_cnn=False,
-                                    feature_model_output_layer=None)
-    dataset_mnist_vgg = DataSet(name="mnist_1247", fe=fe_mnist_vgg)
-
-    # prepare datasets for OCT data with trained CNN model and untrained VGG (same as above, only different dataset name)
-    model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "oct_cc" +
-                                                          str("_cnn_seed3871") + '.hdf5'))
-    fe_oct_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
-                                    model_name=str.upper("cnn"),
-                                    options_cnn=True,
-                                    feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
-    dataset_oct_cnn = DataSet(name="oct_cc", fe=fe_oct_cnn)
-
-    fe_oct_vgg = FeatureExtractor(loaded_model=None,
-                                    model_name=str.upper("vgg"),
-                                    options_cnn=False,
-                                    feature_model_output_layer=None)
-    dataset_oct_vgg = DataSet(name="oct_cc", fe=fe_oct_vgg)
-
-    # Please see the table in the master thesis for all the selected gamma and prototype values
-    # we insert them here directly
-    # sel_size = 224 for all VGG16; =84 for MNIST CNN; =299 for OCT CNN
-    # these values can also be inferred from the models' input shape
-
-    parameters_for_prototypes = {"0000": [3, False, False, 84, 0.0001417233560090703],
-                                 "0100": [3, True, False, 84, 1e-08],
-                                 "0010": [3, False, True, 84, 0.0001417233560090703],
-                                 "0001": [3, False, False, 224, 0.001],
-                                 "0101": [3, True, False, 224, 0.0001],
-                                 "0011": [3, False, True, 224, 1],
-                                 "1000": [4, False, False, 299, 0.001],
-                                 "1100": [4, True, False, 299, 1e-08],
-                                 "1010": [4, False, True, 299, 0.01],
-                                 "1001": [4, False, False, 224, 0.1],
-                                 "1101": [4, True, False, 224, 1e-07],
-                                 "1011": [4, False, True, 224, 0.01]}
-    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
+    # from modelsetup import get_output_layer
+    #
+    # # prepare datasets for MNIST data with trained CNN model and untrained VGG
+    # model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "mnist_1247" +
+    #                                                       str("_cnn_seed3871") + '.hdf5'))
+    # fe_mnist_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
+    #                                 model_name=str.upper("cnn"),
+    #                                 options_cnn=True,
+    #                                 feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
+    # dataset_mnist_cnn = DataSet(name="mnist_1247", fe=fe_mnist_cnn)
+    #
+    # fe_mnist_vgg = FeatureExtractor(loaded_model=None,
+    #                                 model_name=str.upper("vgg"),
+    #                                 options_cnn=False,
+    #                                 feature_model_output_layer=None)
+    # dataset_mnist_vgg = DataSet(name="mnist_1247", fe=fe_mnist_vgg)
+    #
+    # # prepare datasets for OCT data with trained CNN model and untrained VGG (same as above, only different dataset name)
+    # model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "oct_cc" +
+    #                                                       str("_cnn_seed3871") + '.hdf5'))
+    # fe_oct_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
+    #                                 model_name=str.upper("cnn"),
+    #                                 options_cnn=True,
+    #                                 feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
+    # dataset_oct_cnn = DataSet(name="oct_cc", fe=fe_oct_cnn)
+    #
+    # fe_oct_vgg = FeatureExtractor(loaded_model=None,
+    #                                 model_name=str.upper("vgg"),
+    #                                 options_cnn=False,
+    #                                 feature_model_output_layer=None)
+    # dataset_oct_vgg = DataSet(name="oct_cc", fe=fe_oct_vgg)
+    #
+    # # Please see the table in the master thesis for all the selected gamma and prototype values
+    # # we insert them here directly
+    # # sel_size = 224 for all VGG16; =84 for MNIST CNN; =299 for OCT CNN
+    # # these values can also be inferred from the models' input shape
+    #
+    # parameters_for_prototypes = {"0000": [3, False, False, 84, 0.0001417233560090703],
+    #                              "0100": [3, True, False, 84, 1e-08],
+    #                              "0010": [3, False, True, 84, 0.0001417233560090703],
+    #                              "0001": [3, False, False, 224, 0.001],
+    #                              "0101": [3, True, False, 224, 0.0001],
+    #                              "0011": [3, False, True, 224, 1],
+    #                              "1000": [4, False, False, 299, 0.001],
+    #                              "1100": [4, True, False, 299, 1e-08],
+    #                              "1010": [4, False, True, 299, 0.01],
+    #                              "1001": [4, False, False, 224, 0.1],
+    #                              "1101": [4, True, False, 224, 1e-07],
+    #                              "1011": [4, False, True, 224, 0.01]}
+    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
 
     # ================ END of code for master thesis recreation ================
 
