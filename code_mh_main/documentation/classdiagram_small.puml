@@ -1,0 +1,50 @@
+@startuml classdiagram.png
+'https://plantuml.com/class-diagram
+
+skinparam defaultFontSize 20
+
+Dataset *-- "many" DataEntry: > contains
+Modelsetup <|- Dataset: > contains
+DataEntry <|- FeatureExtractor: > contains
+Dataset <|- FeatureExtractor: > contains
+
+class DataEntry{
+    fe: FeatureExtractor
+    dataset: str
+    img_path: str
+}
+
+class Dataset{
+    name: str
+    fe: FeatureExtractor
+    path_datasets: str
+    data: list of DataEntry
+    data_t: list of DataEntry
+    available_classes: list of str
+}
+
+class Modelsetup{
+.. Init ..
+    selected_dataset: str
+    dataset: DataSet
+    img_size: int
+    batch_size: int
+.. for Image Generator ..
+    train_set: ImageDataGenerator
+    val_set: ImageDataGenerator
+    test_set: ImageDataGenerator
+    mode_rgb: bool
+.. Model specific ..
+    model: Keras.training.engine.Model
+    model_history: json
+    predictions: numpy.array
+    labelencoder: LabelEncoder
+    correct_for_imbalanced_data: bool
+}
+
+class FeatureExtractor{
+rgb: bool
+fe_model: Model
+}
+
+@enduml
