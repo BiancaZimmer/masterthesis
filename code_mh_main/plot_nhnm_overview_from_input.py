@@ -307,21 +307,20 @@ def plot_nhnm_overview_from_input(lst,
 
 if __name__ == '__main__':
     # _cnn_seed3871
-    combination = "011_cw"
+    combination = "011_eucl"
     use_prediction = False
     raw = False
     distance_on_image = True
-    # #000_eucl  #001_eucl  #000_ssim #001_ssim  #100_eucl  #101_eucl  010_eucl  010_ssim  #011_eucl #011_ssim
-    # #000_cw #001_cw 010_cw #011_cw
+    # #000_eucl  #001_eucl  #000_ssim #001_ssim  #100_eucl  #101_eucl  #010_eucl  #010_ssim  #011_eucl #011_ssim
+    # #000_cw #001_cw #010_cw #011_cw
 
-    for i in range(0, 20):
-        plot_nhnm_overview_from_input(list(mnist_df["0" + combination].iloc[i]),
-                                      "mnist_1247", suffix_path="", type_of_model="vgg",
-                                      save_name="0" + combination,  top_n=TOP_N_NMNH,
-                                      use_prediction=use_prediction, raw=raw, distance_on_image=distance_on_image)
+    # for i in range(0, 20):
+    #     plot_nhnm_overview_from_input(list(mnist_df["0" + combination].iloc[i]),
+    #                                   "mnist_1247", suffix_path="_cnn_seed3871", type_of_model="cnn",
+    #                                   save_name="0" + combination,  top_n=TOP_N_NMNH,
+    #                                   use_prediction=use_prediction, raw=raw, distance_on_image=distance_on_image)
     for i in range(0, 20):
         plot_nhnm_overview_from_input(list(oct_df["1" + combination].iloc[i]),
                                       "oct_cc", suffix_path="", type_of_model="vgg",
                                       save_name="1" + combination, top_n=TOP_N_NMNH,
                                       use_prediction=use_prediction, raw=raw, distance_on_image=distance_on_image)
-        #011_eucl 011_ssim
