@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from prototype_selection import *
-from sklearn.metrics import recall_score
+from sklearn.metrics import recall_score, f1_score
 
 # simple class to build 1NN classifier and classify using it
 class Classifier:
@@ -57,7 +57,8 @@ class Classifier:
         err = 1 - acc
 
         recall = recall_score(testy, predy, average=None)
+        f1 = f1_score(testy, predy, average="weighted")
 
-        return acc, err, recall
+        return acc, err, recall, f1
 
 
