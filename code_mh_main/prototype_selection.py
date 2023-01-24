@@ -201,8 +201,6 @@ class PrototypesSelector:
 
         assert self.prototypes_per_class is not None, "No Prototypes selected yet! Please, fit the Selector first!"
 
-        test_num_prototypes = list(range(1, self.num_prototypes+1))
-
         eval_classes = self.prototypes_per_class.keys()
 
         if self.use_image_embeddings:
@@ -227,34 +225,22 @@ class PrototypesSelector:
         # print("len of X_test:" , np.shape(X_test))
         # print("len of y_test:" , np.shape(y_test))
 
-        list_errorm = []
-        list_accuracym = []
-        list_recallm = []
-        list_f1m = []
+        classifier = Classifier()
+        classifier.build_model(X_train, y_train, self.verbose)
+        accuracym, errorm, recallm, f1m, f1sm = classifier.classify(X_test, y_test, self.verbose)
 
-        for testm in test_num_prototypes:
-            classifier = Classifier()
-            classifier.build_model(X_train[list(range(0,testm)) + list(range(self.num_prototypes, self.num_prototypes+testm)), :],
-                                   y_train[list(range(0, testm)) + list(range(self.num_prototypes,self.num_prototypes+testm))],
-                                   self.verbose)
-            accuracym, errorm, recallm, f1m = classifier.classify(X_test, y_test, self.verbose)
+        if self.verbose > 0:
+            print(f'################ RESULTS for {self.num_prototypes} Prototypes and classes {eval_classes} ############# ')
+            if self.verbose > 2:
+                print('Number of used prototype per class: ', self.num_prototypes)
+                print("Classified data points: ", len(y_test))
+            print(f"Accuracys for selected prototypes: {accuracym}")
+            print(f"Recalls for prototypes: {recallm}")
+            print(f"F1-score averaged for prototypes: {f1m}")
+            print(f"F1-scores for prototypes per class: {f1sm}")
+            print('############################################################################################# ')
 
-            list_errorm.append(errorm)
-            list_accuracym.append(accuracym)
-            list_recallm.append(recallm)
-            list_f1m.append(f1m)
-
-            if self.verbose > 1 and testm == self.num_prototypes:
-                print('########################## RESULTS for 【 m=%d 】Prototype ############# '% (testm))
-                if self.verbose > 2:
-                    print('Number of used prototype per class: ', testm)
-                    print("Classified data points: ", len(y_test))
-                print(f"Accuracys for [1 to m={self.num_prototypes}] selected prototypes: {list_accuracym}")
-                print(f"Recalls for [1 to m={self.num_prototypes}] and prototypes: {list_recallm}")
-                print(f"F1-scores for [1 to m={self.num_prototypes}] and prototypes: {list_f1m}")
-                print('####################################################################### ')
-
-        return list_errorm, list_accuracym, list_recallm, list_f1m
+        return accuracym, errorm, recallm, f1m, f1sm
 
     def score(self, X=None, y=None, sel_metric: str = 'f1score'):
         """Run 1-NN classifier (over the range of the selected number of prototypes) and calculate the metrics, that is also used for optimizing in GridSearchCV.
@@ -266,11 +252,8 @@ class PrototypesSelector:
         :return: *self* (`dict`) - Return the value of selected metric.
         """
 
-        errors, accuracys, recalls, f1 = self._test_1NN()
-        error = errors[-1]
-        accuracy = accuracys[-1]
-        recall = np.mean(recalls[-1])
-        f1score = f1[-1]
+        error, accuracy, recalls, f1score, f1scores = self._test_1NN()
+        recall = np.mean(recalls)
         
         self.mmd2_per_class = self._calc_mmd2()
         
@@ -290,6 +273,8 @@ class PrototypesSelector:
             print("Overall Error: ", error)
             print("Overall Accuracy: ", accuracy)
             print("Overall Recall: ", recall)
+            print("Overall F1-score: ", f1score)
+            print("All F1-scores: ", f1scores)
             print('MMD2 per class: ', self.mmd2_per_class)
             print('#######################################################################\n\n')
 
