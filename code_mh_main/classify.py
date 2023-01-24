@@ -59,6 +59,8 @@ class Classifier:
         recall = recall_score(testy, predy, average=None)
         f1 = f1_score(testy, predy, average="weighted")
 
+        print("F1scores: " + f1_score(testy, predy, average=None))
+
         return acc, err, recall, f1
 
 
