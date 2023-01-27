@@ -522,9 +522,9 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
 
                 # Visualize
                 if self.make_plots:
-                    num_cols = 4
+                    num_cols = 5
                     num_rows = math.ceil(self.num_prototypes / num_cols)
-                    fig, axes = plt.subplots(num_rows, num_cols, figsize=(24, num_rows * 3.0))
+                    fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, num_rows * 3.0))
                     for i, axis in enumerate(axes.ravel()):
                         if i >= self.num_prototypes:
                             axis.axis('off')
@@ -748,6 +748,11 @@ def find_best_gamma_value():
               "use_image_embeddings": [False],
               "use_lrp": [False],
               "num_prototypes": [5]}
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
+                               scree_params=params, save_path="static/0000_g5")
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
+                               save_path="static/0001_g5")
+
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/1000_g5")
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params,
@@ -767,7 +772,6 @@ def find_best_gamma_value():
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [3]}
-
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/0100_g3")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
@@ -782,7 +786,6 @@ def find_best_gamma_value():
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [4]}
-
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/0100_g4")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
@@ -797,6 +800,10 @@ def find_best_gamma_value():
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [5]}
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
+                               scree_params=params, save_path="static/0100_g5")
+    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
+                               save_path="static/0101_g5")
 
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/1100_g5")
@@ -807,7 +814,6 @@ def find_best_gamma_value():
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [6]}
-
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/1100_g6")
 
@@ -816,7 +822,6 @@ def find_best_gamma_value():
               "use_image_embeddings": [False],
               "use_lrp": [True],
               "num_prototypes": [3]}
-
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/0010_g3")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
@@ -831,7 +836,6 @@ def find_best_gamma_value():
               "use_image_embeddings": [False],
               "use_lrp": [True],
               "num_prototypes": [4]}
-
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/0010_g4")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
@@ -846,7 +850,6 @@ def find_best_gamma_value():
               "use_image_embeddings": [False],
               "use_lrp": [True],
               "num_prototypes": [5]}
-
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
                                scree_params=params, save_path="static/0010_g5")
     gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
@@ -874,12 +877,12 @@ def fit_score_save_prototypes(dataset, input_params: array, make_plots: bool = F
     sel_size = input_params[3]
     gamma = input_params[4]
 
-    tester_KMedoids = PrototypesSelector_KMedoids(dataset, num_prototypes=num_prototypes,
-                                                  use_image_embeddings=use_image_embeddings, use_lrp=use_lrp,
-                                                  make_plots=make_plots, verbose=verbose, sel_size=sel_size)
-    tester_KMedoids.fit()
-    tester_KMedoids.score()
-    tester_KMedoids.save_prototypes(name="KMedoids")
+    # tester_KMedoids = PrototypesSelector_KMedoids(dataset, num_prototypes=num_prototypes,
+    #                                               use_image_embeddings=use_image_embeddings, use_lrp=use_lrp,
+    #                                               make_plots=make_plots, verbose=verbose, sel_size=sel_size)
+    # tester_KMedoids.fit()
+    # tester_KMedoids.score()
+    # tester_KMedoids.save_prototypes(name="KMedoids")
 
     tester_MMD = PrototypesSelector_MMD(dataset, gamma=gamma, num_prototypes=num_prototypes,
                                         use_image_embeddings=use_image_embeddings, use_lrp=use_lrp,
@@ -917,90 +920,70 @@ if __name__ == "__main__":
     running_test_for = "gamma"
     # find_best_gamma_value()
 
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
-              "use_image_embeddings": [False],
-              "use_lrp": [False],
-              "num_prototypes": [5]}
-
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
-                               scree_params=params, save_path="static/0000_g5")
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
-                               save_path="static/0001_g5")
-
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12],
-              "use_image_embeddings": [True],
-              "use_lrp": [False],
-              "num_prototypes": [5]}
-
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model='cnn',
-                               scree_params=params, save_path="static/0100_g5")
-    gridsearch_crossval_forMMD(dataset_to_use="mnist_1247", suffix_path="", type_of_model='vgg', scree_params=params,
-                               save_path="static/0101_g5")
-
     # =========== Save all prototypes locally with tuned parameters ===========
     running_test_for = "nothing"
     # # Run this code if you want to create the prototypes
-    # from modelsetup import get_output_layer
-    #
-    # # prepare datasets for MNIST data with trained CNN model and untrained VGG
-    # model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "mnist_1247" +
-    #                                                       str("_cnn_seed3871") + '.hdf5'))
-    # fe_mnist_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
-    #                                 model_name=str.upper("cnn"),
-    #                                 options_cnn=True,
-    #                                 feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
-    # dataset_mnist_cnn = DataSet(name="mnist_1247", fe=fe_mnist_cnn)
-    #
-    # fe_mnist_vgg = FeatureExtractor(loaded_model=None,
-    #                                 model_name=str.upper("vgg"),
-    #                                 options_cnn=False,
-    #                                 feature_model_output_layer=None)
-    # dataset_mnist_vgg = DataSet(name="mnist_1247", fe=fe_mnist_vgg)
-    #
-    # # prepare datasets for OCT data with trained CNN model and untrained VGG (same as above, only different dataset name)
-    # model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "oct_cc" +
-    #                                                       str("_cnn_seed3871") + '.hdf5'))
-    # fe_oct_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
-    #                                 model_name=str.upper("cnn"),
-    #                                 options_cnn=True,
-    #                                 feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
-    # dataset_oct_cnn = DataSet(name="oct_cc", fe=fe_oct_cnn)
-    #
-    # fe_oct_vgg = FeatureExtractor(loaded_model=None,
-    #                                 model_name=str.upper("vgg"),
-    #                                 options_cnn=False,
-    #                                 feature_model_output_layer=None)
-    # dataset_oct_vgg = DataSet(name="oct_cc", fe=fe_oct_vgg)
-    #
-    # # Please see the table in the master thesis for all the selected gamma and prototype values
-    # # we insert them here directly
-    # # sel_size = 224 for all VGG16; =84 for MNIST CNN; =299 for OCT CNN
-    # # these values can also be inferred from the models' input shape
-    #
-    # parameters_for_prototypes = {"0000": [4, False, False, 84, 0.01],
-    #                              "0100": [4, True, False, 84, 1e-06],
-    #                              "0010": [4, False, True, 84, 0.0001417233560090703],
-    #                              "0001": [4, False, False, 224, 0.001],
-    #                              "0101": [4, True, False, 224, 3.985969387755102e-05],
-    #                              "0011": [4, False, True, 224, 0.001],
-    #                              "1000": [5, False, False, 299, 0.001],
-    #                              "1100": [5, True, False, 299, 1e-10],
-    #                              "1010": [5, False, True, 299, 0.001],
-    #                              "1001": [5, False, False, 224, 0.01],
-    #                              "1101": [5, True, False, 224, 1e-05],
-    #                              "1011": [5, False, True, 224, 0.1]}
+    from modelsetup import get_output_layer
+
+    # prepare datasets for MNIST data with trained CNN model and untrained VGG
+    model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "mnist_1247" +
+                                                          str("_cnn_seed3871") + '.hdf5'))
+    fe_mnist_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
+                                    model_name=str.upper("cnn"),
+                                    options_cnn=True,
+                                    feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
+    dataset_mnist_cnn = DataSet(name="mnist_1247", fe=fe_mnist_cnn)
+
+    fe_mnist_vgg = FeatureExtractor(loaded_model=None,
+                                    model_name=str.upper("vgg"),
+                                    options_cnn=False,
+                                    feature_model_output_layer=None)
+    dataset_mnist_vgg = DataSet(name="mnist_1247", fe=fe_mnist_vgg)
+
+    # prepare datasets for OCT data with trained CNN model and untrained VGG (same as above, only different dataset name)
+    model_for_feature_embedding = load_model(os.path.join(STATIC_DIR, 'models', 'model_history_' + "oct_cc" +
+                                                          str("_cnn_seed3871") + '.hdf5'))
+    fe_oct_cnn = FeatureExtractor(loaded_model=model_for_feature_embedding,
+                                    model_name=str.upper("cnn"),
+                                    options_cnn=True,
+                                    feature_model_output_layer=get_output_layer(model_for_feature_embedding, "cnn"))
+    dataset_oct_cnn = DataSet(name="oct_cc", fe=fe_oct_cnn)
+
+    fe_oct_vgg = FeatureExtractor(loaded_model=None,
+                                    model_name=str.upper("vgg"),
+                                    options_cnn=False,
+                                    feature_model_output_layer=None)
+    dataset_oct_vgg = DataSet(name="oct_cc", fe=fe_oct_vgg)
+
+    # Please see the table in the master thesis for all the selected gamma and prototype values
+    # we insert them here directly
+    # sel_size = 224 for all VGG16; =84 for MNIST CNN; =299 for OCT CNN
+    # these values can also be inferred from the models' input shape
+
+    parameters_for_prototypes = {"0000": [4, False, False, 84, 0.01],
+                                 "0100": [4, True, False, 84, 1e-06],
+                                 "0010": [4, False, True, 84, 0.0001417233560090703],
+                                 "0001": [4, False, False, 224, 0.001],
+                                 "0101": [4, True, False, 224, 3.985969387755102e-05],
+                                 "0011": [4, False, True, 224, 0.001],
+                                 "1000": [5, False, False, 299, 0.001],
+                                 "1100": [5, True, False, 299, 1e-10],
+                                 "1010": [5, False, True, 299, 0.001],
+                                 "1001": [5, False, False, 224, 0.01],
+                                 "1101": [5, True, False, 224, 1e-05],
+                                 "1011": [5, False, True, 224, 0.1]}
     # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
     # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
     # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
     # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1)
     # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
     # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
 
     # ================ END of code for master thesis recreation ================
 
