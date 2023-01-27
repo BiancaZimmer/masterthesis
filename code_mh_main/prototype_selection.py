@@ -522,9 +522,9 @@ class PrototypesSelector_MMD(BaseEstimator, PrototypesSelector):
 
                 # Visualize
                 if self.make_plots:
-                    num_cols = 5
+                    num_cols = 4
                     num_rows = math.ceil(self.num_prototypes / num_cols)
-                    fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, num_rows * 3.0))
+                    fig, axes = plt.subplots(num_rows, num_cols, figsize=(12, num_rows * 3.0))
                     for i, axis in enumerate(axes.ravel()):
                         if i >= self.num_prototypes:
                             axis.axis('off')
@@ -972,18 +972,18 @@ if __name__ == "__main__":
                                  "1001": [5, False, False, 224, 0.01],
                                  "1101": [5, True, False, 224, 1e-05],
                                  "1011": [5, False, True, 224, 0.1]}
-    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
-    # fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
-    fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0000"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0100"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_cnn, parameters_for_prototypes["0010"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0001"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0101"], make_plots=True, verbose=1)
+    fit_score_save_prototypes(dataset_mnist_vgg, parameters_for_prototypes["0011"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1000"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1100"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_cnn, parameters_for_prototypes["1010"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1001"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1101"], make_plots=True, verbose=1)
+    # fit_score_save_prototypes(dataset_oct_vgg, parameters_for_prototypes["1011"], make_plots=True, verbose=1)
 
     # ================ END of code for master thesis recreation ================
 
