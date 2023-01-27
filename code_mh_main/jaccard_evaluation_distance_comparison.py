@@ -131,14 +131,16 @@ sns.boxplot(data=mnist_scores[scores_names[1:]], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(scores_names[1:])+1),
            labels=[name.split("_")[2] for name in scores_names[1:]],
            rotation=20, ha="right")
-plt.title("Near Hits - Distance Comparison")
+plt.ylim([0,0.6])
+plt.title("MNIST Near Hits - Distance Comparison")
 plt.show
 
 sns.boxplot(data=mnist_scores[scores_top_names[1:]], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(scores_top_names[1:])+1),
            labels=[name.split("_")[3] for name in scores_top_names[1:]],
            rotation=20, ha="right")
-plt.title("Near Misses - Distance Comparison")
+plt.ylim([0,0.6])
+plt.title("MNIST Near Misses - Distance Comparison")
 plt.show
 
 # #### Results:
@@ -163,11 +165,12 @@ oct_scores
 
 oct_scores.describe().transpose()
 
-sns.boxplot(data=oct_scores[scores_names[:-1]], palette="pastel", width=0.5)
-plt.xticks(ticks=range(0, len(scores_names[:-1])+1),
-           labels=[name.split("_")[2] for name in scores_names[1:]],
+sns.boxplot(data=oct_scores[scores_names[1:-1]], palette="pastel", width=0.5)
+plt.xticks(ticks=range(0, len(scores_names[1:-1])+1),
+           labels=[name.split("_")[2] for name in scores_names[1:-1]],
            rotation=20, ha="right")
-plt.title("Near Hits - Distance Comparison")
+plt.ylim([0,0.6])
+plt.title("OCT Near Hits - Distance Comparison")
 plt.show
 
 # oct_scores.boxplot(column=scores_names[1:-1], rot= 10)
@@ -176,14 +179,15 @@ sns.boxplot(data=oct_scores[scores_top_names[:-1]], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(scores_top_names[:-1])+1),
            labels=[name.split("_")[3] for name in scores_top_names[:-1]],
            rotation=20, ha="right")
-plt.title("Near Misses - Distance Comparison")
+plt.title("OCT Near Misses - Distance Comparison")
 plt.show
 
 sns.boxplot(data=oct_scores[scores_top_names[1:-1]], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(scores_top_names[1:-1])+1),
            labels=[name.split("_")[3] for name in scores_top_names[1:-1]],
            rotation=20, ha="right")
-plt.title("Near Misses - Distance Comparison")
+plt.ylim([0,0.6])
+plt.title("OCT Near Misses - Distance Comparison")
 plt.show
 
 
@@ -244,7 +248,7 @@ def jaccards_heatmap(jaccards_df, column, title = None, vmin=None, vmax=None):
     else:
         ax = sns.heatmap(mean_topmisses, annot=True, fmt=".3f", cmap='viridis', square = True,
                         vmin=vmin, vmax=vmax)
-    ax.set(xlabel="df2", ylabel="df1")
+    ax.set(xlabel="", ylabel="")
     ax.xaxis.tick_top()
     texts = [t for t in ax.get_xticklabels()]
     plt.xticks(ticks=np.arange(0, len(texts))+0.5,
@@ -278,9 +282,9 @@ for m1, df1 in mnist_df.items():
 jaccards
 # -
 
-jaccards_heatmap(jaccards, "jaccard_misses", vmax=1)
-jaccards_heatmap(jaccards, "jaccard_top_misses", vmax=1)
-jaccards_heatmap(jaccards, "jaccard_hits", vmax=1)
+jaccards_heatmap(jaccards, "jaccard_misses", vmax=1, title = "Jaccard Indices for MNIST Near Misses per Class")
+jaccards_heatmap(jaccards, "jaccard_top_misses", vmax=1, title = "Jaccard Indices for MNIST Top 5 Near Misses")
+jaccards_heatmap(jaccards, "jaccard_hits", vmax=1, title = "Jaccard Indices for MNIST Near Hits")
 
 sns.reset_defaults()
 jaccards.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
@@ -316,9 +320,9 @@ for m1, df1 in oct_df.items():
 jaccards_oct
 # -
 
-jaccards_heatmap(jaccards_oct, "jaccard_misses", vmax=1)
-jaccards_heatmap(jaccards_oct, "jaccard_top_misses", vmax=1)
-jaccards_heatmap(jaccards_oct, "jaccard_hits", vmax=1)
+jaccards_heatmap(jaccards_oct, "jaccard_misses", vmax=1, title = "Jaccard Indices for OCT Near Misses per Class")
+jaccards_heatmap(jaccards_oct, "jaccard_top_misses", vmax=1, title = "Jaccard Indices for OCT Top 5 Near Misses")
+jaccards_heatmap(jaccards_oct, "jaccard_hits", vmax=1, title = "Jaccard Indices for OCT Near Hits")
 
 sns.reset_defaults()
 jaccards_oct.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
