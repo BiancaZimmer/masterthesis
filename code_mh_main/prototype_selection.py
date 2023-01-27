@@ -763,7 +763,7 @@ def find_best_gamma_value():
                                save_path="static/1001_g6")
 
     # # With FE
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12],
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [3]}
@@ -778,7 +778,7 @@ def find_best_gamma_value():
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params,
                                save_path="static/1101_g3")
 
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12],
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [4]}
@@ -793,7 +793,17 @@ def find_best_gamma_value():
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params,
                                save_path="static/1101_g4")
 
-    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12],
+              "use_image_embeddings": [True],
+              "use_lrp": [False],
+              "num_prototypes": [5]}
+
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn',
+                               scree_params=params, save_path="static/1100_g5")
+    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="", type_of_model='vgg', scree_params=params,
+                               save_path="static/1101_g5")
+
+    params = {"gamma": [10, 8, 6, 4, 2, 1, None, 0.1, 0.01, 0.001, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12],
               "use_image_embeddings": [True],
               "use_lrp": [False],
               "num_prototypes": [6]}
@@ -910,18 +920,10 @@ if __name__ == "__main__":
     params = {"gamma": [1e-10, 1e-11, 1e-12],
               "use_image_embeddings": [True],
               "use_lrp": [False],
-              "num_prototypes": [5]}
+              "num_prototypes": [6]}
 
     gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn',
-                               scree_params=params, save_path="static/1100_g5-2")
-
-    params = {"gamma": [1e-10, 1e-11, 1e-12],
-              "use_image_embeddings": [True],
-              "use_lrp": [False],
-              "num_prototypes": [4]}
-
-    gridsearch_crossval_forMMD(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model='cnn',
-                               scree_params=params, save_path="static/1100_g4-2")
+                               scree_params=params, save_path="static/1100_g6-2")
 
     # =========== Save all prototypes locally with tuned parameters ===========
     running_test_for = "nothing"
@@ -963,12 +965,12 @@ if __name__ == "__main__":
     # # sel_size = 224 for all VGG16; =84 for MNIST CNN; =299 for OCT CNN
     # # these values can also be inferred from the models' input shape
     #
-    # parameters_for_prototypes = {"0000": [3, False, False, 84, 0.0001417233560090703],
-    #                              "0100": [3, True, False, 84, 1e-08],
-    #                              "0010": [3, False, True, 84, 0.0001417233560090703],
-    #                              "0001": [3, False, False, 224, 0.001],
-    #                              "0101": [3, True, False, 224, 0.0001],
-    #                              "0011": [3, False, True, 224, 1],
+    # parameters_for_prototypes = {"0000": [4, False, False, 84, 0.01],
+    #                              "0100": [4, True, False, 84, 1e-06],
+    #                              "0010": [4, False, True, 84, 0.0001417233560090703],
+    #                              "0001": [4, False, False, 224, 0.001],
+    #                              "0101": [4, True, False, 224, 3.985969387755102e-05],
+    #                              "0011": [4, False, True, 224, 0.001],
     #                              "1000": [4, False, False, 299, 0.001],
     #                              "1100": [4, True, False, 299, 1e-08],
     #                              "1010": [4, False, True, 299, 0.01],
