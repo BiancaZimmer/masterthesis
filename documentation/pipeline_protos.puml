@@ -1,0 +1,20 @@
+@startuml
+'https://plantuml.com/deployment-diagram
+
+skinparam defaultFontSize 15
+
+(*) -right-> preprocess raw images
+-right-> train model on images
+-right-> calculate feature embeddings\nand/or\ngenerate LRP heatmaps
+if "" then
+    --> select prototypes
+    --> qualitative evaluation of NHNM and prototypes
+else
+-left-> [select distance measure]  calculate near hits and near misses
+--> evaluate near hits and near misses\nvia Jaccard Index
+end if
+--> qualitative evaluation of NHNM and prototypes
+--> (*)
+
+
+@enduml
