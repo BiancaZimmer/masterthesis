@@ -23,7 +23,12 @@ def bk_proj(X):
 
 
 def heatmap(X):
-    return ivis.heatmap(X)
+    # creating a heatmap - other color types:
+    # "bwr" (lighter in color than seismic)
+    # "coolwarm" (grey instead of white as neutral value)
+    # "seismic"
+    # binary or greymap or gray are white to black or black to white
+    return ivis.heatmap(X, cmap_type="seismic")
 
 
 def graymap(X):
@@ -66,7 +71,16 @@ def methods_grayscale():
 
 def methods_mnist():
 
-    def scale(X):
+    def scale(X):  # scale data between [0,1]
+        a, b = X.min(), X.max()
+        c, d = [0, 1]
+        # shift original data to [0, b-a] (and copy)
+        X = X - a
+        # scale to new range gap [0, d-c]
+        X /= b - a
+        X *= d - c
+        # shift to desired output range
+        X += c
         return X
 
     # Configure analysis methods and properties
