@@ -8,6 +8,7 @@ code_mh_main/static/feature_embedding/
 code_mh_main/static/heatmaps/
 code_mh_main/static/media/
 code_mh_main/static/NHNM/
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
