@@ -175,20 +175,36 @@ mnist_scores.describe().transpose()
 
 # #### Distances for Hits
 
+# +
+plt.rcParams.update({'font.size': 14})
+
 cols = [scores_names[i] for i in eucl]
+plt.figure(figsize=(8,5))
+#plt.rcParams.update(plt.rcParamsDefault)
 sns.boxplot(data=mnist_scores[cols], palette="pastel", width=0.5)
 plt.xticks(ticks=range(0, len(cols)+1),
            labels=[name.split("_",2)[2] for name in cols],
            rotation=20, ha="right")
 plt.title("Near Hits - Distance Comparison - Euclidean")
 plt.show
+# -
 
-sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] != "eucl"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(8,5))
+sns.boxplot(x=mnist_scores_long["number"][(mnist_scores_long["distance"] != "eucl") &
+                                         (mnist_scores_long["number"] != "0001")],
             y=mnist_scores_long["value"][(mnist_scores_long["nhnm"] == "hit") &
                                          (mnist_scores_long["distance"] != "eucl")],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["distance"][mnist_scores_long["distance"] != "eucl"])
-plt.title("Near Misses - Distance Comparison - SSIM & CW")
+plt.xticks(ticks=range(0, 3),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('SSIM')
+L.get_texts()[1].set_text('CW-SSIM')
+plt.title("MNIST Near Hits - Distance Comparison")
 plt.show
 
 # #### Distances for Top Misses
@@ -201,36 +217,81 @@ plt.xticks(ticks=range(0, len(cols)+1),
 plt.title("Near Misses - Distance Comparison - Euclidean")
 plt.show
 
-sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] != "eucl"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(8,5))
+sns.boxplot(x=mnist_scores_long["number"][(mnist_scores_long["distance"] != "eucl") &
+                                         (mnist_scores_long["number"] != "0001")],
             y=mnist_scores_long["value"][(mnist_scores_long["nhnm"] == "misses") &
                                          (mnist_scores_long["distance"] != "eucl")],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["distance"][mnist_scores_long["distance"] != "eucl"])
-plt.title("Near Misses - Distance Comparison - SSIM & CW")
+plt.xticks(ticks=range(0, 3),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('SSIM')
+L.get_texts()[1].set_text('CW-SSIM')
+plt.title("MNIST Near Misses - Distance Comparison")
 plt.show
 
 # #### Compare misses + hits
 
 mnist_scores.describe().transpose()[["mean","50%"]]
 
-sns.boxplot(x=mnist_scores_long["number"], y=mnist_scores_long["value"][mnist_scores_long["distance"] == "eucl"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(6.5,5))
+sns.boxplot(x=mnist_scores_long["number"][(mnist_scores_long["number"] != "0001")],
+            y=mnist_scores_long["value"][(mnist_scores_long["distance"] == "eucl") &
+                                         (mnist_scores_long["number"] != "0001")],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["nhnm"])
-plt.title("NHNM - Distance Comparison - Euclidean")
+plt.xticks(ticks=range(0, 5),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16", "FE - CNN", "FE - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('Near Hits')
+L.get_texts()[1].set_text('Near Misses')
+plt.title("MNIST NHNM - Euclidean")
 plt.show
 
-sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] == "ssim"],
-            y=mnist_scores_long["value"][mnist_scores_long["distance"] == "ssim"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(5,5))
+sns.boxplot(x=mnist_scores_long["number"][(mnist_scores_long["distance"] == "ssim") &
+                                         (mnist_scores_long["number"] != "0001")],
+            y=mnist_scores_long["value"][(mnist_scores_long["distance"] == "ssim") &
+                                         (mnist_scores_long["number"] != "0001")],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["nhnm"])
-plt.title("NHNM - Distance Comparison - Euclidean")
+plt.xticks(ticks=range(0, 3),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('Near Hits')
+L.get_texts()[1].set_text('Near Misses')
+plt.ylim([0,0.7])
+plt.title("MNIST NHNM - SSIM")
 plt.show
 
-sns.boxplot(x=mnist_scores_long["number"][mnist_scores_long["distance"] == "cw"],
-            y=mnist_scores_long["value"][mnist_scores_long["distance"] == "cw"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(5,5))
+sns.boxplot(x=mnist_scores_long["number"][(mnist_scores_long["distance"] == "cw") &
+                                         (mnist_scores_long["number"] != "0001")],
+            y=mnist_scores_long["value"][(mnist_scores_long["distance"] == "cw") &
+                                         (mnist_scores_long["number"] != "0001")],
             palette="pastel", width=0.5,
             hue=mnist_scores_long["nhnm"])
-plt.title("NHNM - Distance Comparison - CW-SSIM")
+plt.xticks(ticks=range(0, 3),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('Near Hits')
+L.get_texts()[1].set_text('Near Misses')
+plt.ylim([0,0.7])
+plt.title("MNIST NHNM - CW-SSIM")
 plt.show
 
 # #### Results:
@@ -331,18 +392,40 @@ plt.show
 
 oct_scores.describe().transpose()[["mean","50%"]]
 
-sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "eucl"],
-            y=oct_scores_long["value"][oct_scores_long["distance"] == "eucl"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(7,5))
+sns.boxplot(x=oct_scores_long["number"][(oct_scores_long["distance"] == "eucl")&
+                                         (oct_scores_long["number"] != "1001")],
+            y=oct_scores_long["value"][(oct_scores_long["distance"] == "eucl")&
+                                         (oct_scores_long["number"] != "1001")],
             palette="pastel", width=0.5,
             hue=oct_scores_long["nhnm"])
-plt.title("NHNM Comparison - Euclidean")
+plt.xticks(ticks=range(0, 5),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16", "FE - CNN", "FE - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('Near Hits')
+L.get_texts()[1].set_text('Near Misses')
+plt.title("OCT NHNM - Euclidean")
 plt.show
 
-sns.boxplot(x=oct_scores_long["number"][oct_scores_long["distance"] == "ssim"],
-            y=oct_scores_long["value"][oct_scores_long["distance"] == "ssim"],
+plt.rcParams.update({'font.size': 16})
+plt.figure(figsize=(5,5))
+sns.boxplot(x=oct_scores_long["number"][(oct_scores_long["distance"] == "ssim")&
+                                         (oct_scores_long["number"] != "1001")],
+            y=oct_scores_long["value"][(oct_scores_long["distance"] == "ssim")&
+                                         (oct_scores_long["number"] != "1001")],
             palette="pastel", width=0.5,
             hue=oct_scores_long["nhnm"])
-plt.title("NHNM Comparison - SSIM")
+plt.xticks(ticks=range(0, 3),
+           labels=["Raw Image", "LRP - CNN", "LRP - VGG16"],
+           rotation=20, ha="right")
+plt.ylabel("Distance Value")
+L=plt.legend()
+L.get_texts()[0].set_text('Near Hits')
+L.get_texts()[1].set_text('Near Misses')
+plt.title("OCT NHNM - SSIM")
 plt.show
 
 
@@ -441,6 +524,51 @@ def jaccards_heatmap(jaccards_df, column, title = None, vmin=None, vmax=None, me
     plt.show()
 
 
+# +
+def rename_numbers(df, column):
+    newcol = pd.DataFrame([0]* len(df[column]))
+    
+    newcol[df[column] == "0000_cw"] = "Raw Image-CWSSIM"
+    newcol[df[column] == "0000_eucl"] = "Raw Image-Eucl"
+    newcol[df[column] == "0000_ssim"] = "Raw Image-SSIM"
+    newcol[df[column] == "0010_cw"] = "CNN-LRP-CWSSIM"
+    newcol[df[column] == "0010_eucl"] = "CNN-LRP-Eucl"
+    newcol[df[column] == "0010_ssim"] = "CNN-LRP-SSIM"
+    newcol[df[column] == "0011_cw"] = "VGG-LRP-CWSSIM"
+    newcol[df[column] == "0011_eucl"] = "VGG-LRP-Eucl"
+    newcol[df[column] == "0011_ssim"] = "VGG-LRP-SSIM"
+    newcol[df[column] == "0100_eucl"] = "CNN-FE-Eucl"
+    newcol[df[column] == "0101_eucl"] = "VGG-FE-Eucl"
+    
+    newcol[df[column] == "1000_eucl"] = "Raw Image-Eucl"
+    newcol[df[column] == "1000_ssim"] = "Raw Image-SSIM"
+    newcol[df[column] == "1010_eucl"] = "CNN-LRP-Eucl"
+    newcol[df[column] == "1010_ssim"] = "CNN-LRP-SSIM"
+    newcol[df[column] == "1011_eucl"] = "VGG-LRP-Eucl"
+    newcol[df[column] == "1011_ssim"] = "VGG-LRP-SSIM"
+    newcol[df[column] == "1100_eucl"] = "CNN-FE-Eucl"
+    newcol[df[column] == "1101_eucl"] = "VGG-FE-Eucl"
+
+    return newcol
+
+#rename_numbers(jaccards, "df1_name")
+#jaccards["df1_name"]
+
+
+# +
+# get rid of double raw images
+mnist_df_names = ["0000_eucl", "0000_ssim", "0000_cw",
+          "0010_eucl", "0010_ssim", "0010_cw",
+          "0011_eucl", "0011_ssim", "0011_cw",
+          "0100_eucl", "0101_eucl"]
+
+oct_df_names = ["1000_eucl", "1000_ssim",
+          "1010_eucl", "1010_ssim",
+          "1011_eucl", "1011_ssim",
+          "1100_eucl", "1101_eucl"]
+
+mnist_df = {df_name: all_df[df_name] for df_name in all_df if df_name in mnist_df_names}
+oct_df = {df_name: all_df[df_name] for df_name in all_df if df_name in oct_df_names}
 # -
 
 # ### MNIST
@@ -466,9 +594,15 @@ jaccards
 
 jaccards.groupby(["df1_name", "df2_name"]).describe() #.transpose()
 
-jaccards_heatmap(jaccards, "jaccard_misses")
-jaccards_heatmap(jaccards, "jaccard_top_misses")
-jaccards_heatmap(jaccards, "jaccard_hits")
+# +
+jaccards2 = jaccards.copy()
+jaccards2["df1_name"] = rename_numbers(jaccards, "df1_name")
+jaccards2["df2_name"] = rename_numbers(jaccards, "df2_name")
+
+jaccards_heatmap(jaccards2, "jaccard_misses", vmax=1, title = "Jaccard Indices for MNIST Near Misses per Class")
+jaccards_heatmap(jaccards2, "jaccard_top_misses", vmax=1, title = "Jaccard Indices for MNIST Top 5 Near Misses")
+jaccards_heatmap(jaccards2, "jaccard_hits", vmax=1, title = "Jaccard Indices for MNIST Near Hits")
+# -
 
 # #### Jaccard Indices
 
@@ -542,7 +676,7 @@ c = 0
 for m1 in jaccards.group.value_counts().index:
     try:
         _, p = stats.wilcoxon(jaccards[jaccards.group == m1]["jaccard_misses"],tmp)
-        if p > 0.005:  # p value too big, these are not different from an all 0 distribution
+        if p > 0.01:  # p value too big, these are not different from an all 0 distribution
             print(m1)
             print(p)
             c += 1
@@ -597,20 +731,26 @@ jaccards_oct.groupby(["df1_name", "df2_name"]).describe()# .transpose()
 
 oct_df["1000_eucl"]["image_name"].equals(oct_df["1000_ssim"]["image_name"])
 
-jaccards_heatmap(jaccards_oct, "jaccard_misses")
-jaccards_heatmap(jaccards_oct, "jaccard_top_misses")
-jaccards_heatmap(jaccards_oct, "jaccard_hits")
+# +
+jaccards_oct2 = jaccards_oct.copy()
+jaccards_oct2["df1_name"] = rename_numbers(jaccards_oct, "df1_name")
+jaccards_oct2["df2_name"] = rename_numbers(jaccards_oct, "df2_name")
 
-jaccards_heatmap(jaccards_oct, "jaccard_misses", metric = "quantile", q=0.9)
-jaccards_heatmap(jaccards_oct, "jaccard_top_misses", metric = "quantile", q=0.9)
-jaccards_heatmap(jaccards_oct, "jaccard_hits", metric = "quantile", q=0.9)
+jaccards_heatmap(jaccards_oct2, "jaccard_misses", vmax=1, title = "Jaccard Indices for OCT Near Misses per Class")
+jaccards_heatmap(jaccards_oct2, "jaccard_top_misses", vmax=1, title = "Jaccard Indices for OCT Top 5 Near Misses")
+jaccards_heatmap(jaccards_oct2, "jaccard_hits", vmax=1, title = "Jaccard Indices for OCT Near Hits")
+# -
+
+jaccards_heatmap(jaccards_oct2, "jaccard_misses", vmax=1, metric = "quantile", q=0.9, title = "Jaccard Indices for OCT Near Misses per Class - 90%-quantile")
+jaccards_heatmap(jaccards_oct2, "jaccard_top_misses", vmax=1, metric = "quantile", q=0.9)
+jaccards_heatmap(jaccards_oct2, "jaccard_hits", vmax=1, metric = "quantile", q=0.9)
 
 sns.reset_defaults()
 
-jaccards_oct.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
+jaccards_oct2.boxplot(column=["jaccard_misses", "jaccard_top_misses", "jaccard_hits"], by=["df1_name", "df2_name"],
                  figsize=(30, 30), rot=90, fontsize=20)
 
-jaccards_oct.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"],
+jaccards_oct2.boxplot(column=["jaccard_misses_abs", "jaccard_top_misses_abs", "jaccard_hits_abs"],
                  by=["df1_name", "df2_name"],
                  figsize=(30, 30), rot=90, fontsize=20)
 
@@ -633,7 +773,7 @@ c = 0
 for m1 in jaccards_oct.group.value_counts().index:
     try:
         _, p = stats.wilcoxon(jaccards_oct[jaccards_oct.group == m1]["jaccard_misses"],tmp)
-        if p > 0.005:  # p value too big, these are not different from an all 0 distribution
+        if p > 0.01:  # p value too big, these are not different from an all 0 distribution
             print(m1)
             print(p)
             c += 1
