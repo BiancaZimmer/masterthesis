@@ -250,6 +250,10 @@ if __name__ == '__main__':
                                           method=method, parameters=parameters, base_vgg=True)
 
     # Create prototypes
-    if input("Do you want to create the prototypes for your current data set now? [y/n] ") == "y":
-        code_from_prototype_selection(dataset_to_use)
+    print("For the creation of the prototypes you first need to select the parameters."
+          "Please do this via 'prototype_selection.py'."
+          "Then you can run the code in 'prototype_selection.py' to select your prototypes.")
+
+    # Create NHNMs
+    print("For the creation of the NHNMs please refer to 'near_miss_hits_selection.py'")
 

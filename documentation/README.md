@@ -17,7 +17,7 @@ Data of each patient was either put into train, test OR validation split. </br>
 Parameters used in the makeimagesplits() function : `splitbypatient=True, maxiter=10, deviation=0.05)`
 
 Command used: </br>
-`python sort_ttv.py /Users/biancazimmer/Documents/Masterthesis_data/data_kermany/all /Users/biancazimmer/Documents/Masterthesis_data/data_kermany_split2 0.03 -s 0.1`
+`python sort_ttv.py ./data_kermany/all ./data_kermany_split 0.03 -s 0.1`
 
 This was used since in Original Dataset 250 images were used per class for testing ->
 that is at most 3% of the original size </br>
@@ -90,4 +90,5 @@ Validation pictures:  8091
 ## 7. Generate Near Hits & Near Misses
 
 ## 8. Evaluation
+Please see my master thesis for the evaluation
 
