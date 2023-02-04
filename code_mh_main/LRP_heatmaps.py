@@ -132,13 +132,17 @@ def methods_oct():
 
 def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, methods, number_images=10):
 
-    print(
-        os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),
-        " loading ...")
-    model = load_model(
-        os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
+    model = None
+    feature_model_output_layer = None
 
-    feature_model_output_layer = get_output_layer(model, type_of_model)
+    if suffix_path != "":
+        print(
+            os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'),
+            " loading ...")
+        model = load_model(
+            os.path.join(STATIC_DIR, 'models', 'model_history_' + str(dataset_to_use) + str(suffix_path) + '.hdf5'))
+
+        feature_model_output_layer = get_output_layer(model, type_of_model)
 
     setup_model = train_eval_model(dataset_to_use, fit=False, type_of_model=type_of_model, suffix_path=suffix_path,
                                    model_for_feature_embedding=model,
@@ -146,15 +150,19 @@ def generate_method_comparison(dataset_to_use, suffix_path, type_of_model, metho
                                    feature_model_output_layer=feature_model_output_layer)
     print("You are using a ", setup_model.dataset.fe.fe_model.name)
     train_data = setup_model.dataset.data
-    x_test = [setup_model.img_preprocess_for_prediction(file) for file in setup_model.dataset.data_t]
-    y_test = [file.ground_truth_label for file in setup_model.dataset.data_t]
 
-    rand_idx = [random.randint(0, len(y_test)) for p in range(0, number_images)]
-    test_images = list(zip([x_test[i] for i in rand_idx],
-                           [y_test[i] for i in rand_idx]))
+    # if you only want to select images from a certain class, use this line instead of the next
+    # xt = [file for file in setup_model.dataset.data_t if file.ground_truth_label == "DRUSEN"]
+    xt = setup_model.dataset.data_t
+    rand_idx = random.sample(range(0, len(xt)), number_images)
+    x_test = [setup_model.img_preprocess_for_prediction(xt[i]) for i in rand_idx]
+    y_test = [xt[i].ground_truth_label for i in rand_idx]
+
+    test_images = list(zip([i for i in x_test],
+                           [i for i in y_test]))
 
     # Create model without trailing softmax
-    model_wo_softmax = innvestigate.model_wo_softmax(model)
+    model_wo_softmax = innvestigate.model_wo_softmax(setup_model.model)
 
     try:
         model_wo_softmax.get_layer(name='activation')._name = 'activation_ori'
