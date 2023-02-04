@@ -795,7 +795,11 @@ def train_eval_model(dataset_to_use, fit: bool = True, type_of_model: str = 'vgg
         print("Fitting model ...")
         sel_model.fit(save_model=True, suffix_path=suffix_path)
     else:
-        sel_model.set_model(suffix_path=suffix_path)
+        if suffix_path == "":
+            sel_model.model = VGG16(weights='imagenet', include_top=True)
+            sel_model.img_size = 224
+        else:
+            sel_model.set_model(suffix_path=suffix_path)
 
     if eval:
         print("Evaluating model ...")
