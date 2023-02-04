@@ -2,7 +2,12 @@
 .DS_Store
 
 # big data folders
-code_mh_main/static/
+code_mh_main/templates/
+code_mh_main/static/data/
+code_mh_main/static/feature_embedding/
+code_mh_main/static/heatmaps/
+code_mh_main/static/media/
+code_mh_main/static/NHNM/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
