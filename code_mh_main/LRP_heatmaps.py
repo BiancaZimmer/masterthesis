@@ -523,39 +523,36 @@ if __name__ == '__main__':
     from feature_extractor import FeatureExtractor
     from modelsetup import ModelSetup
 
+    # ===== Code to generate example heatmaps to find out which analyzer works best =====
     # EXAMPLE USAGES:
-    # generate_method_comparison(dataset_to_use="mnist", suffix_path="_multicnn", type_of_model="cnn",
-    #                            methods=methods_mnist(), number_images=5)
-
-    # generate_method_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn_balanced", type_of_model="cnn",
-    #                            methods=methods_mnist(), number_images=5)
-
-    # generate_method_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
-    #                            methods=methods_oct(), number_images=10)
-
-    generate_method_and_neuron_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn_balanced", type_of_model="cnn",
-                                          methods=methods_mnist(), number_images=2)  # PresetA
-
-    # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_cnn5c2d6bn_balanced",
-    #                                       type_of_model="cnn",
-    #                                       methods=methods_oct(), number_images=5)  # Preset A flat
-
-    # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg", type_of_model="vgg",
-    #                                       methods=methods_oct(), number_images=3)  # Preset A flat
-
-    # generate_method_and_neuron_comparison(dataset_to_use="oct_small_cc", suffix_path="_vgg1balanced", type_of_model="vgg",
-    #                                       methods=methods_oct(), number_images=3)  # alphabeta10
-
     # possible inputs for "methods":
     # methods_grayscale()   for grayscale data
     # methods_mnist()       for dataset mnist
     # methods_oct()         for datasets oct
 
+    generate_method_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model="cnn",
+                               methods=methods_mnist(), number_images=8)
+
+    generate_method_comparison(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871", type_of_model="cnn",
+                               methods=methods_oct(), number_images=4)
+
+    # generate_method_and_neuron_comparison(dataset_to_use="mnist_1247", suffix_path="_cnn_seed3871", type_of_model="cnn",
+    #                                       methods=methods_mnist(), number_images=2)  # PresetA
+    #
+    # generate_method_and_neuron_comparison(dataset_to_use="oct_cc", suffix_path="_cnn_seed3871",
+    #                                       type_of_model="cnn",
+    #                                       methods=methods_oct(), number_images=3)  # Preset A flat
+
+    # ===== End of try-out for analyzers =====
+
+    # ===== Example usage for generating heatmaps for a whole dataset =====
+    # if you want to change the color map of the heatmap got to "generate_LRP_heatmap()"
+    # and change the parameter "cmap_type"
+
     # generate_LRP_heatmaps_for_dataset(dataset_to_use="oct_cc", suffix_path="_vgg4balanced",
     #                                   type_of_model="vgg",
     #                                   method="lrp.sequential_preset_a_flat", parameters={}, base_vgg=True)  # {"epsilon": 0.1}
 
-    # TODO: function to compare neuron outputs on x-Axis, images on y-Axis
 
 
 
