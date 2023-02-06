@@ -104,7 +104,7 @@ oct_df_names = ["1000_eucl", "1000_ssim",
 
 # load all pickles
 for df in all_df:
-    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/" + df + \
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/NHNM/" + df + \
                  "_FINAL100.pickle"
     print(picklepath)
     all_df[df] = pd.read_pickle(picklepath)

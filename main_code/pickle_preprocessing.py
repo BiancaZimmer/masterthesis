@@ -123,12 +123,12 @@ def jaccard_df(df1, df2, method="intersection"):
 # ## Datasets for testing
 
 mnist_eucl = pd.read_pickle(
-    "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
+    "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/mnist_1247_cnn_seed3871_euclidean_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
 add_top_misses(mnist_eucl)
 show_humanfriendly(mnist_eucl)
 
 mnist_SSIM = pd.read_pickle(
-    "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
+    "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/mnist_1247_cnn_seed3871_SSIM_usepredTrue_rawFalse_distonimgTrue_100notrandom.pickle")
 add_top_misses(mnist_SSIM)
 show_humanfriendly(mnist_SSIM)
 
@@ -138,7 +138,7 @@ show_humanfriendly(mnist_SSIM)
 # +
 # dataset_to_use = "mnist_1247"
 
-path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
+path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/NHNM/"
 
 r = range(1, 21)
 
@@ -207,13 +207,13 @@ for df in all_df:
 
 # +
 for df in mnist_df:
-    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/mnist_1247_cnn_seed3871_" + \
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/NHNM/mnist_1247_cnn_seed3871_" + \
                  df + "_usepredTrue_rawFalse_distonimgTrue_FINAL100"
     print(picklepath)
     mnist_df[df].to_pickle(picklepath + ".pickle")
 
 for df in oct_df:
-    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/oct_cc_cnn_seed3871_" + \
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/NHNM/oct_cc_cnn_seed3871_" + \
                  df + "_usepredTrue_rawFalse_distonimgTrue_FINAL100"
     print(picklepath)
     oct_df[df].to_pickle(picklepath + ".pickle")
@@ -223,7 +223,7 @@ for df in oct_df:
 # ## Combine Pickles
 
 # +
-path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/"
+path_base = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/NHNM/"
 
 r = range(1, 21)
 
@@ -310,7 +310,7 @@ for df in all_df:
 # ## Save new pickles
 
 for df in all_df:
-    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/code_mh_main/static/NHNM/" + df + \
+    picklepath = "/Users/biancazimmer/Documents/PycharmProjects/masterthesis/main_code/static/NHNM/" + df + \
                  "_FINAL100"
     print(picklepath)
     all_df[df].to_pickle(picklepath + ".pickle")
