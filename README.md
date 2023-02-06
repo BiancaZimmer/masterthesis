@@ -9,11 +9,42 @@ or anyone at the institution of Cognitive Systems at University of Bamberg
 ---
 
 ## Abstract
-< under construction >
+Deep Neural Networks (DNNs) are often criticized for being a so-called black
+box. There have been many attempts to visualize the decision process of classification
+DNNs. One of them is the approach by Herchenbach et al. (2022) to
+give the domain expert an explanation of the decision boundaries by providing
+prototypical images, Near Hit, and Near Miss images (P+NHNM). This thesis
+aims to expand their approach to multi-class classification as well as basing
+the image selection not only on feature embeddings (FE) but additionally on
+heatmaps generated with layer-wise relevance propagation (LRP) (Lapuschkin
+et al., 2015). For the selection of the P+NHNM images we used the MDD-critic
+(Borgwardt et al., 2006), the Euclidean Distance, structural similarity
+(SSIM) (Wang et al., 2004), and complex wavelet structural similarity (CW-
+SSIM) (Sampat et al., 2009). As models, we set up a custom CNN as well as
+an off-the-shelf VGG16 (Russakovsky et al., 2014).
+
+We evaluated our findings on the MNIST dataset (Y. LeCun and Burges, 1998) and
+the OCT dataset (Kermany et al., 2018a) using quantitative evalua
+tion via comparisons of distance values, the Jaccard Index (Jaccard, 1901) and
+the 1-NN classifier (Bien and Tibshirani, 2011). The qualitative evaluation consisted
+of reviewing the selected P+NHNM images. Our results were not always
+in line with those of Herchenbach et al. (2022) indicating that the off-the-shelf
+VGG16 provided a good basis for the P+NHNM selection and often even a better one
+than the custom CNN. We propose to try a transfer-learned CNN model
+next. No clear recommendation for or against the LRP heatmaps as reference
+point can be made, since our results show evidence for both cases, depending
+on the underlying distance measure and dataset. The computational time for
+the LRP heatmaps as well as the selection of NHNM images was several times
+higher than for the FE and the corresponding NHNM images, suggesting that
+FE might be the better choice when aiming for real-time applications.
 
 ---
 
 ## Folders:
+
+### documentation
+Folder with process flow images, class diagram and some additional information in the README.md.
+Documentation for the master thesis.
 
 ### main_code
 Is the modified code provided by Marvin Herchenbach et al. in the paper "Explaining Image
@@ -29,6 +60,11 @@ and Near Misses on their basis
 4. Deleted the XAI demonstrator since it was not compatible with the tensorflow versions anymore
 
 See own README.md in this folder for detailed information
+
+### results
+Contains some of our results used for the evaluation of the master thesis.
+You can find example images of the prototypes as well as selected Near Hits and Near Misses (NHNM)
+in the respective sub-folders.
 
 ### sort_ttv.py
 Stands for _sort test train validation_. This is a helper Python file which can sort images
